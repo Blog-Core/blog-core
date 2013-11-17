@@ -235,12 +235,12 @@ var types = (function(exports) {
         
         list: function(value, prop) {
             
-            return document.createElement(value);
+            return document.createTextNode(value);
         },
         
         detail: function(value, prop) {
             
-            return document.createElement(value);
+            return document.createTextNode(value);
         },
         
         edit: function(value, prop, id) {
@@ -252,7 +252,7 @@ var types = (function(exports) {
                 var option = document.createElement('option');
                 
                 option.value = value;
-                option.textContent = nameToLabel(value);
+                option.textContent = util.nameToLabel(value);
                 
                 input.appendChild(option);
             });
@@ -285,7 +285,6 @@ var types = (function(exports) {
             });
             
             input.id = id;
-            input.value = value;
             
             return {
                 
