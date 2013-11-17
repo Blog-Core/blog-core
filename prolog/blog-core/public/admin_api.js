@@ -82,12 +82,12 @@ var api = (function(exports) {
     
     exports.docType = function(id, cb) {
         
-        get('/api/type/doc/' + id, cb);
+        get('/api/doc/' + id + '/type', cb);
     };
     
     exports.colType = function(id, cb) {
         
-        get('/api/type/col/' + id, cb);
+        get('/api/col/' + id + '/type', cb);
     };
     
     exports.collection = function(name, cb) {
@@ -107,7 +107,7 @@ var api = (function(exports) {
     
     exports.create = function(name, doc, cb) {
         
-        post('/api/col/' + name, doc, cb);
+        post('/api/col/' + name + '/doc', doc, cb);
     };
     
     return exports;
