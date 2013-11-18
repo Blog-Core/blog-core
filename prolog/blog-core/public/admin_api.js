@@ -1,5 +1,21 @@
 var api = (function(exports) {
     
+    function handle(res, cb) {
+        
+        if (res.status === 'error') {
+                
+            var error = new Error('API call failed.');
+            
+            error.code = res.code;
+            
+            cb(error);
+            
+        } else {
+            
+            cb(null, res.data);
+        }
+    }
+    
     function get(url, cb) {
         
         var xhr = new XMLHttpRequest();
@@ -8,9 +24,7 @@ var api = (function(exports) {
         
         xhr.addEventListener('load', function() {
             
-            var res = JSON.parse(xhr.responseText);            
-            
-            cb(null, res.data);
+            handle(JSON.parse(xhr.responseText), cb);                        
             
         }, false);
         
@@ -25,9 +39,7 @@ var api = (function(exports) {
         
         xhr.addEventListener('load', function() {
             
-            var res = JSON.parse(xhr.responseText);            
-            
-            cb(null, res.data);
+            handle(JSON.parse(xhr.responseText), cb);
             
         }, false);
         
@@ -43,9 +55,7 @@ var api = (function(exports) {
         
         xhr.addEventListener('load', function() {
             
-            var res = JSON.parse(xhr.responseText);            
-            
-            cb(null, res.data);
+            handle(JSON.parse(xhr.responseText), cb);
             
         }, false);
         
@@ -61,9 +71,7 @@ var api = (function(exports) {
         
         xhr.addEventListener('load', function() {
             
-            var res = JSON.parse(xhr.responseText);            
-            
-            cb(null, res.data);
+            handle(JSON.parse(xhr.responseText), cb);
             
         }, false);
         
@@ -108,6 +116,11 @@ var api = (function(exports) {
     exports.create = function(name, doc, cb) {
         
         post('/api/col/' + name + '/doc', doc, cb);
+    };
+    
+    exports.login = function(username, password, cb) {
+        
+        post('/api/login', { username: username, password: password }, cb);
     };
     
     return exports;

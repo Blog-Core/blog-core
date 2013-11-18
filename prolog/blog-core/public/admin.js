@@ -6,6 +6,54 @@ function setContent(dom) {
     content.appendChild(dom);
 }
 
+function showAuth() {        
+    
+    var username = document.createElement('input');
+    
+    username.type = 'text';
+    username.placeholder = 'username';
+    
+    var password = document.createElement('input');
+    
+    password.type = 'password';
+    password.placeholder = 'password';
+    
+    var login = document.createElement('button');
+    
+    login.textContent = 'Login';
+    
+    var form = document.createElement('form');
+    
+    form.addEventListener('submit', function(e) {
+        
+        e.preventDefault();
+        
+        api.login(username.value, password.value, function(err) {
+            
+            console.log(err);
+            
+            // FIXME error handling.
+            
+            window.location.hash = '';
+        });
+    });
+    
+    form.appendChild(username);
+    form.appendChild(password);
+    form.appendChild(login);
+    
+    var title = document.createElement('h2');
+    
+    title.textContent = 'Log in';
+    
+    var content = document.createElement('div');
+    
+    content.appendChild(title);
+    content.appendChild(form);
+    
+    setContent(content);
+}
+
 function showTypes() {
     
     api.types(function(err, list) {
@@ -25,7 +73,13 @@ function showTypes() {
             
             types.appendChild(li);
         });
-    });
+        
+        var p = document.createElement('p');
+        
+        p.textContent = 'Pick a collection.';
+        
+        setContent(p);
+    });        
 }
 
 function showCollection(name) {
@@ -85,6 +139,10 @@ function newDoc(name) {
 }
 
 var routes = [
+    {
+        exp: /#!\/auth/,
+        fun: showAuth
+    },
     {
         exp: /#!\/list\/(\w+)/,
         fun: showCollection
