@@ -87,13 +87,19 @@ var list = (function(exports) {
             
             var add = document.createElement('a');
             
-            add.textContent = 'New';
-            
+            add.textContent = 'New';            
             add.href = '#!/new/' + type.name;
+            
+            var collections = document.createElement('a');
+            
+            collections.textContent = 'Back to collections';
+            collections.href = '#!/collections';
             
             var links = document.createElement('p');
             
             links.appendChild(add);
+            links.appendChild(document.createTextNode(' '));
+            links.appendChild(collections);
             
             return links;
         }

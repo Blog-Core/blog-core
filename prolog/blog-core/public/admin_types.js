@@ -361,6 +361,36 @@ var types = (function(exports) {
         }
     };
     
+    // Reference to another document.
+    // Currently has only 'list' and 'detail' views.
+    
+    exports.ref = {
+        
+        list: function(value, prop) {
+            
+            var a = document.createElement('a');
+            
+            a.title = value;
+            a.href = '#!/show/' + value;
+            a.textContent = value.substring(0, 8);
+            a.className = 'reference';
+            
+            return a;
+        },
+        
+        detail: function(value, prop) {
+            
+            var a = document.createElement('a');
+            
+            a.title = value;
+            a.href = '#!/show/' + value;
+            a.textContent = value.substring(0, 8);
+            a.className = 'reference';
+            
+            return a;
+        }        
+    };
+    
     // List of document references.
     // Currently only has detail view.
     

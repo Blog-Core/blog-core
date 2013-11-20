@@ -6,7 +6,9 @@ function setContent(dom) {
     content.appendChild(dom);
 }
 
-function showAuth() {        
+var redirect;
+
+function showAuth() {
     
     var username = document.createElement('input');
     
@@ -34,7 +36,12 @@ function showAuth() {
             
             // FIXME error handling.
             
-            window.location.hash = '';
+            if (redirect) {
+                
+                window.location.hash = redirect;
+                
+                redirect = null;
+            }
         });
     });
     
@@ -48,7 +55,7 @@ function showAuth() {
     
     var content = document.createElement('div');
     
-    content.appendChild(title);
+    content.appendChild(title);    
     content.appendChild(form);
     
     setContent(content);
@@ -58,35 +65,116 @@ function showTypes() {
     
     api.types(function(err, list) {
         
-        var types = document.getElementById('types');
-        
-        list.forEach(function(type) {
+        if (err) {
+            
+            if (err.code === 101) {
                 
-            var a = document.createElement('a');
+                redirect = '#!/collections';
+                
+                window.location.hash = '#!/auth';
+            }
             
-            a.textContent = util.nameToLabel(type.name);
-            a.href = '#!/list/' + type.name;
-            
-            var li = document.createElement('li');
-            
-            li.appendChild(a);
-            
-            types.appendChild(li);
-        });
+        } else {
         
-        var p = document.createElement('p');
-        
-        p.textContent = 'Pick a collection.';
-        
-        setContent(p);
-    });        
+            function header() {
+                
+                var name = document.createElement('th');
+                
+                name.textContent = 'Name';
+                
+                var tr = document.createElement('tr');            
+                
+                tr.appendChild(name);
+                
+                return tr;
+            }
+            
+            var table = document.createElement('table');
+            
+            table.appendChild(header());
+            
+            list.forEach(function(type) {
+                    
+                var a = document.createElement('a');
+                
+                a.textContent = util.nameToLabel(type.name);
+                a.href = '#!/list/' + type.name;
+                
+                var td = document.createElement('td');
+                
+                td.appendChild(a);
+                
+                var tr = document.createElement('tr');
+                
+                tr.appendChild(td);
+                
+                table.appendChild(tr);
+            });
+            
+            var title = document.createElement('h2');
+            
+            title.textContent = 'Document collections';
+            
+            function links() {
+                
+                var links = document.createElement('p');
+                
+                var logout = document.createElement('a');
+                
+                logout.textContent = 'Logout';
+                logout.href = '#';
+                logout.addEventListener('click', function(e) {
+                    
+                    e.preventDefault();
+                    
+                    api.logout(function(err) {
+                        
+                        // FIXME error handling.
+                        
+                        window.location.hash = '#!/auth';
+                    });
+                    
+                }, false);
+                
+                links.appendChild(logout);
+                
+                return links;
+            }
+            
+            var content = document.createElement('div');
+            
+            content.appendChild(title);
+            content.appendChild(links());
+            content.appendChild(table);
+            content.appendChild(links());
+            
+            setContent(content);
+        }
+    });
 }
 
 function showCollection(name) {
     
-    api.colType(name, function(err, type) {
+    async.series({
         
-        api.collection(name, function(err, docs) {
+        type: async.apply(api.colType, name),
+        docs: async.apply(api.collection, name)
+        
+    }, function(err, results) {
+        
+        if (err) {
+            
+            if (err.code === 101) {
+                
+                redirect = '#!/list/' + name;
+                
+                window.location.hash = '#!/auth';
+            }
+            
+        } else {
+            
+            var type = results.type;            
+            var docs = results.docs;
             
             // Sort documents when the sort order is specified.
             
@@ -98,7 +186,7 @@ function showCollection(name) {
             }
             
             setContent(list.create(docs, type));
-        });
+        }
     });
 }
 
@@ -152,7 +240,7 @@ var routes = [
         fun: newDoc
     },
     {
-        exp: /^$/,
+        exp: /#!\/collections/,
         fun: showTypes
     },
     {

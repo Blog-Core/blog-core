@@ -5,119 +5,141 @@
 :- use_module(library(http/http_files)).
 :- use_module(library(http/http_client), [ http_read_data/3 ]).
 :- use_module(library(http/http_session)).
-:- use_module(library(debug)).
 :- use_module(library(docstore)).
-:- use_module(blog_route).
-:- use_module(blog_json).
-:- use_module(blog_prop).
 
-:- http_get(admin, reply_file('admin.html')).
+:- use_module(ar_router).
+:- use_module(blog_doc).
 
-:- http_get(admin/File, reply_file(File)).
+% Sends the main admin HTML file.
+
+:- route_get(admin, reply_file('admin.html')).
 
 % Sends the given file as response.
+
+:- route_get(admin/File, reply_file(File)).
 
 reply_file(File, _):-
     module_property(blog_admin, file(ModFile)),
     file_directory_name(ModFile, ModDir),
-    atomic_list_concat([ ModDir, '/public/', File ], FullPath),
+    atomic_list_concat([ModDir, '/public/', File], FullPath),
     send_file(FullPath).
 
 % Helper to authenticate the current request.
 % Requires role admin.
 
-auth(Next, _):-
-    http_session_data(user(User)),
-    memberchk(role(admin), User), !,
-    call(Next).
-    
-auth(_, _):-
-    reply_json(json([ status = error, code = 101 ])).
+auth(Next):-
+    (   http_session_data(user(User)),
+        memberchk(role(admin), User)
+    ->  call(Next)
+    ;   reply_error(101)).
     
 % Gives all documents in the collection.
     
-:- http_get(api/col/Col, [ auth ], doc_all(Col)).
+:- route_get(api/col/Col, [auth], doc_all(Col)).
 
-doc_all(Col, _):-
-    all(Col, Docs),
-    maplist(doc_to_json, Docs, JSONDocs),
-    reply_json(json([ status = success, data = JSONDocs ])).
+doc_all(Col):-
+    ds_all(Col, Docs),
+    maplist(doc_to_json, Docs, Json),
+    reply_success(Json).
 
 % Stores new document in the collection.
 % Replies back id.
 
-:- http_post(api/col/Col/doc, [ auth ], doc_insert(Col)).
+:- route_post(api/col/Col/doc, [auth], doc_insert(Col)).
 
-doc_insert(Col, Req):-
-    http_read_data(Req, JSONDoc, []),
-    json_to_doc(JSONDoc, Doc),
-    insert(Col, Doc, Id),
-    reply_json(json([ status = success, data = Id ])).
+doc_insert(Col):-
+    http_current_request(Req),
+    http_read_data(Req, Json, []),
+    json_to_doc(Json, Doc),
+    ds_insert(Col, Doc, Id),
+    reply_success(Id).
     
 % Gives document type by collection name.
 
-:- http_get(api/col/Col/type, [ auth ], col_type(Col)).
+:- route_get(api/col/Col/type, [auth], col_type(Col)).
 
-col_type(Col, _):-
-    find(types, name = Col, [ Doc ]),
-    doc_to_json(Doc, JSONDoc),
-    reply_json(json([ status = success, data = JSONDoc ])).
+col_type(Col):-
+    (   ds_find(types, name=Col, [Doc])
+    ->  doc_to_json(Doc, Json),
+        reply_success(Json)
+    ;   reply_error(103)).
     
 % Gives single document by id.
 
-:- http_get(api/doc/Id, [ auth ], doc_get(Id)).
+:- route_get(api/doc/Id, [auth], doc_get(Id)).
 
-doc_get(Id, _):-
-    get(Id, Doc),
-    doc_to_json(Doc, JSONDoc),
-    reply_json(json([ status = success, data = JSONDoc ])).
+doc_get(Id):-
+    (   ds_get(Id, Doc)
+    ->  doc_to_json(Doc, Json),
+        reply_success(Json)
+    ;   reply_error(104)).
     
 % Gives document type by document id.
     
-:- http_get(api/doc/Id/type, [ auth ], doc_type(Id)).
+:- route_get(api/doc/Id/type, [auth], doc_type(Id)).
     
-doc_type(Id, _):-
-    collection(Id, Col),
-    find(types, name = Col, [Doc]),
-    doc_to_json(Doc, JSONDoc),
-    reply_json(json([ status = success, data = JSONDoc ])).
+doc_type(Id):-
+    (   ds_collection(Id, Col),
+        ds_find(types, name=Col, [Doc])
+    ->  doc_to_json(Doc, Json),
+        reply_success(Json)
+    ;   reply_error(105)).
     
 % Updates document by id.
 
-:- http_put(api/doc/Id, [ auth ], doc_update(Id)).
+:- route_put(api/doc/Id, [auth], doc_update(Id)).
 
 doc_update(Id, Req):-
-    http_read_data(Req, JSONDoc, []),
-    json_to_doc(JSONDoc, Doc),
-    (memberchk('$id'(Id), Doc) -> update(Doc) ; update(['$id'(Id)|Doc])),
-    reply_json(json([ status = success, data = Id ])).
+    http_read_data(Req, Json, []),
+    json_to_doc(Json, Doc),
+    (   memberchk('$id'(Id), Doc)
+    ->  ds_update(Doc)
+    ;   ds_update(['$id'(Id)|Doc])),
+    reply_success(Id).
 
 % Removes the given document.
 % Replies back id.
     
-:- http_del(api/doc/Id, [ auth ], doc_remove(Id)).
+:- route_del(api/doc/Id, [auth], doc_remove(Id)).
     
-doc_remove(Id, _):-
-    remove(Id),
-    reply_json(json([ status = success, data = Id ])).
+doc_remove(Id):-
+    ds_remove(Id),
+    reply_success(Id).
 
 % Logins into the system with username/password.
 % When logic succeeds, sends user id back.
 % Otherwise sends error 102.
     
-:- http_post(api/login, login).
+:- route_post(api/login, login).
 
-login(Req):-
+login:-
+    http_current_request(Req),
     http_read_data(Req, json(Data), []),
-    memberchk(username = User, Data),
-    memberchk(password = Pass, Data),
-    login_response(User, Pass).
+    memberchk(username=User, Data),
+    memberchk(password=Pass, Data),
+    (   Cond = (username=User, password=Pass),
+        ds_find(users, Cond, [Doc])
+    ->  prop_get('$id', Doc, Id),
+        http_session_assert(user(Doc)),
+        reply_success(Id)
+    ;   reply_error(102)).
     
-login_response(User, Pass):-
-    find(users, (username = User, password = Pass), [ Doc ]), !,
-    prop_get('$id', Doc, Id),
-    http_session_assert(user(Doc)),
-    reply_json(json([ status = success, data = Id ])).
 
-login_response(_, _):-
-    reply_json(json([ status = error, code = 102 ])).
+% Logs out from the system
+    
+:- route_get(api/logout, logout).
+
+logout:-
+    http_session_retractall(user(_)),
+    reply_success(@(true)).
+
+% Sends JSON response with Data
+% and success.
+    
+reply_success(Data):-
+    reply_json(json([status=success, data=Data])).
+
+% Sends error JSON response with Code.
+    
+reply_error(Code):-
+    reply_json(json([status=error, code=Code])).

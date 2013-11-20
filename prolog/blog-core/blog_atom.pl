@@ -4,7 +4,7 @@
 
 :- use_module(library(http/html_write)).
 
-:- use_module(blog_prop).
+:- use_module(blog_doc).
 
 %% reply_atom(+Feed) is det.
 %

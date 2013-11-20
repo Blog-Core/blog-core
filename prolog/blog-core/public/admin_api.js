@@ -123,6 +123,11 @@ var api = (function(exports) {
         post('/api/login', { username: username, password: password }, cb);
     };
     
+    exports.logout = function(cb) {
+    
+        get('/api/logout', cb);
+    };
+    
     return exports;
     
 })({});

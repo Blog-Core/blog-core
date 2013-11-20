@@ -4,8 +4,6 @@
     enable_debug
 ]).
 
-:- asserta(user:file_search_path(library, '/home/raivo/docstore/prolog')).
-
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(http/http_session)).
 :- use_module(library(http/http_dispatch)).
@@ -15,26 +13,25 @@
 :- use_module(library(error)).
 
 :- use_module(library(docstore)).
+:- use_module(library(md/md_parse)).
 
 :- use_module(blog_config).
-:- use_module(blog_route).
 :- use_module(blog_admin).
 :- use_module(blog_atom).
-:- use_module(blog_html).
-:- use_module(blog_json).
+:- use_module(blog_doc).
 
 enable_debug:-
     debug(blog_route).
 
 setup(File):-
-    docstore:open(File),
+    ds_open(File),
     init_config,
     init_users,
     init_meta,
     start_server.
 
 setup(Mod, File):-
-    docstore:open(File),
+    ds_open(File),
     init_config,
     init_users,
     init_meta,
@@ -42,7 +39,7 @@ setup(Mod, File):-
     start_server.
     
 init_config:-
-    all(config, []), !,
+    ds_all(config, []), !,
     config_set(title, 'Untitled blog'),
     config_set(author, 'Name not set'),
     config_set(server_port, 8001),
@@ -55,8 +52,8 @@ init_config:-
 init_config.
 
 init_users:-
-    all(users, []), !,
-    insert(users, [
+    ds_all(users, []), !,
+    ds_insert(users, [
         username('admin'),
         password('admin'),
         email('test@example.com'),
@@ -68,8 +65,8 @@ init_users:-
 init_users.
 
 init_meta:-
-    all(types, []), !,
-    insert(types, [
+    ds_all(types, []), !,
+    ds_insert(types, [
         name(users),
         title(username),
         list([ email, username, role ]),
@@ -97,7 +94,7 @@ init_meta:-
             ])
         ])        
     ]),
-    insert(types, [
+    ds_insert(types, [
         name(posts),
         title(title),
         order([
@@ -131,7 +128,7 @@ init_meta:-
             ])
         ])
     ]),
-    insert(types, [
+    ds_insert(types, [
         name(config),
         title(name),
         list([ name, value ]),
@@ -146,15 +143,15 @@ init_meta:-
             ])
         ])        
     ]),
-    insert(types, [
+    ds_insert(types, [
         name(comments),
         title(author),
         order([
             property(date),
             direction(desc)
         ]),
-        list([ date, author ]),
-        detail([ date, author, content ]),
+        list([ date, author, post ]),
+        detail([ date, author, content, post ]),
         edit([ date, author, content ]),
         props([
             author([
@@ -165,11 +162,34 @@ init_meta:-
             ]),
             date([
                 type(datetime)
+            ]),
+            post([
+                type(ref)
             ])
         ])
     ]).
 
 init_meta.
+
+% Hook to turn post content into HTML.
+
+:- ds_hook(posts, before_save, convert_content).
+
+convert_content(In, Out):-
+    prop_get(content, In, Content),
+    atom_codes(Content, Codes),
+    (md_html(Codes, Html)
+    ->  true
+    ;   prop_get('$id', In, Id),
+        throw(error(cannot_convert_post(Id)))),
+    Out = [ html(Html)|In ].
+    
+% Hook to remove comments when a post is removed.
+
+:- ds_hook(posts, before_remove, remove_comments).
+
+remove_comments(Id):-
+    ds_remove(comments, post = Id).
     
 load_all(Mod):-
     module_property(Mod, file(File)),
