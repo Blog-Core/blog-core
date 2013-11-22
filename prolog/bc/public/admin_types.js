@@ -24,10 +24,13 @@ var types = (function(exports) {
 
         // Property editor. Returns
         // dom for the editor and accessor for the edited value.
+        // Remembers the actual value type (string vs number).
         
         edit: function(value, prop, id) {
             
-            var input = document.createElement('input');
+            var type = typeof value;
+            
+            var input = document.createElement('input');            
                 
             input.type = 'text';
             input.id = id;
@@ -39,7 +42,7 @@ var types = (function(exports) {
              
                 value: function() {
                     
-                    return input.value;
+                    return type === 'number' ? parseFloat(input.value) : input.value;
                 }
             };
         },

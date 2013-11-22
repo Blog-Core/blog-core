@@ -1,4 +1,4 @@
-:- module(blog_comment, []).
+:- module(bc_comment, []).
 
 human_test(1, '50'). % How much is 25 times 2?
 human_test(2, '20'). % How much is 15 plus 5?

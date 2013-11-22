@@ -1,12 +1,12 @@
-:- module(blog_config, [
-    config_get/2,
-    config_set/2
+:- module(bc_config, [
+    config_get/2, % +Name, -Value
+    config_set/2  % +Name, +Value
 ]).
 
 /** <module> Configuration interface.
 */
 
-:- use_module(blog_doc).
+:- use_module(bc_doc).
 :- use_module(library(docstore)).
 
 %% config_get(+Name, -Value) is det.
@@ -16,8 +16,8 @@
 % the configuration option is not found.
 
 config_get(Name, Value):-
-    ds_find(config, name = Name, [ Doc ]), !,
-    prop_get(value, Doc, Value).
+    ds_find(config, name=Name, [Doc]), !,
+    doc_get(value, Doc, Value).
     
 config_get(Name, _):-
     throw(error(no_config(Name))).
@@ -28,9 +28,9 @@ config_get(Name, _):-
 % value does not exist yet, it is added.
 
 config_set(Name, Value):-
-    ds_find(config, name = Name, [ Doc ]), !,
-    memberchk('$id'(Id), Doc),
+    ds_find(config, name=Name, [Doc]), !,
+    doc_id(Doc, Id),
     ds_prop_update(Id, value, Value).
 
 config_set(Name, Value):-
-    ds_insert(config, [ name(Name), value(Value) ]).
+    ds_insert(config, [name(Name), value(Value)]).

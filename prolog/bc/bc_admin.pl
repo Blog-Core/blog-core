@@ -1,14 +1,16 @@
-:- module(blog_admin, []).
+:- module(bc_admin, []).
 
 :- use_module(library(http/http_json)).
 :- use_module(library(http/html_write)).
-:- use_module(library(http/http_files)).
-:- use_module(library(http/http_client), [ http_read_data/3 ]).
+:- use_module(library(http/http_client)).
 :- use_module(library(http/http_session)).
-:- use_module(library(docstore)).
+:- use_module(library(http/http_wrapper)).
+:- use_module(library(http/http_dispatch)).
 
-:- use_module(ar_router).
-:- use_module(blog_doc).
+:- use_module(library(docstore)).
+:- use_module(library(ar_router)).
+
+:- use_module(bc_doc).
 
 % Sends the main admin HTML file.
 
@@ -18,11 +20,13 @@
 
 :- route_get(admin/File, reply_file(File)).
 
-reply_file(File, _):-
-    module_property(blog_admin, file(ModFile)),
+reply_file(File):-
+    module_property(bc_admin, file(ModFile)),
     file_directory_name(ModFile, ModDir),
     atomic_list_concat([ModDir, '/public/', File], FullPath),
-    send_file(FullPath).
+    \+ sub_atom(FullPath, _, _, _, '..'),
+    http_current_request(Request),
+    http_reply_file(FullPath, [unsafe(true)], Request).
 
 % Helper to authenticate the current request.
 % Requires role admin.
@@ -89,7 +93,8 @@ doc_type(Id):-
 
 :- route_put(api/doc/Id, [auth], doc_update(Id)).
 
-doc_update(Id, Req):-
+doc_update(Id):-
+    http_current_request(Req),
     http_read_data(Req, Json, []),
     json_to_doc(Json, Doc),
     (   memberchk('$id'(Id), Doc)
@@ -119,7 +124,7 @@ login:-
     memberchk(password=Pass, Data),
     (   Cond = (username=User, password=Pass),
         ds_find(users, Cond, [Doc])
-    ->  prop_get('$id', Doc, Id),
+    ->  doc_id(Doc, Id),
         http_session_assert(user(Doc)),
         reply_success(Id)
     ;   reply_error(102)).
