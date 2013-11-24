@@ -321,44 +321,30 @@ var types = (function(exports) {
         
         edit: function(value, prop, id) {
             
-            var date = new Date(value * 1000);
-            
-            var input = document.createElement('input');
-            
-            input.type = 'text';
-            input.id = id;
-            input.value = date.toLocaleString();
-            input.disabled = true;
+            var editor = dateEdit.create(value);
             
             return {
                 
-                dom: input,
+                dom: editor.dom,
              
                 value: function() {
                     
-                    return value;
+                    return editor.value();
                 }
             };
         },
         
         create: function(prop, id) {
             
-            var date = new Date();
-            
-            var input = document.createElement('input');
-            
-            input.type = 'text';
-            input.id = id;
-            input.value = date.toLocaleString();
-            input.disabled = true;
+            var editor = dateEdit.create();
             
             return {
                 
-                dom: input,
+                dom: editor.dom,
              
                 value: function() {
                     
-                    return Math.round(date.getTime() / 1000);
+                    return editor.value();
                 }
             };
         }
@@ -420,6 +406,60 @@ var types = (function(exports) {
             
             return ul;
         }        
+    };
+    
+    // List of comma-separated strings.
+    
+    exports.tags = {
+        
+        list: function(value, prop) {
+            
+            return document.createTextNode(value.join(', '));
+        },
+        
+        detail: function(value, prop) {
+            
+            return document.createTextNode(value.join(', '));
+        },
+        
+        edit: function(value, prop, id) {
+            
+            var type = typeof value;
+            
+            var input = document.createElement('input');            
+                
+            input.type = 'text';
+            input.id = id;
+            input.value = value.join(', ');
+            
+            return {
+                
+                dom: input,
+             
+                value: function() {
+                    
+                    return input.value.split(/, */);
+                }
+            };
+        },
+        
+        create: function(prop, id) {
+            
+            var input = document.createElement('input');
+                
+            input.type = 'text';
+            input.id = id;
+            
+            return {
+                
+                dom: input,
+             
+                value: function() {
+                    
+                    return input.value.split(/, */);
+                }
+            };
+        }
     };
     
     return exports;

@@ -3,7 +3,6 @@
 :- use_module(library(http/http_json)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_client)).
-:- use_module(library(http/http_session)).
 :- use_module(library(http/http_wrapper)).
 :- use_module(library(http/http_dispatch)).
 
@@ -32,10 +31,14 @@ reply_file(File):-
 % Requires role admin.
 
 auth(Next):-
-    (   http_session_data(user(User)),
-        memberchk(role(admin), User)
+    (   auth_x_key_admin
     ->  call(Next)
     ;   reply_error(101)).
+
+auth_x_key_admin:-
+    http_current_request(Request),
+    memberchk(x_key(Key), Request),
+    ds_find(users, (key=Key, role=admin), [role], [_]).
     
 % Gives all documents in the collection.
     
@@ -112,7 +115,7 @@ doc_remove(Id):-
     reply_success(Id).
 
 % Logins into the system with username/password.
-% When logic succeeds, sends user id back.
+% When logic succeeds, sends user key back.
 % Otherwise sends error 102.
     
 :- route_post(api/login, login).
@@ -124,19 +127,9 @@ login:-
     memberchk(password=Pass, Data),
     (   Cond = (username=User, password=Pass),
         ds_find(users, Cond, [Doc])
-    ->  doc_id(Doc, Id),
-        http_session_assert(user(Doc)),
-        reply_success(Id)
+    ->  doc_get(key, Doc, Key),
+        reply_success(Key)
     ;   reply_error(102)).
-    
-
-% Logs out from the system
-    
-:- route_get(api/logout, logout).
-
-logout:-
-    http_session_retractall(user(_)),
-    reply_success(@(true)).
 
 % Sends JSON response with Data
 % and success.

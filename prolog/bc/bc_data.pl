@@ -48,10 +48,11 @@ init_meta:-
     (   ds_all(types, [])
     ->  ds_insert(types, [
             name(users),
+            description('Blog users'),
             title(username),
             list([ email, username, role ]),
-            detail([ email, username, role, name, surname ]),
-            edit([ email, username, role, name, surname ]),
+            detail([ email, username, role, name, surname, key ]),
+            edit([ email, username, role, name, surname, key, password ]),
             props([
                 username([
                     type(line)
@@ -63,7 +64,7 @@ init_meta:-
                     type(line)
                 ]),
                 password([
-                    type(password)
+                    type(line)
                 ]),
                 surname([
                     type(line)
@@ -71,19 +72,23 @@ init_meta:-
                 role([
                     type(choice),
                     values([ normal, admin ])
+                ]),
+                key([
+                    type(line)                    
                 ])
             ])        
         ]),
         ds_insert(types, [
             name(posts),
+            description('Blog posts. Can serve as pages/fragments too.'),
             title(title),
             order([
                 property(date),
                 direction(desc)
             ]),
             list([ title, published, commenting ]),
-            detail([ title, slug, published, commenting, content ]),
-            edit([ title, slug, published, commenting, content ]),
+            detail([ title, slug, published, commenting, content, tags, date ]),
+            edit([ title, slug, published, commenting, content, tags, date ]),
             props([
                 date([
                     type(datetime)
@@ -105,11 +110,15 @@ init_meta:-
                 ]),
                 type([
                     type(line)
+                ]),
+                tags([
+                    type(tags)
                 ])
             ])
         ]),
         ds_insert(types, [
             name(config),
+            description('Configuration options.'),
             title(name),
             list([ name, value ]),
             detail([ name, value ]),
@@ -125,16 +134,17 @@ init_meta:-
         ]),
         ds_insert(types, [
             name(comments),
-            title(author),
+            description('Blog post comments.'),
+            title(name),
             order([
                 property(date),
                 direction(desc)
             ]),
-            list([ date, author, post ]),
-            detail([ date, author, content, post ]),
-            edit([ date, author, content ]),
+            list([ date, name, post ]),
+            detail([ date, name, content, post ]),
+            edit([ date, name, content ]),
             props([
-                author([
+                name([
                     type(line)
                 ]),
                 content([
@@ -155,17 +165,31 @@ init_meta:-
 :- ds_hook(posts, before_save, convert_content).
 
 convert_content(In, Out):-
-    doc_get(content, In, Content),
-    atom_codes(Content, Codes),
-    (   md_html(Codes, Html)
-    ->  true
-    ;   doc_id(In, Id),
-        throw(error(cannot_convert_post(Id)))),
-    Out = [ html(Html)|In ].
+    (   memberchk(content(Content), In)
+    ->
+        atom_codes(Content, Codes),
+        (   md_html(Codes, Html)
+        ->  Out = [html(Html)|In]
+        ;   doc_id(In, Id),
+            throw(error(cannot_convert_post(Id))))
+    ;   Out = In).
     
 % Hook to remove comments when a post is removed.
 
 :- ds_hook(posts, before_remove, remove_comments).
+
+% Hook to add API key to the user.
+
+:- ds_hook(users, before_save, add_api_key).
+
+add_api_key(In, Out):-
+    (   memberchk(key(Key), In)
+    ->  (   Key = ''
+        ->  ds_uuid(New),
+            doc_replace(key, New, In, Out)
+        ;   true)
+    ;   ds_uuid(Key),
+        Out = [key(Key)|In]).
 
 remove_comments(Id):-
     ds_remove(comments, post=Id).

@@ -1,10 +1,13 @@
 :- module(bc_doc, [
     doc_id/2,      % +Doc, -Id
     doc_get/3,     % +Name, +Doc, -Value
+    doc_replace/4, % +Name, +Value, +DocIn, -DocOut
     doc_sort/4,    % +Name, +Dir, +List, -Sorted
     doc_to_json/2, % +Json, -Doc
-    json_to_doc/2  % +Doc, -Json
+    json_to_doc/2  % +Doc, -Json,    
 ]).
+
+
 
 %% doc_id(+Doc, -Id) is det.
 %
@@ -25,10 +28,22 @@ doc_id(Doc, Id):-
 % the document has no given property.
     
 doc_get(Name, Doc, Value):-
-    Term =.. [Name,Value],
+    Term =.. [Name, Value],
     (   memberchk(Term, Doc)
     ->  true
     ;   throw(error(no_property(Name)))).
+
+%% doc_replace(+Name, +Value, +In, -Out) is det.
+%
+% Replaces (or adds) the property value
+% in the given document.
+    
+doc_replace(Name, Value, In, Out):-
+    Old =.. [Name, _],
+    New =.. [Name, Value],
+    (   select(Old, In, Tmp)
+    ->  Out = [New|Tmp]
+    ;   Out = [New|In]).
 
 %% doc_sort(+Name, +Direction, +List, -Sorted) is det.
 %

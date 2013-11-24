@@ -39,7 +39,7 @@ var edit = (function(exports) {
             
             if (changes) {
             
-                api.update(newDoc, function(err) {
+                api.update(newDoc, auth.key(), function(err) {
                     
                     // FIXME error handling.
                 });

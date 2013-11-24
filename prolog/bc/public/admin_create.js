@@ -23,7 +23,7 @@ var create = (function(exports) {
                 newDoc[name] = getters[name]();
             });
             
-            api.create(type.name, newDoc, function(err) {
+            api.create(type.name, newDoc, auth.key(), function(err) {
                 
                 // FIXME error handling.
             });

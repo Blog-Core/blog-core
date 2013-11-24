@@ -12,6 +12,29 @@ body {
     padding: 1em;
 }
 
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+}
+
+.modal-content {
+    width: 600px;
+    margin: 2em auto;
+    padding: 1em;
+    background-color: #fcfcfc;
+    -webkit-box-shadow: 0px 0px 10px rgba(50, 50, 50, 0.5);
+    -moz-box-shadow: 0px 0px 10px rgba(50, 50, 50, 0.5);
+    box-shadow: 0px 0px 10px rgba(50, 50, 50, 0.5);
+    border-radius: 6px;
+}
+
+.date-edit input {
+    display: inline;
+}
+
 table {
     border-collapse: collapse;
     width: 100%;
