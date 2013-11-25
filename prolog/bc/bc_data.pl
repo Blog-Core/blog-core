@@ -1,5 +1,6 @@
 :- module(bc_data, [
-    bc_data_init/1
+    bc_data_init/1,
+    reinit_types
 ]).
 
 :- use_module(library(docstore)).
@@ -157,8 +158,38 @@ init_meta:-
                     type(ref)
                 ])
             ])
+        ]),
+        ds_insert(types, [
+            name(blocks),
+            description('Static HTML blocks.'),
+            title(name),
+            order([
+                property(date),
+                direction(asc)
+            ]),
+            list([name, slug]),
+            detail([name, slug, content]),
+            edit([name, slug, content]),
+            props([
+                name([
+                    type(line)
+                ]),
+                slug([
+                    type(line)
+                ]),
+                content([
+                    type(multiline)
+                ])
+            ])
         ])
     ; true).
+    
+% Reloads all collection types.
+% Helper for development.
+    
+reinit_types:-
+    ds_remove_col(types),
+    init_meta.
 
 % Hook to turn post content into HTML.
 
