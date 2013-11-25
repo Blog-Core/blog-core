@@ -183,6 +183,26 @@ init_meta:-
                     type(multiline)
                 ])
             ])
+        ]),
+        ds_insert(types, [
+            name(meta_headers),
+            description('Custom meta headers.'),
+            title(name),
+            order([
+                property(name),
+                direction(asc)
+            ]),
+            list([name, value]),
+            detail([name, value]),
+            edit([name, value]),
+            props([
+                name([
+                    type(line)
+                ]),
+                value([
+                    type(line)
+                ])
+            ])
         ])
     ; true).
     
