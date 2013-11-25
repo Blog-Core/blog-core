@@ -33,13 +33,15 @@ init_config:-
 
 init_users:-
     (   ds_all(users, [])
-    ->  ds_insert(users, [
+    ->  ds_uuid(Key),
+        ds_insert(users, [
             username('admin'),
             password('admin'),
             email('test@example.com'),
             name('Blog'),
             surname('Admin'),
-            role(admin)
+            role(admin),
+            key(Key)
         ])
     ;   true).
 
@@ -196,31 +198,27 @@ reinit_types:-
 :- ds_hook(posts, before_save, convert_content).
 
 convert_content(In, Out):-
-    (   memberchk(content(Content), In)
-    ->
-        atom_codes(Content, Codes),
-        (   md_html(Codes, Html)
-        ->  Out = [html(Html)|In]
-        ;   doc_id(In, Id),
-            throw(error(cannot_convert_post(Id))))
-    ;   Out = In).
-    
-% Hook to remove comments when a post is removed.
-
-:- ds_hook(posts, before_remove, remove_comments).
+    memberchk(content(Content), In),
+    atom_codes(Content, Codes),
+    (   md_html(Codes, Html)
+    ->  Out = [html(Html)|In]
+    ;   doc_id(In, Id),
+        throw(error(cannot_convert_post(Id)))).
 
 % Hook to add API key to the user.
 
 :- ds_hook(users, before_save, add_api_key).
 
-add_api_key(In, Out):-
-    (   memberchk(key(Key), In)
-    ->  (   Key = ''
-        ->  ds_uuid(New),
-            doc_replace(key, New, In, Out)
-        ;   true)
-    ;   ds_uuid(Key),
-        Out = [key(Key)|In]).
+% Key cleared, generate new.
 
+add_api_key(In, Out):-
+    memberchk(key(''), In),
+    ds_uuid(New),
+    doc_replace(key, New, In, Out).
+
+% Hook to remove comments when a post is removed.
+
+:- ds_hook(posts, before_remove, remove_comments).
+    
 remove_comments(Id):-
     ds_remove(comments, post=Id).
