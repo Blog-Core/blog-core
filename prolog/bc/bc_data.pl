@@ -21,9 +21,6 @@ init_config:-
     (   ds_all(config, [])
     ->  config_set(title, 'Untitled blog'),
         config_set(author, 'Name not set'),
-        config_set(server_port, 8001),
-        config_set(num_workers, 10),
-        config_set(timeout_worker, 20),
         config_set(site, 'http://localhost:8001'),
         config_set(date_format, '%F'),
         config_set(excerpt_size, 100)

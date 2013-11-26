@@ -86,10 +86,26 @@ Import `bc_init`:
     
 Start profiling server:
 
-    bc_profile('blog.db').
+    bc_profile([file('blog.docstore'), port(8008)]).
 
 This will start profiling in the HTTP worker thread. It will ask you
 to hit Enter when you want to see results. Generate some traffic on the server
 to have some profiling results. Load testing tool like `ab` can be used. After
 you have generated enough load, press Enter. This will show profiling results.
 Explanation of results is [here](http://www.swi-prolog.org/pldoc/man?section=profile).
+
+## Running as a daemon
+
+This uses the [http_unix_daemon](http://www.swi-prolog.org/pldoc/man?section=httpunixdaemon)
+module under the hood. Example code for the main file would be:
+
+    :- use_module(library(bc/bc_init)).
+    
+    bc_init:database('blog.docstore').
+    
+    :- use_module(library(bc/bc_daemon)).
+    :- use_module(routes).
+
+Then starting as daemon takes the following command:
+
+    swipl -s blog.pl -- --port=8001 --output=/var/log/blog.txt --pidfile=/var/run/blog.pid
