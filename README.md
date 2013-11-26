@@ -41,6 +41,27 @@ Meaning of terms is the following:
  * `password` - password with masked editor. Editor `<input type="password">` is used.
  * `boolean` - checkbox. Editor `<input type="checkbox">` is used.
  * `choice` - combobox. Editor `<select></select>` is used.
+ 
+## Provided functionality
+
+TODO
+
+### bc_html
+
+`embed_block(+Slug)//`
+
+Emits HTML for static block. Block contents is added without escaping. Does nothing
+when the block is not found.
+
+`embed_post(+Slug)//`
+
+Emits HTML for the given post. Post settings (type, commenting, published)
+do not matter. Does nothing when the post is not found.
+
+`meta_headers//`
+
+Emits HTML `<meta>` tags with configured values. When no tags have been configured,
+it does nothing.
 
 ## Response mini how-to
 
