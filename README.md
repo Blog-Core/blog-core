@@ -126,6 +126,8 @@ module under the hood. Example code for the main file would be:
     
     :- use_module(library(bc/bc_daemon)).
     :- use_module(routes).
+    
+    :- bc_init_daemon.
 
 Then starting as daemon takes the following command:
 

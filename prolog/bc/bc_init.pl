@@ -1,6 +1,7 @@
 :- module(bc_init, [
-    bc_setup/1,  % +Options,
-    bc_profile/1 % +Options
+    bc_setup/1,    % +Options,
+    bc_profile/1,  % +Options,
+    bc_init_hook/1 % :Goal
 ]).
 
 :- use_module(library(http/thread_httpd)).
@@ -12,6 +13,8 @@
 :- use_module(bc_data).
 :- use_module(bc_router).
 
+:- module_transparent(bc_init_hook/1).
+
 %% database(-File) is semidet.
 %
 % Specifies the docstore
@@ -19,13 +22,28 @@
 
 :- multifile(database/1).
 
+:- dynamic(init_hook/1).
+
+bc_init_hook(Module:Goal):- !,
+    assertz(bc_init:init_hook(Module:Goal)).
+    
+bc_init_hook(Goal):-
+    context_module(Module),
+    assertz(bc_init:init_hook(Module:Goal)).
+
 init_docstore(Options):-
     (   memberchk(file(File), Options)
-    ->  bc_data_init(File)
+    ->  bc_data_init(File),
+        run_init_hooks
     ;   (   database(File)
-        ->  bc_data_init(File)
+        ->  bc_data_init(File),
+            run_init_hooks
         ;   throw(error(database_not_specified)))).
 
+run_init_hooks:-
+    findall(Goal, init_hook(Goal), Hooks),
+    maplist(ignore, Hooks).
+        
 %% bc_setup(+Options) is det.
 %
 % Opens the database, inserts
