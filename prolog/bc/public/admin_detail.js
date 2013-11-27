@@ -68,7 +68,7 @@ var detail = (function(exports) {
                 
                 if (confirm('Delete this document?')) {
                 
-                    api.remove(doc.$id, function(err) {
+                    api.remove(doc.$id, auth.key(), function(err) {
                         
                         // FIXME error handling.
                         
