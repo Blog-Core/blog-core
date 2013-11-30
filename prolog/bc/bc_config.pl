@@ -6,8 +6,10 @@
 /** <module> Configuration interface.
 */
 
-:- use_module(bc_doc).
 :- use_module(library(docstore)).
+:- use_module(library(debug)).
+
+:- use_module(bc_doc).
 
 %% config_get(+Name, -Value) is det.
 %
@@ -29,8 +31,10 @@ config_get(Name, _):-
 
 config_set(Name, Value):-
     ds_find(config, name=Name, [Doc]), !,
+    debug(bc_config, 'setting ~w to ~p', [Name, Value]),
     doc_id(Doc, Id),
     ds_prop_update(Id, value, Value).
 
 config_set(Name, Value):-
+    debug(bc_config, 'setting ~w to ~p', [Name, Value]),
     ds_insert(config, [name(Name), value(Value)]).

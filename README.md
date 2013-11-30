@@ -119,15 +119,11 @@ Explanation of results is [here](http://www.swi-prolog.org/pldoc/man?section=pro
 
 This uses the [http_unix_daemon](http://www.swi-prolog.org/pldoc/man?section=httpunixdaemon)
 module under the hood. Example code for the main file would be:
-
-    :- use_module(library(bc/bc_init)).
-    
-    bc_init:database('blog.docstore').
     
     :- use_module(library(bc/bc_daemon)).
-    :- use_module(routes).
     
-    :- bc_init_daemon.
+    :- ds_open('file.docstore').
+    :- bc_daemon.
 
 Then starting as daemon takes the following command:
 

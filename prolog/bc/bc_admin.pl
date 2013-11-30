@@ -10,6 +10,7 @@
 :- use_module(library(ar_router)).
 
 :- use_module(bc_doc).
+:- use_module(bc_data).
 
 % Sends the main admin HTML file.
 
@@ -48,6 +49,15 @@ doc_all(Col):-
     ds_all(Col, Docs),
     maplist(doc_to_json, Docs, Json),
     reply_success(Json).
+    
+% Gives all registered types.
+    
+:- route_get(api/types, [auth], types_all).
+
+types_all:-
+    findall([name(Name)|Type], bc_collection(Name, Type), Types),
+    maplist(doc_to_json, Types, Json),
+    reply_success(Json).
 
 % Stores new document in the collection.
 % Replies back id.
@@ -66,11 +76,11 @@ doc_insert(Col):-
 :- route_get(api/col/Col/type, [auth], col_type(Col)).
 
 col_type(Col):-
-    (   ds_find(types, name=Col, [Doc])
-    ->  doc_to_json(Doc, Json),
+    (   bc_collection(Col, Type)
+    ->  doc_to_json([name(Col)|Type], Json),
         reply_success(Json)
     ;   reply_error(103)).
-    
+
 % Gives single document by id.
 
 :- route_get(api/doc/Id, [auth], doc_get(Id)).
@@ -87,8 +97,8 @@ doc_get(Id):-
     
 doc_type(Id):-
     (   ds_collection(Id, Col),
-        ds_find(types, name=Col, [Doc])
-    ->  doc_to_json(Doc, Json),
+        bc_collection(Col, Type)
+    ->  doc_to_json([name(Col)|Type], Json),
         reply_success(Json)
     ;   reply_error(105)).
     

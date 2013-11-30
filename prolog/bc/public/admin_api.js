@@ -90,7 +90,7 @@ var api = (function(exports) {
     
     exports.types = function(key, cb) {
         
-        get('/api/col/types', key, cb);
+        get('/api/types', key, cb);
     };
 
     exports.doc = function(id, key, cb) {
