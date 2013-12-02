@@ -12,13 +12,27 @@
 % First tries ar_route/1. If it fails
 % then it tries serve_file/1. Finally
 % tries http_dispatch/1.
+%
+% When ar_route/1 fails and path has
+% slash at end then HTTP redirect 301
+% is sent (location canonicalization).
+%
+% TODO make canonicalization optional?
 
 bc_route(Request):-
-    (   ar_route(Request)
+    (   try_route(Request)
     ->  true
     ;   (   serve_file(Request)
         ->  true
         ;   http_dispatch(Request))).
+        
+try_route(Request):-
+    (   ar_route(Request)
+    ->  true
+    ;   memberchk(path(Path), Request),
+        atom_concat(Prefix, '/', Path),
+        Prefix \= '',
+        http_redirect(moved, Prefix, Request)).
 
 %% serve_file(+Request) is semidet.
 %
