@@ -1,10 +1,41 @@
 :- module(bc_router, [
-    bc_route/1 % +Request
-]). 
+    bc_route/1,       % +Request
+    bc_rewrite_hook/1 % :Goal
+]).
 
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(debug)).
 :- use_module(library(ar_router)).
+
+:- module_transparent(bc_rewrite_hook/1).
+
+:- dynamic(rewrite_hook/1).
+
+%% bc_rewrite_hook(:Goal) is det.
+%
+% Registers new request path rewrite
+% hook. These are executed before
+% dispatching.
+
+bc_rewrite_hook(Module:Goal):- !,
+    (   rewrite_hook(Module:Goal)
+    ->  true
+    ;   asserta(bc_router:rewrite_hook(Module:Goal))).
+    
+bc_rewrite_hook(Goal):-
+    context_module(Module),
+    bc_rewrite_hook(Module:Goal).
+    
+run_rewrite_hooks(PathIn, PathOut):-
+    findall(Hook, rewrite_hook(Hook), Hooks),
+    run_rewrite_hooks(Hooks, PathIn, PathOut).
+    
+run_rewrite_hooks([Hook|Hooks], PathIn, PathOut):-
+    (   call(Hook, PathIn, Tmp)
+    ->  run_rewrite_hooks(Hooks, Tmp, PathOut)
+    ;   run_rewrite_hooks(Hooks, PathIn, PathOut)).
+    
+run_rewrite_hooks([], Path, Path).
 
 %% bc_route(+Request) is det.
 %
@@ -19,13 +50,18 @@
 %
 % TODO make canonicalization optional?
 
-bc_route(Request):-
-    (   try_route(Request)
+bc_route(Request):-    
+    select(path(Path), Request, NoPathRequest),
+    debug(bc_router, 'routing ~p', [Path]),
+    run_rewrite_hooks(Path, RewrPath),
+    RewrRequest = [path(RewrPath)|NoPathRequest],
+    debug(bc_router, 'dispatching ~p', [RewrPath]),
+    (   try_route(RewrRequest)
     ->  true
-    ;   (   serve_file(Request)
+    ;   (   serve_file(RewrRequest)
         ->  true
-        ;   http_dispatch(Request))).
-        
+        ;   http_dispatch(RewrRequest))).
+
 try_route(Request):-
     (   ar_route(Request)
     ->  true
