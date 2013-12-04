@@ -3,14 +3,16 @@
 A Prolog library extracted from the [blog](https://github.com/rla) application.
 It is work-in-progress and every piece of its API could change any time.
 
+## Features
+
+ * Document-based in-memory data storage.
+ * Generic administration interface.
+ * Simple HTTP request routing.
+ * Built-in cache busting.
+
 ## Dependencies
 
 TODO
-
-## Configuration
-
- * config_get(+Name, -Value)
- * config_set(+Name, +Value)
  
 ## Modules
 
@@ -62,6 +64,24 @@ do not matter. Does nothing when the post is not found.
 
 Emits HTML `<meta>` tags with configured values. When no tags have been configured,
 it does nothing.
+
+### bc_bust
+
+Loading this module will install rewrite handler to remove
+the request URL path prefix `/t-[0-9]+`.
+
+`bs_bust_token(-Token)`
+
+Retrieves the token for cache busting. Currently it is set to
+the server start timestamp.
+
+When serving static files with Nginx, the rewrite rule can be
+handled with Nginx's own rewrite rule:
+
+    location ~ ^/t-\d+/(.*)$ {
+        access_log off;
+        rewrite ^/t-\d+/(.*)$ /$1 last;
+    }
 
 ## Response mini how-to
 
