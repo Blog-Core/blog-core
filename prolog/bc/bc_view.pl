@@ -2,7 +2,7 @@
     send_view/2 % +Name, +Data
 ]).
 
-:- use_module(library(st_render)).
+:- use_module(library(st/st_render)).
 
 % Only enable template cache
 % in production environment.

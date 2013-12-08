@@ -2,7 +2,7 @@
     bc_bust_token/1 % -Atomic
 ]).
 
-:- use_module(library(st_render)).
+:- use_module(library(st/st_render)).
 :- use_module(library(dcg/basics)).
 :- use_module(bc_router).
 
