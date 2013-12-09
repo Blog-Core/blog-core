@@ -25,8 +25,8 @@ bc_daemon(File):-
     ->  true
     ;   
         assertz(docstore_file(File)),
-        assertz(initialized)),
-        http_daemon.
+        assertz(initialized),
+        http_daemon).
 
 % Sets up the hook that opens the database
 % and calls bc_start/1.
