@@ -17,15 +17,14 @@
 % admin interface. Docstore does not have
 % to be open yet.
 %
-% Throws error(collection_exists(Name)) when
-% the collection already exists.
+% When a collection with same name has
+% already been registered it is replaced.
 
 bc_register_collection(Name, Type):-
     must_be(atom, Name),
     must_be(ground, Type),
-    (   collection(Name, _)
-    ->  throw(error(collection_exists(Name)))
-    ;   assertz(collection(Name, Type))).
+    retractall(collection(Name, _)),
+    assertz(collection(Name, Type)).
 
 %% bc_collection(?Name, ?Type) is nondet.
 %
