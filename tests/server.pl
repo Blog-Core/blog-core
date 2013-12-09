@@ -12,5 +12,4 @@
 :- debug(bc_data).
 :- debug(docstore).
 
-:- ds_open('site.docstore').
-:- bc_daemon.
+:- bc_daemon('site.docstore').
