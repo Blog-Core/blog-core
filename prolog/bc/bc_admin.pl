@@ -10,7 +10,6 @@
 :- use_module(library(arouter)).
 
 :- use_module(bc_data).
-:- use_module(bc_doc).
 
 % Sends the main admin HTML file.
 

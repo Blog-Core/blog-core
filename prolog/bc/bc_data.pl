@@ -10,7 +10,6 @@
 :- use_module(library(md/md_parse)).
 :- use_module(library(error)).
 
-:- use_module(bc_doc).
 :- use_module(bc_config).
 
 %! bc_register_collection(+Name, +Type) is det.

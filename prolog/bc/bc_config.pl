@@ -9,8 +9,6 @@
 :- use_module(library(docstore)).
 :- use_module(library(debug)).
 
-:- use_module(bc_doc).
-
 %! config_get(+Name, -Value) is det.
 %
 % Retrieves the given configuration
