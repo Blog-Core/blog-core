@@ -43,27 +43,6 @@ Meaning of terms is the following:
  * `password` - password with masked editor. Editor `<input type="password">` is used.
  * `boolean` - checkbox. Editor `<input type="checkbox">` is used.
  * `choice` - combobox. Editor `<select></select>` is used.
- 
-## Provided functionality
-
-TODO
-
-### bc_html
-
-`embed_block(+Slug)//`
-
-Emits HTML for static block. Block contents is added without escaping. Does nothing
-when the block is not found.
-
-`embed_post(+Slug)//`
-
-Emits HTML for the given post. Post settings (type, commenting, published)
-do not matter. Does nothing when the post is not found.
-
-`meta_headers//`
-
-Emits HTML `<meta>` tags with configured values. When no tags have been configured,
-it does nothing.
 
 ### bc_bust
 
@@ -83,19 +62,27 @@ handled with Nginx's own rewrite rule:
         rewrite ^/t-\d+/(.*)$ /$1 last;
     }
 
-## Known issues
-
-Loading `library(http/http_files)` will install some `http_dispatch` handlers
-that cause error 500 response for urls like `/css/non-existent.css`.
-
-## Generic top-level module:
-
-    :- use_module(library(bc/bc_daemon)).
-    :- bc_daemon('file.docstore').
-
 ## Running with REPL
 
-    swipl -s blog.pl -- --port=8001 --fork=false
+    swipl -s main.pl -- --port=8001 --fork=false
+
+## Profiling single HTTP thread
+
+Start with a single HTTP worker thread:
+
+    swipl -- --port=18008 --fork=false --workers=1
+
+Import thread_httpd:
+
+    ?- use_module(library(http/thread_httpd)).
+
+Show HTTP thread ids:
+
+    ?- http_current_worker(8001, ThreadId).
+
+Enable profiling on a thread:
+
+    ?- tprofile(ThreadId).
 
 ## Running as a daemon
 
@@ -104,4 +91,8 @@ module under the hood.
 
 Then starting as daemon takes the following command:
 
-    swipl -s blog.pl -- --port=8001
+    swipl -s main.pl -- --port=8001
+
+## Running tests
+
+    make tests
