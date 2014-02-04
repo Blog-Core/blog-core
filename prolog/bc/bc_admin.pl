@@ -45,7 +45,8 @@ auth(Next):-
 % are in the list field of the type.
 % FIXME order property values also.
     
-:- route_get(api/collection/Name, auth, collection(Name)).
+:- route_get(api/collection/Name,
+    auth, collection(Name)).
 
 collection(Name):-
     (   bc_collection(Name, Type)
@@ -70,7 +71,8 @@ types_all:-
 % Stores new document in the collection.
 % Replies back id.
 
-:- route_post(api/collection/Collection, auth, new_document(Collection)).
+:- route_post(api/collection/Collection,
+    auth, new_document(Collection)).
 
 new_document(Collection):-
     http_current_request(Request),
@@ -80,7 +82,8 @@ new_document(Collection):-
 
 % Gives document type by collection name.
 
-:- route_get(api/collection/Collection/type, auth, collection_type(Collection)).
+:- route_get(api/collection/Collection/type,
+    auth, collection_type(Collection)).
 
 collection_type(Collection):-
     (   bc_collection(Collection, Type)
@@ -91,7 +94,8 @@ collection_type(Collection):-
 % Gives single document by id.
 % Retrieves all fields.
 
-:- route_get(api/document/Id, auth, document(Id)).
+:- route_get(api/document/Id,
+    auth, document(Id)).
 
 document(Id):-
     (   ds_get(Id, Dict)
@@ -100,7 +104,8 @@ document(Id):-
 
 % Gives document type by document id.
     
-:- route_get(api/document/Id/type, auth, document_type(Id)).
+:- route_get(api/document/Id/type,
+    auth, document_type(Id)).
     
 document_type(Id):-
     (   ds_collection(Id, Collection),
@@ -111,7 +116,8 @@ document_type(Id):-
 
 % Updates document by id.
 
-:- route_put(api/document/Id, auth, update_document(Id)).
+:- route_put(api/document/Id,
+    auth, update_document(Id)).
 
 update_document(Id):-
     http_current_request(Request),
@@ -126,7 +132,8 @@ update_document(Id):-
 % Removes the given document.
 % Replies back id.
     
-:- route_del(api/document/Id, auth, remove_document(Id)).
+:- route_del(api/document/Id,
+    auth, remove_document(Id)).
     
 remove_document(Id):-
     ds_remove(Id),
