@@ -31,7 +31,7 @@ var detail = (function(exports) {
         
         type.detail.forEach(function(name) {
             
-            var prop = type.props[name];
+            var prop = type.properties[name];
             
             var label = document.createElement('td');
             

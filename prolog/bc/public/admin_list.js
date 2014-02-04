@@ -73,7 +73,7 @@ var list = (function(exports) {
             
             type.list.forEach(function(name) {
                 
-                tr.appendChild(propCell(doc[name], type.props[name]));
+                tr.appendChild(propCell(doc[name], type.properties[name]));
             });
             
             table.appendChild(tr);

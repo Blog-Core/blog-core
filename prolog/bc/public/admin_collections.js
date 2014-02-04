@@ -37,7 +37,7 @@ var collections = (function(exports) {
             
             var desc = document.createElement('td');
             
-            desc.textContent = type.description;
+            desc.textContent = type.def.description;
             
             var tr = document.createElement('tr');
             

@@ -1,6 +1,32 @@
 var api = (function(exports) {
+
+    var reqs = 0;
+
+    function begin() {
+
+        if (reqs === 0 &&
+            typeof exports.onbegin === 'function') {
+
+            exports.onbegin();
+        }
+
+        reqs += 1;
+    }
+
+    function end() {
+
+        reqs -= 1;
+
+        if (reqs === 0 &&
+            typeof exports.onend === 'function') {
+
+            exports.onend();
+        }
+    }
     
     function handle(res, cb) {
+
+        end();
         
         if (res.status === 'error') {
                 
@@ -29,6 +55,8 @@ var api = (function(exports) {
             handle(JSON.parse(xhr.responseText), cb);                        
             
         }, false);
+
+        begin();
         
         xhr.send();        
     }
@@ -46,6 +74,8 @@ var api = (function(exports) {
             handle(JSON.parse(xhr.responseText), cb);
             
         }, false);
+
+        begin();
         
         xhr.send();   
     }
@@ -65,6 +95,8 @@ var api = (function(exports) {
             handle(JSON.parse(xhr.responseText), cb);
             
         }, false);
+
+        begin();
         
         xhr.send(JSON.stringify(doc));
     }
@@ -84,6 +116,8 @@ var api = (function(exports) {
             handle(JSON.parse(xhr.responseText), cb);
             
         }, false);
+
+        begin();
         
         xhr.send(JSON.stringify(doc));
     }
@@ -95,37 +129,37 @@ var api = (function(exports) {
 
     exports.doc = function(id, key, cb) {
         
-        get('/api/doc/' + id, key, cb);
+        get('/api/document/' + id, key, cb);
     };
     
     exports.docType = function(id, key, cb) {
         
-        get('/api/doc/' + id + '/type', key, cb);
+        get('/api/document/' + id + '/type', key, cb);
     };
     
     exports.colType = function(id, key, cb) {
         
-        get('/api/col/' + id + '/type', key, cb);
+        get('/api/collection/' + id + '/type', key, cb);
     };
     
     exports.collection = function(name, key, cb) {
     
-        get('/api/col/' + name, key, cb);
+        get('/api/collection/' + name, key, cb);
     };
     
     exports.update = function(doc, key, cb) {
         
-        put('/api/doc/' + doc.$id, doc, key, cb);
+        put('/api/document/' + doc.$id, doc, key, cb);
     };
     
     exports.remove = function(id, key, cb) {
         
-        del('/api/doc/' + id, key, cb);
+        del('/api/document/' + id, key, cb);
     };
     
     exports.create = function(name, doc, key, cb) {
         
-        post('/api/col/' + name + '/doc', doc, key, cb);
+        post('/api/collection/' + name + '/document', doc, key, cb);
     };
     
     exports.login = function(username, password, cb) {

@@ -36,6 +36,31 @@ function removePopup() {
     popup.parentNode.removeChild(popup);
 }
 
+// Shows the loading spinner.
+
+function showSpinner() {
+
+    var spinner = document.getElementById('spinner');
+
+    spinner.style.display = 'block';
+}
+
+// Hides the loading spinner.
+
+function hideSpinner() {
+
+    setTimeout(function() {
+
+        var spinner = document.getElementById('spinner');
+
+        spinner.style.display = 'none';
+
+    }, 100);
+}
+
+api.onbegin = showSpinner;
+api.onend = hideSpinner;
+
 // Shows page with collections.
 
 function showCollections() {
