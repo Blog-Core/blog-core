@@ -23,9 +23,13 @@ var create = (function(exports) {
                 newDoc[name] = getters[name]();
             });
             
-            api.create(type.name, newDoc, auth.key(), function(err) {
+            api.create(type.name, newDoc, auth.key(), function(err, id) {
                 
                 // FIXME error handling.
+
+                // Redirect to editing.
+
+                window.location.hash = '#!/edit/' + id;
             });
         });
         
@@ -33,7 +37,7 @@ var create = (function(exports) {
         
         type.edit.forEach(function(name) {
                                     
-            var prop = type.props[name];
+            var prop = type.properties[name];
             
             var id = 'edit' + idCounter++;
             

@@ -159,7 +159,7 @@ var api = (function(exports) {
     
     exports.create = function(name, doc, key, cb) {
         
-        post('/api/collection/' + name + '/document', doc, key, cb);
+        post('/api/collection/' + name, doc, key, cb);
     };
     
     exports.login = function(username, password, cb) {
