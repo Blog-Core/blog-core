@@ -11,30 +11,25 @@
 
 :- use_module(bc_doc).
 
-%% config_get(+Name, -Value) is det.
+%! config_get(+Name, -Value) is det.
 %
 % Retrieves the given configuration
 % value. Throws error(no_config(Name)) when
 % the configuration option is not found.
 
 config_get(Name, Value):-
-    ds_find(config, name=Name, [Doc]), !,
-    doc_get(value, Doc, Value).
-    
-config_get(Name, _):-
-    throw(error(no_config(Name))).
-    
-%% config_set(+Name, +Value) is det.
+    (   ds_find(config, name=Name, [Doc])
+    ->  get_dict_ex(value, Doc, Value)
+    ;   throw(error(no_config(Name)))).
+
+%! config_set(+Name, +Value) is det.
 %
 % Sets the configuration value. If the
 % value does not exist yet, it is added.
 
 config_set(Name, Value):-
-    ds_find(config, name=Name, [Doc]), !,
     debug(bc_config, 'setting ~w to ~p', [Name, Value]),
-    doc_id(Doc, Id),
-    ds_prop_update(Id, value, Value).
-
-config_set(Name, Value):-
-    debug(bc_config, 'setting ~w to ~p', [Name, Value]),
-    ds_insert(config, [name(Name), value(Value)]).
+    (   ds_find(config, name=Name, [Doc])
+    ->  put_dict(value, Doc, Value, New),
+        ds_update(New)
+    ;   ds_insert(config{ name: Name, value: Value })).

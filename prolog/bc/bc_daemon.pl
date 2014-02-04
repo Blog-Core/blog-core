@@ -2,9 +2,13 @@
     bc_daemon/1
 ]).
 
+:- use_module(library(http/thread_httpd)).
 :- use_module(library(http/http_unix_daemon)).
 :- use_module(library(docstore)).
-:- use_module(bc_main).
+
+:- use_module(bc_data).
+:- use_module(bc_router).
+:- use_module(bc_admin).
 
 % Flag to prevent initialization
 % multiple times.
@@ -23,8 +27,7 @@
 bc_daemon(File):-
     (   initialized
     ->  true
-    ;   
-        assertz(docstore_file(File)),
+    ;   assertz(docstore_file(File)),
         assertz(initialized),
         http_daemon).
 
@@ -33,5 +36,5 @@ bc_daemon(File):-
 
 http_unix_daemon:http_server_hook(Options):-
     docstore_file(File),
-    ds_open(File),
-    bc_start(Options).
+    bc_data_open(File),
+    http_server(bc_route, Options).

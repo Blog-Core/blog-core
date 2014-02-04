@@ -5,7 +5,7 @@
 
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(debug)).
-:- use_module(library(ar_router)).
+:- use_module(library(arouter)).
 
 :- module_transparent(bc_rewrite_hook/1).
 
@@ -16,6 +16,7 @@
 % Registers new request path rewrite
 % hook. These are executed before
 % dispatching.
+% FIXME use meta_predicate.
 
 bc_rewrite_hook(Module:Goal):- !,
     (   rewrite_hook(Module:Goal)
@@ -63,7 +64,7 @@ bc_route(Request):-
         ;   http_dispatch(RewrRequest))).
 
 try_route(Request):-
-    (   ar_route(Request)
+    (   route(Request)
     ->  true
     ;   memberchk(path(Path), Request),
         atom_concat(Prefix, '/', Path),

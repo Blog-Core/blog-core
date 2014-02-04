@@ -2,7 +2,7 @@
     bc_bust_token/1 % -Atomic
 ]).
 
-:- use_module(library(st/st_render)).
+:- use_module(library(st/st_expr)).
 :- use_module(library(dcg/basics)).
 :- use_module(bc_router).
 
@@ -43,5 +43,5 @@ cache_busting_prefix -->
 
 % Add token value to simple-template
 % global values.
-    
+
 :- bc_bust_token(Token), st_set_global(cache_token, Token).

@@ -2,13 +2,14 @@
     send_view/2 % +Name, +Data
 ]).
 
+:- use_module(library(st/st_file)).
 :- use_module(library(st/st_render)).
 
 % Only enable template cache
 % in production environment.
 
 :- if(getenv('PL_ENV', production)).
-    :- st_enable_cache(true).
+    :- st_enable_cache.
 :- endif.
 
 send_view(Name, Data):-
