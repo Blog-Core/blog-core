@@ -10,6 +10,7 @@
 :- use_module(library(arouter)).
 
 :- use_module(bc_data).
+:- use_module(bc_doc).
 
 % Sends the main admin HTML file.
 
@@ -43,13 +44,18 @@ auth(Next):-
 % Retrieves subset of properties. Only
 % those properties are retrieved that
 % are in the list field of the type.
+% FIXME order property values also.
     
 :- route_get(api/collection/Name, auth, collection(Name)).
 
 collection(Name):-
     (   bc_collection(Name, Type)
     ->  get_dict_ex(list, Type, Properties),
-        ds_all(Name, Properties, Docs),
+        (   get_dict(order, Type, Order)
+        ->  get_dict_ex(property, Order, Prop),
+            AllProperties = [Prop|Properties]
+        ;   AllProperties = Properties),
+        ds_all(Name, AllProperties, Docs),
         reply_success(Docs)
     ;   reply_error(103)).
 

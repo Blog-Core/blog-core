@@ -1,5 +1,5 @@
 :- module(bc_doc, [
-    doc_sort/4    % +Name, +Dir, +List, -Sorted
+    dict_sort/4    % +Name, +Dir, +List, -Sorted
 ]).
 
 %% doc_sort(+Name, +Direction, +List, -Sorted) is det.
@@ -16,7 +16,7 @@
 % property.
 % FIXME rename to dict_sort.
     
-doc_sort(Name, Direction, List, Sorted):-
+dict_sort(Name, Direction, List, Sorted):-
     (   Direction = asc
     ->  predsort(asc(Name), List, Sorted)
     ;   (   Direction = desc
