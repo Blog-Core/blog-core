@@ -35,7 +35,8 @@ reply_file(File):-
 auth(Next):-
     (   http_current_request(Request),
         memberchk(x_key(Key), Request),
-        ds_find(user, (key=Key, role=admin), [role], [_])
+        atom_string(Key, KeyString),
+        ds_find(user, (key=KeyString, role="admin"), [role], [_])
     ->  call(Next)
     ;   reply_error(101)).
 
@@ -146,15 +147,16 @@ remove_document(Id):-
 :- route_post(api/login, login).
 
 login:-
-    http_current_request(Req),
-    http_read_data(Req, json(Data), []),
-    memberchk(username=User, Data),
-    memberchk(password=Pass, Data),
-    (   Cond = (username=User, password=Pass),
-        ds_find(user, Cond, [Doc])
-    ->  get_dict(key, Doc, Key),
-        reply_success(Key)
-    ;   reply_error(102)).
+    http_current_request(Request),
+    http_read_json_dict(Request, Dict),
+    (   get_dict(username, Dict, User),
+        get_dict(password, Dict, Pass)
+    ->  (   Cond = (username=User, password=Pass),
+            ds_find(user, Cond, [Doc])
+        ->  get_dict(key, Doc, Key),
+            reply_success(Key)
+        ;   reply_error(102))
+    ;   reply_error(106)).
 
 % Sends JSON response with Data
 % and success.
