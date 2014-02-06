@@ -83,8 +83,6 @@ function showCollection(name) {
             // Sort documents when the sort order is specified.
             
             if (typeof type.order === 'object') {
-
-                console.log(type.order);
                 
                 var desc = type.order.direction === 'desc';
                 

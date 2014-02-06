@@ -28,7 +28,8 @@ reply_file(File):-
     http_reply_file(FullPath, [unsafe(true)], Request).
 
 % Helper to authenticate the current request.
-% Requires role admin.
+% Requires role admin. Populates the thread-
+% local bc_data:author.
 
 :- meta_predicate(auth(0)).
 
@@ -36,8 +37,9 @@ auth(Next):-
     (   http_current_request(Request),
         memberchk(x_key(Key), Request),
         atom_string(Key, KeyString),
-        ds_find(user, (key=KeyString, role="admin"), [role], [_])
-    ->  call(Next)
+        ds_find(user, (key=KeyString, role="admin"), [role], [User])
+    ->  setup_call_cleanup(assertz(bc_data:author(User)),
+            call(Next), retractall(bc_data:author(_)))
     ;   reply_error(101)).
 
 % Gives all documents in the collection.

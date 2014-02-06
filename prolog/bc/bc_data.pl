@@ -12,6 +12,11 @@
 
 :- use_module(bc_config).
 
+% Threadlocal for the current author.
+% Automatically set/unset by the admin interface.
+
+:- thread_local(author/1).
+
 %! bc_register_collection(+Name, +Type) is det.
 %
 % Registers a new collection for automatic
@@ -102,9 +107,9 @@ init_users:-
     order: _{ property: date, direction: desc },
     list: [title, published, commenting],
     detail: [title, slug, description, published,
-        commenting, content, tags, date],
+        commenting, content, tags, date, author],
     edit: [title, slug, description, published,
-        commenting, content, tags, date],
+        commenting, content, tags, date, author],
     properties: _{
         date: _{ type: datetime },
         published: _{ type: boolean },
@@ -114,7 +119,8 @@ init_users:-
         description: _{ type: multiline },
         content: _{ type: multiline },
         type: _{ type: line },
-        tags: _{ type: tags }
+        tags: _{ type: tags },
+        author: _{ type: author }
     }
 }).
 
@@ -166,6 +172,16 @@ convert_content(In, Out):-
         put_dict(html, In, Html, Out)
     ;   Out = In).
 
+:- ds_hook(post, before_save, set_author).
+
+set_author(In, Out):-
+    (   get_dict(author, In, "")
+    ->  author(User),
+        get_dict_ex('$id', User, Id),
+        atom_string(Id, IdString),
+        put_dict(author, In, IdString, Out)
+    ;   Out = In).
+
 % Hook to remove comments when a post is removed.
 
 :- ds_hook(post, before_remove, remove_comments).
@@ -180,7 +196,7 @@ remove_comments(Id):-
 % Key cleared, generate new.
 
 add_api_key(In, Out):-
-    (   get_dict(key, In, '')
+    (   get_dict(key, In, "")
     ->  ds_uuid(Key),
         put_dict(key, In, Key, Out)
     ;   Out = In).

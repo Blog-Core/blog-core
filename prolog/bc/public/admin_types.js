@@ -7,7 +7,7 @@ var types = (function(exports) {
     
     // Single-line text field.
     
-    exports.line = {
+    exports.author = exports.line = {
         
         // Show value in the list view.
         // Simply a text is shown.
