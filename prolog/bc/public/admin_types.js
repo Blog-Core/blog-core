@@ -438,7 +438,9 @@ var types = (function(exports) {
              
                 value: function() {
                     
-                    return input.value.split(/, */);
+                    var value = input.value.trim();
+
+                    return value === '' ? [] : value.split(/, */);
                 }
             };
         },
