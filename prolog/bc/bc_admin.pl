@@ -47,6 +47,7 @@ auth(Next):-
 % those properties are retrieved that
 % are in the list field of the type.
 % FIXME order property values also.
+% FIXME order property is doubled.
     
 :- route_get(api/collection/Name,
     auth, collection(Name)).

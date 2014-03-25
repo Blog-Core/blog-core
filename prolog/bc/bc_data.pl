@@ -100,6 +100,8 @@ init_users:-
 }).
 
 % Blog posts/pages.
+% FIXME provide bc_register_collection/1
+% FIXME check that all properties are in edit.
 
 :- bc_register_collection(post, post{
     description: 'Blog posts and pages.',
