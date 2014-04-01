@@ -25,6 +25,7 @@ user:message_hook(Term, error, _):-
 :- use_module(bc_router).
 :- use_module(bc_bust).
 :- use_module(bc_view).
+:- use_module(bc_admin).
 
 %! bc_environment(-Env) is det.
 %
