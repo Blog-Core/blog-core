@@ -45,12 +45,16 @@ new_database:-
         content_type: markdown,
         description: "Test",
         type: post
-    }, _).
+    }, PostId),
+    bc_comment_save(PostId, comment{
+        author: "RLa",
+        content: "Test comment"
+    }).
 
 % Auth key for the test user.
 
 test_auth_key(Key):-
-    ds_find(user, username = default_test, [key], [User]),
+    ds_find(user, username=default_test, [key], [User]),
     get_dict_ex(key, User, Key).
 
 request_get(Path, Dict):-

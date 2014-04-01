@@ -56,3 +56,17 @@ The module defines schemas for API data.
         value: [ atom, number ]
     }
 }).
+
+% Basic comments. Can be overriden to
+% add more properties.
+
+:- register_schema(comment, _{
+    type: dict,
+    tag: comment,
+    keys: _{
+        author: _{ type: string, min_length: 1 },
+        content: _{ type: string, min_length: 1 },
+        date: _{ type: integer, min: 0 }
+    },
+    optional: [date]
+}).

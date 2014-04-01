@@ -1,5 +1,6 @@
 :- begin_tests(api).
 
+:- use_module(library(docstore)).
 :- use_module(util).
 
 % Add a new user.
@@ -142,5 +143,63 @@ test('PUT /api/post', [setup(new_database)]):-
         type: post
     }, Update),
     get_dict_ex(status, Update, "success").
+
+test('GET /api/posts', [setup(new_database)]):-
+    request_get('/api/posts', Dict),
+    get_dict_ex(status, Dict, "success"),
+    get_dict_ex(data, Dict, List),
+    assertion(is_list(List)),
+    List = [Post],
+    get_dict_ex(title, Post, _),
+    get_dict_ex(author, Post, _).
+
+test('GET /api/post/Id', [setup(new_database)]):-
+    ds_all(post, [Post]),
+    get_dict_ex('$id', Post, Id),
+    atom_concat('/api/post/', Id, Path),
+    request_get(Path, Dict),
+    get_dict_ex(status, Dict, "success"),
+    get_dict_ex(data, Dict, PostDict),
+    get_dict_ex(title, PostDict, _),
+    get_dict_ex(author, PostDict, _),
+    get_dict_ex(content, PostDict, _).
+
+test('GET /api/configs', [setup(new_database)]):-
+    request_get('/api/configs', Dict),
+    get_dict_ex(status, Dict, "success"),
+    get_dict_ex(data, Dict, List),
+    assertion(is_list(List)),
+    List = [TitleConfig],
+    get_dict_ex(name, TitleConfig, _),
+    get_dict_ex(value, TitleConfig, _).
+
+test('PUT /api/config', [setup(new_database)]):-
+    request_put('/api/config', _{
+        name: "title",
+        value: "Updated title"
+    }, Dict),
+    get_dict_ex(status, Dict, "success").
+
+test('POST /api/post/Id/comment', [setup(new_database)]):-
+    ds_all(post, [Post]),
+    get_dict_ex('$id', Post, Id),
+    atomic_list_concat(['/api/post/', Id, '/comment'], Path),
+    request_post(Path, _{
+        author: "RLa",
+        content: "Test comment"
+    }, Dict),
+    get_dict_ex(status, Dict, "success").
+
+test('GET /api/post/Id/comments', [setup(new_database)]):-
+    ds_all(post, [Post]),
+    get_dict_ex('$id', Post, Id),
+    atomic_list_concat(['/api/post/', Id, '/comments'], Path),
+    request_get(Path, Dict),
+    get_dict_ex(status, Dict, "success"),
+    get_dict_ex(data, Dict, List),
+    assertion(is_list(List)),
+    List = [Comment],
+    get_dict_ex(author, Comment, _),
+    get_dict_ex(date, Comment, _).
 
 :- end_tests(api).

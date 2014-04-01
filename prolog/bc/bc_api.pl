@@ -126,6 +126,63 @@ post_remove(Id):-
     bc_view_purge_cache,
     reply_success(Id).
 
+% List of all posts.
+% FIXME add comment count.
+
+:- route_get(api/posts, auth, post_list).
+
+post_list:-
+    bc_post_list(List),
+    reply_success(List).
+
+% Single post with contents.
+
+:- route_get(api/post/Id, auth, post_get(Id)).
+
+post_get(Id):-
+    bc_post(Id, Post),
+    reply_success(Post).
+
+% Gets config values.
+
+:- route_get(api/configs, auth, config_list).
+
+config_list:-
+    bc_config_list(List),
+    reply_success(List).
+
+% Updates the config value.
+
+:- route_put(api/config, auth, config_update).
+
+config_update:-
+    read_by_schema(config, Config),
+    get_dict_ex(name, Config, Name),
+    get_dict_ex(value, Config, Value),
+    bc_config_set(Name, Value),
+    reply_success(Name).
+
+% Comments of a single post.
+
+:- route_get(api/post/Id/comments, auth, comment_list(Id)).
+
+comment_list(PostId):-
+    bc_comment_list(PostId, Comments),
+    reply_success(Comments).
+
+% Adds new comment. This is available for
+% everyone.
+
+:- route_post(api/post/Id/comment, comment_save(Id)).
+
+comment_save(PostId):-
+    read_by_schema(comment, Comment),
+    bc_comment_save(PostId, Comment),
+    bc_view_purge_cache,
+    reply_success(PostId).
+
+% TODO modify comment.
+
 % Helper that reads dict from JSON request
 % and validates it against the schema.
 

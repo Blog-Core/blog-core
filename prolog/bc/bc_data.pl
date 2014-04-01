@@ -5,6 +5,10 @@
     bc_post_update/2,       % +Id, +Post
     bc_post_remove/1,       % +Id
     bc_post_find_by_slug/2, % +Slug, -Post
+    bc_post_list/1,         % -List
+    bc_post/2,              % +Id, -Post
+    bc_comment_list/2,      % +PostId, -Comments
+    bc_comment_save/2,      % +PostId, +Comment
     bc_user_save/2,         % +User, -Id
     bc_user_update/2,       % +Id, +User
     bc_user_remove/1,       % +Id
@@ -12,13 +16,15 @@
     bc_set_user/1,          % +User
     bc_unset_user/0,
     bc_config_get/2,        % +Name, -Value
-    bc_config_set/2         % +Name, +Value
+    bc_config_set/2,        % +Name, +Value
+    bc_config_list/1        % -List
 ]).
 
 :- use_module(library(docstore)).
 :- use_module(library(debug)).
 :- use_module(library(sha)).
 :- use_module(library(md/md_parse)).
+:- use_module(library(sort_dict)).
 
 % Threadlocal for the current user.
 % Automatically set/unset by the admin interface.
@@ -109,6 +115,54 @@ bc_post_remove(Id):-
 
 bc_post_find_by_slug(Slug, Post):-
     ds_find(post, slug=Slug, [Post]).
+
+%! bc_post_list(-List) is det.
+%
+% Retrieves the list of all posts.
+% Does not include contents and HTML.
+% FIXME add comment count.
+
+bc_post_list(List):-
+    ds_all(post, [slug, type, date_published,
+        commenting, published, title, author], List).
+
+%! bc_post(+Id, -Post) is det.
+%
+% Retrieves a single post by ID. Throws
+% error(no_post(Id)) when there is no such post.
+
+bc_post(Id, Post):-
+    (   ds_get(Id, [slug, type, date_published, date_updated,
+            commenting, published, title, author, content], Post)
+    ;   throw(error(no_post(Id)))), !.
+
+%! bc_comment_list(+PostId, -Comments) is det.
+%
+% Retrieves the list of comments
+% for the given post. Includes
+% `author`, `date` and `$id` fields only.
+
+bc_comment_list(PostId, Comments):-
+    ds_find(comment, post=PostId, [author, date], Comments).
+
+%! bc_comment_save(+PostId, +Comment) is det.
+%
+% Saves the comment. Throws error(no_post(PostId))
+% when the post does not exist, and throws
+% commenting_disabled(PostId)) when commenting
+% is disabled on the post.
+% FIXME process links.
+
+bc_comment_save(PostId, Comment):-
+    (   ds_get(PostId, [commenting], Post)
+    ->  (   get_dict_ex(commenting, Post, true)
+        ->  get_time(Time),
+            Ts is floor(Time),
+            put_dict(_{ date: Ts, post: PostId },
+                Comment, Processed),
+            ds_insert(Processed)
+        ;   throw(error(commenting_disabled(PostId))))
+    ;   throw(error(no_post(PostId)))).
 
 %! bc_user_auth(+Auth, -Key) is semidet.
 %
@@ -252,6 +306,15 @@ bc_config_set(Name, Value):-
     ->  put_dict(value, Doc, Value, New),
         ds_update(New)
     ;   ds_insert(config{ name: Name, value: Value })).
+
+%! bc_config_list(-List) is det.
+%
+% Retrieves the list of all config
+% values. Returned list contains dicts
+% `config{ name: Name, value: Value }`.
+
+bc_config_list(List):-
+    ds_all(config, List).
 
 % Sets up initial values.
 % Inserts the default admin user.
