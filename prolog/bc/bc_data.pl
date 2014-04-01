@@ -1,5 +1,6 @@
 :- module(bc_data, [
     bc_data_open/1,         % +File
+    bc_data_close/0,
     bc_post_save/2,         % +Post, -Id
     bc_post_update/2,       % +Id, +Post
     bc_post_remove/1,       % +Id
@@ -9,7 +10,9 @@
     bc_user_remove/1,       % +Id
     bc_user_auth/2,         % +Auth, -Key
     bc_set_user/1,          % +User
-    bc_unset_user/0
+    bc_unset_user/0,
+    bc_config_get/2,        % +Name, -Value
+    bc_config_set/2         % +Name, +Value
 ]).
 
 :- use_module(library(docstore)).
@@ -31,7 +34,7 @@ bc_set_user(User):-
     retractall(user(_)),
     assertz(user(User)),
     get_dict_ex(username, User, Username),
-    debug(bc_data, 'Set current user to ~p', [Username]).
+    debug(bc_data, 'set current user to ~p', [Username]).
 
 %! bc_unset_user is det.
 %
@@ -40,7 +43,7 @@ bc_set_user(User):-
 
 bc_unset_user:-
     retractall(user(_)),
-    debug(bc_data, 'User unset', []).
+    debug(bc_data, 'user unset', []).
 
 %! bc_data_open(+File) is det.
 %
@@ -49,7 +52,16 @@ bc_unset_user:-
 
 bc_data_open(File):-
     ds_open(File),
-    debug(bc_data, 'Opened docstore file ~p', [File]).
+    bc_init,
+    debug(bc_data, 'opened docstore file ~p', [File]).
+
+%! bc_data_close is det.
+%
+% Closes the docstore database.
+
+bc_data_close:-
+    ds_close,
+    debug(bc_data, 'closed docstore file', []).
 
 bc_post_save(Post, Id):-
     get_dict_ex(slug, Post, Slug),
@@ -59,7 +71,7 @@ bc_post_save(Post, Id):-
     ->  throw(error(existing_slug(Slug)))
     ;   bc_post_format(Post, Formatted),
         ds_insert(Formatted, Id),
-        debug(bc_data, 'Saved post ~p', [Id])).
+        debug(bc_data, 'saved post ~p', [Id])).
 
 %! bc_post_update(+Id, +Post) is det.
 %
@@ -69,7 +81,7 @@ bc_post_update(Id, Post):-
     bc_post_format(Post, Formatted),
     put_dict('$id', Formatted, Id, Update),
     ds_update(Update),
-    debug(bc_data, 'Updated post ~p', [Id]).
+    debug(bc_data, 'updated post ~p', [Id]).
 
 % Formats post HTML contents based on
 % the post's content type.
@@ -89,7 +101,7 @@ bc_post_format(PostIn, PostOut):-
 bc_post_remove(Id):-
     ds_remove(Id),
     ds_remove(comment, post=Id),
-    debug(bc_data, 'Removed post ~p', [Id]).
+    debug(bc_data, 'removed post ~p', [Id]).
 
 %! bc_post_find_by_slug(+Slug, -Post) is semidet.
 %
@@ -108,7 +120,7 @@ bc_post_find_by_slug(Slug, Post):-
 bc_user_auth(Auth, Key):-
     get_dict_ex(username, Auth, Username),
     get_dict_ex(password, Auth, Password),
-    debug(bc_data, 'Authenticating ~p', [Username]),
+    debug(bc_data, 'authenticating ~p', [Username]),
     (   ds_find(user, username=Username, [User])
     ->  get_dict_ex(salt, User, Salt),
         get_dict_ex(password, User, Stored),
@@ -116,9 +128,9 @@ bc_user_auth(Auth, Key):-
         sha_hash(Data, Hash, [encoding(utf8), algorithm(sha256)]),
         hash_atom(Hash, HashAtom),
         (   HashAtom = Stored
-        ->  debug(bc_data, 'Authentication successful', []),
+        ->  debug(bc_data, 'authentication successful', []),
             get_dict_ex(key, User, Key)
-        ;   debug(bc_data, 'Authentication failed', []),
+        ;   debug(bc_data, 'authentication failed', []),
             throw(error(invalid_credentials)))
     ;   throw(error(invalid_credentials))).
 
@@ -138,7 +150,7 @@ bc_user_save(User, Id):-
         ds_uuid(Key),
         put_dict(key, Hashed, Key, Keyed),
         ds_insert(Keyed, Id),
-        debug(bc_data, 'Saved user ~p', [Id])).
+        debug(bc_data, 'saved user ~p', [Id])).
 
 %! bc_user_username_exists(+Username) is semidet.
 %
@@ -163,7 +175,7 @@ bc_user_update(Id, User):-
     ;   bc_user_hash(User, Hashed),
         put_dict('$id', Hashed, Id, Update),
         ds_update(Update),
-        debug(bc_data, 'Updated user ~p', [Id])).
+        debug(bc_data, 'updated user ~p', [Id])).
 
 % (Re)hashes the user password when password
 % is set in the user dict. Replaces the password
@@ -192,7 +204,7 @@ bc_user_remove(Id):-
     ;   (   bc_user_last_admin(Id)
         ->  throw(error(cannot_remove_last_admin(Id)))
         ;   ds_remove(Id),
-            debug(bc_data, 'Removed user ~p', [Id]))).
+            debug(bc_data, 'removed user ~p', [Id]))).
 
 %! bc_user_last_admin(+Id) is semidet.
 %
@@ -217,3 +229,42 @@ bc_user_has_posts(Id):-
 bc_user_post_count(Id, Count):-
     ds_find(post, author=Id, [author], Posts),
     length(Posts, Count).
+
+%! bc_config_get(+Name, -Value) is det.
+%
+% Retrieves the configuration entry.
+% When the entry does not exist then
+% an error error(no_config(Name)) is thrown.
+
+bc_config_get(Name, Value):-
+    (   ds_find(config, name=Name, [Doc])
+    ->  get_dict_ex(value, Doc, Value)
+    ;   throw(error(no_config(Name)))).
+
+%! bc_config_set(+Name, +Value) is det.
+%
+% Sets the configuration value. If the
+% value does not exist yet, it is added.
+
+bc_config_set(Name, Value):-
+    debug(bc_data, 'setting ~w to ~p', [Name, Value]),
+    (   ds_find(config, name=Name, [Doc])
+    ->  put_dict(value, Doc, Value, New),
+        ds_update(New)
+    ;   ds_insert(config{ name: Name, value: Value })).
+
+% Sets up initial values.
+% Inserts the default admin user.
+
+bc_init:-
+    ds_all(config, []), !,
+    debug(bc_data, 'inserting initial data', []),
+    bc_config_set(title, 'Untitled site'),
+    bc_user_save(user{
+        fullname: 'Admin',
+        username: 'admin',
+        password: 'admin',
+        type: admin
+    }, _).
+
+bc_init.

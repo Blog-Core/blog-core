@@ -23,9 +23,9 @@ for unit/integration testing.
 % Recreates the test database.
 
 new_database:-
-    ds_close,
+    bc_data_close,
     delete_file('test.docstore'),
-    ds_open('test.docstore'),
+    bc_data_open('test.docstore'),
     bc_user_save(user{
         username: default_test,
         password: default_test,

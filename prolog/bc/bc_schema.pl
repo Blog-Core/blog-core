@@ -45,3 +45,14 @@ The module defines schemas for API data.
         type: _{ type: enum, values: [page, post] }
     }
 }).
+
+% Generic config entry.
+
+:- register_schema(config, _{
+    type: dict,
+    tag: config,
+    keys: _{
+        name: atom,
+        value: [ atom, number ]
+    }
+}).
