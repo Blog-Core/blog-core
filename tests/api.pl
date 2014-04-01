@@ -1,111 +1,146 @@
 :- begin_tests(api).
 
-:- use_module(library(http/json)).
-:- use_module(library(http/http_open)).
-:- use_module(library(http/http_json)).
-:- use_module(library(http/http_client)).
+:- use_module(util).
 
-request_get(Path, Dict):-
-    Options = [
-        request_header('X-Key'='b4184b55-0af1-451a-aed7-c056263ee3d3')
-    ],
-    atom_concat('http://localhost:18008', Path, Url),
-    http_open(Url, Stream, Options),
-    json_read_dict(Stream, Dict),
-    close(Stream).
+% Add a new user.
 
-request_post(Path, In, Out):-
-    Options = [
-        request_header('X-Key'='b4184b55-0af1-451a-aed7-c056263ee3d3'),
-        post(json(In))
-    ],
-    atom_concat('http://localhost:18008', Path, Url),
-    http_open(Url, Stream, Options),
-    json_read_dict(Stream, Out),
-    close(Stream).
+test('POST /api/user', [setup(new_database)]):-
+    request_post('/api/user', _{
+        username: test,
+        password: test123,
+        fullname: 'Test',
+        type: author }, Dict),
+    get_dict_ex(status, Dict, "success").
 
-request_put(Path, In, Out):-
-    Options = [
-        request_header('X-Key'='b4184b55-0af1-451a-aed7-c056263ee3d3'),
-        post(json(In)),
-        method(put)
-    ],
-    atom_concat('http://localhost:18008', Path, Url),
-    http_open(Url, Stream, Options),
-    json_read_dict(Stream, Out),
-    close(Stream).
+% Update an user.
 
-request_del(Path, Dict):-
-    Options = [
-        request_header('X-Key'='b4184b55-0af1-451a-aed7-c056263ee3d3'),
-        method(delete)
-    ],
-    atom_concat('http://localhost:18008', Path, Url),
-    http_open(Url, Stream, Options),
-    json_read_dict(Stream, Dict),
-    close(Stream).
+test('PUT /api/user/Id', [setup(new_database)]):-
+    request_post('/api/user', _{
+        username: testa,
+        password: test123,
+        fullname: 'Test A',
+        type: author }, Dict1),
+    get_dict_ex(status, Dict1, "success"),
+    get_dict_ex(data, Dict1, Id),
+    atom_concat('/api/user/', Id, Url),
+    request_put(Url, _{
+        username: testb,
+        password: test321,
+        fullname: 'Test B',
+        type: author }, Dict2),
+    get_dict_ex(status, Dict2, "success").
 
-test('GET /api/collection/user'):-
-    request_get('/api/collection/user', Dict),
-    get_dict_ex(status, Dict, "success"),
-    get_dict_ex(data, Dict, [User]),
-    get_dict_ex(email, User, "test@example.com").
+% Remove an user.
 
-test('GET /api/types'):-
-    request_get('/api/types', Dict),
-    get_dict_ex(status, Dict, "success"),
-    get_dict_ex(data, Dict, [Type|_]),
-    get_dict_ex(name, Type, _),
-    get_dict_ex(def, Type, Def),
-    get_dict_ex(description, Def, _),
-    get_dict_ex(detail, Def, _),
-    get_dict_ex(edit, Def, _),
-    get_dict_ex(list, Def, _).
+test('DELETE /api/user/Id', [setup(new_database)]):-
+    request_post('/api/user', _{
+        username: test,
+        password: test123,
+        fullname: 'Test',
+        type: author }, Dict1),
+    get_dict_ex(status, Dict1, "success"),
+    get_dict_ex(data, Dict1, Id),
+    atom_concat('/api/user/', Id, Url),
+    request_del(Url, Dict2),
+    get_dict_ex(status, Dict2, "success").
 
-test('POST /api/collection/user'):-
-    request_post('/api/collection/config',
-        _{ name: test, value: abc }, Dict),
-    get_dict_ex(status, Dict, "success"),
-    get_dict_ex(data, Dict, _).
+% Authenticate user.
 
-test('GET /api/collection/config/type'):-
-    request_get('/api/collection/config/type', Dict),
-    get_dict_ex(status, Dict, "success"),
-    get_dict_ex(data, Dict, Data),
-    get_dict_ex(description, Data, _),
-    get_dict_ex(detail, Data, _),
-    get_dict_ex(edit, Data, _),
-    get_dict_ex(list, Data, _),
-    get_dict_ex(name, Data, "config"),
-    get_dict_ex(properties, Data, _).
+test('POST /api/auth', [setup(new_database)]):-
+    request_post('/api/user', _{
+        username: test,
+        password: test123,
+        fullname: 'Test',
+        type: author }, User),
+    get_dict_ex(status, User, "success"),
+    request_post('/api/auth', _{
+        username: test,
+        password: test123
+    }, Auth),
+    get_dict_ex(status, Auth, "success"),
+    get_dict_ex(data, Auth, _).
 
-test('GET /api/document/Id'):-
-    request_get('/api/document/d2f1b828-8063-446c-a1b7-4a151911fd27', Dict),
-    get_dict_ex(status, Dict, "success"),
-    get_dict_ex(data, Dict, Data),
-    get_dict_ex(name, Data, _),
-    get_dict_ex(value, Data, _).
+% Invalid credentials.
 
-test('GET /api/document/Id/type'):-
-    request_get('/api/document/d2f1b828-8063-446c-a1b7-4a151911fd27/type', Dict),
-    get_dict_ex(status, Dict, "success"),
-    get_dict_ex(data, Dict, Data),
-    get_dict_ex(description, Data, _),
-    get_dict_ex(detail, Data, _),
-    get_dict_ex(edit, Data, _),
-    get_dict_ex(list, Data, _),
-    get_dict_ex(name, Data, "config"),
-    get_dict_ex(properties, Data, _).
+test('POST /api/auth (invalid credentials)', [setup(new_database)]):-
+    request_post('/api/auth', _{
+        username: not_exists,
+        password: test123
+    }, Auth),
+    get_dict_ex(status, Auth, "error"),
+    get_dict_ex(message, Auth, "Invalid auth credentials.").
 
-test('PUT /api/document/Id'):-
-    request_put('/api/document/d2f1b828-8063-446c-a1b7-4a151911fd27',
-        _{ value: abc }, Dict),
-    get_dict_ex(status, Dict, "success"),
-    get_dict_ex(data, Dict, _).
+test('POST /api/auth (invalid data)', [setup(new_database)]):-
+    request_post('/api/auth', _{
+        password: test123
+    }, Auth),
+    get_dict_ex(status, Auth, "error"),
+    get_dict_ex(message, Auth, "Invalid input: [no_key(#,username)].").
 
-test('DELETE /api/document/Id'):-
-    request_del('/api/document/abc-not-exist', Dict),
-    get_dict_ex(status, Dict, "success"),
-    get_dict_ex(data, Dict, _).
+test('POST /api/post', [setup(new_database)]):-
+    request_post('/api/user', _{
+        username: test,
+        password: test123,
+        fullname: 'Test',
+        type: author }, User),
+    get_dict_ex(status, User, "success"),
+    get_dict_ex(data, User, Author),
+    request_post('/api/post', _{
+        author: Author,
+        title: "Test post",
+        slug: "test-post",
+        tags: [test, post],
+        date_published: 1396216490,
+        date_updated: 1396216490,
+        commenting: true,
+        published: true,
+        content: "**test**",
+        content_type: markdown,
+        description: "Test",
+        type: post
+    }, Post),
+    get_dict_ex(status, Post, "success"),
+    get_dict_ex(data, Post, _).
+
+test('PUT /api/post', [setup(new_database)]):-
+    request_post('/api/user', _{
+        username: test,
+        password: test123,
+        fullname: 'Test',
+        type: author }, User),
+    get_dict_ex(status, User, "success"),
+    get_dict_ex(data, User, Author),
+    request_post('/api/post', _{
+        author: Author,
+        title: "Test post",
+        slug: "test-post",
+        tags: [test, post],
+        date_published: 1396216490,
+        date_updated: 1396216490,
+        commenting: true,
+        published: true,
+        content: "**test**",
+        content_type: markdown,
+        description: "Test",
+        type: post
+    }, Post),
+    get_dict_ex(status, Post, "success"),
+    get_dict_ex(data, Post, PostId),
+    atom_concat('/api/post/', PostId, UpdateUrl),
+    request_put(UpdateUrl, _{
+        author: Author,
+        title: "Test post 1",
+        slug: "test-post-1",
+        tags: [test, post],
+        date_published: 1396216490,
+        date_updated: 1396216490,
+        commenting: true,
+        published: true,
+        content: "**test 1**",
+        content_type: markdown,
+        description: "Test 1",
+        type: post
+    }, Update),
+    get_dict_ex(status, Update, "success").
 
 :- end_tests(api).

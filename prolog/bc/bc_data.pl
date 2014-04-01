@@ -1,204 +1,219 @@
 :- module(bc_data, [
-    bc_data_open/1,           % +File
-    bc_data_close/0,
-    bc_register_collection/2, % +Name, +Type
-    bc_unregister_all/0,
-    bc_collection/2           % ?Name, ?Type
+    bc_data_open/1,         % +File
+    bc_post_save/2,         % +Post, -Id
+    bc_post_update/2,       % +Id, +Post
+    bc_post_remove/1,       % +Id
+    bc_post_find_by_slug/2, % +Slug, -Post
+    bc_user_save/2,         % +User, -Id
+    bc_user_update/2,       % +Id, +User
+    bc_user_remove/1,       % +Id
+    bc_user_auth/2,         % +Auth, -Key
+    bc_set_user/1,          % +User
+    bc_unset_user/0
 ]).
 
 :- use_module(library(docstore)).
+:- use_module(library(debug)).
+:- use_module(library(sha)).
 :- use_module(library(md/md_parse)).
-:- use_module(library(error)).
 
-:- use_module(bc_config).
-
-% Threadlocal for the current author.
+% Threadlocal for the current user.
 % Automatically set/unset by the admin interface.
 
-:- thread_local(author/1).
+:- thread_local(user/1).
 
-%! bc_register_collection(+Name, +Type) is det.
+%! bc_set_user(+User) is det.
 %
-% Registers a new collection for automatic
-% admin interface. Docstore does not have
-% to be open yet.
-% When a collection with same name has
-% already been registered it is replaced.
+% Sets thread-local for the current
+% user. Must be called from the REST handlers.
 
-bc_register_collection(Name, Type):-
-    must_be(atom, Name),
-    must_be(dict, Type),
-    retractall(bc_collection(Name, _)),
-    assertz(bc_collection(Name, Type)).
+bc_set_user(User):-
+    retractall(user(_)),
+    assertz(user(User)),
+    get_dict_ex(username, User, Username),
+    debug(bc_data, 'Set current user to ~p', [Username]).
 
-bc_unregister_all:-
-    retractall(bc_collection(_, _)).
-
-%! bc_collection(?Name, ?Type) is nondet.
+%! bc_unset_user is det.
 %
-% Queries currently registered collection
-% types. Docstore does not have to be open yet.
+% Unsets the author thread-local.
+% Must be called from the REST handlers.
 
-:- dynamic(bc_collection/2).
+bc_unset_user:-
+    retractall(user(_)),
+    debug(bc_data, 'User unset', []).
+
+%! bc_data_open(+File) is det.
+%
+% Opens the docstore database file.
+% Inserts the initial data.
 
 bc_data_open(File):-
     ds_open(File),
-    (   ds_all(config, [])
-    ->  init_config,
-        init_users
-    ;   true).
+    debug(bc_data, 'Opened docstore file ~p', [File]).
 
-bc_data_close:-
-    ds_close,
-    bc_unregister_all.
+bc_post_save(Post, Id):-
+    get_dict_ex(slug, Post, Slug),
+    ds_find(post, slug=Slug, Existing),
+    length(Existing, Length),
+    (   Length > 0
+    ->  throw(error(existing_slug(Slug)))
+    ;   bc_post_format(Post, Formatted),
+        ds_insert(Formatted, Id),
+        debug(bc_data, 'Saved post ~p', [Id])).
 
-init_config:-
-    config_set(title, 'Untitled blog'),
-    config_set(author, 'Name not set'),
-    config_set(site, 'http://localhost:8001'),
-    config_set(date_format, '%F'),
-    config_set(excerpt_size, 100).
+%! bc_post_update(+Id, +Post) is det.
+%
+% Updates the given post. Reformats HTML.
 
-init_users:-
-    ds_uuid(Key),
-    ds_insert(user{
-        username: 'admin',
-        password: 'admin',
-        email: 'test@example.com',
-        name: 'Blog',
-        surname: 'Admin',
-        role: admin,
-        key: Key
-    }).
-    
-:- bc_register_collection(config, config{
-    description: 'Configuration options.',
-    title: name,
-    list: [name, value],
-    detail: [name, value],
-    edit: [name, value],
-    properties: _{
-        name: _{ type: line },
-        value: _{ type: line }
-    }
-}).
+bc_post_update(Id, Post):-
+    bc_post_format(Post, Formatted),
+    put_dict('$id', Formatted, Id, Update),
+    ds_update(Update),
+    debug(bc_data, 'Updated post ~p', [Id]).
 
-% Static HTML blocks.
+% Formats post HTML contents based on
+% the post's content type.
 
-:- bc_register_collection(block, block{
-    description: 'Static HTML blocks.',
-    title: name,
-    order: _{ property: date, direction: desc },
-    list: [name, slug],
-    detail: [name, slug, content],
-    edit: [name, slug, content],
-    properties: _{
-        name: _{ type: line },
-        slug: _{ type: line },
-        content: _{ type: multiline }
-    }
-}).
+bc_post_format(PostIn, PostOut):-
+    get_dict_ex(content, PostIn, Content),
+    get_dict_ex(content_type, PostIn, ContentType),
+    (   ContentType = markdown
+    ->  md_html_string(Content, Html)
+    ;   Html = Content),
+    put_dict(_{ html: Html }, PostIn, PostOut).
 
-% Blog posts/pages.
-% FIXME provide bc_register_collection/1
-% FIXME check that all properties are in edit.
+%! bc_post_remove(+Id) is det.
+%
+% Removes the given post and its comments.
 
-:- bc_register_collection(post, post{
-    description: 'Blog posts and pages.',
-    title: title,
-    order: _{ property: date, direction: desc },
-    list: [title, published, commenting],
-    detail: [title, slug, description, published,
-        commenting, content, tags, date, author],
-    edit: [title, slug, description, published,
-        commenting, content, tags, date, author],
-    properties: _{
-        date: _{ type: datetime },
-        published: _{ type: boolean },
-        commenting: _{ type: boolean },
-        title: _{ type: line },
-        slug: _{ type: line },
-        description: _{ type: multiline },
-        content: _{ type: multiline },
-        type: _{ type: line },
-        tags: _{ type: tags },
-        author: _{ type: author }
-    }
-}).
+bc_post_remove(Id):-
+    ds_remove(Id),
+    ds_remove(comment, post=Id),
+    debug(bc_data, 'Removed post ~p', [Id]).
 
-% Post comments.
+%! bc_post_find_by_slug(+Slug, -Post) is semidet.
+%
+% Finds post. Fails when no post is found.
 
-:- bc_register_collection(comment, comment{
-    description: 'Blog post comments.',
-    title: name,
-    order: _{ property: date, direction: desc },
-    list: [date, name, post],
-    detail: [date, name, content, post],
-    edit: [date, name, content],
-    properties: _{
-        name: _{ type: line },
-        content: _{ type: multiline },
-        date: _{ type: datetime },
-        post: _{ type: ref }
-    }
-}).
+bc_post_find_by_slug(Slug, Post):-
+    ds_find(post, slug=Slug, [Post]).
 
-% Blog users/post authors.
+%! bc_user_auth(+Auth, -Key) is semidet.
+%
+% Authenticates the given user. Throws
+% error(invalid_credentials) when
+% the auth credentials are wrong.
+% Retrieves the user's API key.
 
-:- bc_register_collection(user, user{
-    description: 'Users',
-    title: username,
-    list: [email, username, role],
-    detail: [email, username, role,
-        name, surname, key],
-    edit: [email, username, role,
-        name, surname, key, password],
-    properties: _{
-        username: _{ type: line },
-        email: _{ type: line },
-        name: _{ type: line },
-        password: _{ type: line },
-        surname: _{ type: line },
-        role: _{ type: choice, values: [normal, admin] },
-        key: _{ type: line }
-    }
-}).
+bc_user_auth(Auth, Key):-
+    get_dict_ex(username, Auth, Username),
+    get_dict_ex(password, Auth, Password),
+    debug(bc_data, 'Authenticating ~p', [Username]),
+    (   ds_find(user, username=Username, [User])
+    ->  get_dict_ex(salt, User, Salt),
+        get_dict_ex(password, User, Stored),
+        atom_concat(Salt, Password, Data),
+        sha_hash(Data, Hash, [encoding(utf8), algorithm(sha256)]),
+        hash_atom(Hash, HashAtom),
+        (   HashAtom = Stored
+        ->  debug(bc_data, 'Authentication successful', []),
+            get_dict_ex(key, User, Key)
+        ;   debug(bc_data, 'Authentication failed', []),
+            throw(error(invalid_credentials)))
+    ;   throw(error(invalid_credentials))).
 
-% Hook to turn post content into HTML.
+%! bc_user_save(+User, -Id) is det.
+%
+% Saves the new user. Throws
+% error(existing_username(Username))
+% when an user with the same username
+% already exists. Attaches freshly generated
+% API key to the user.
 
-:- ds_hook(post, before_save, convert_content).
+bc_user_save(User, Id):-
+    get_dict_ex(username, User, Username),
+    (   bc_user_username_exists(Username)
+    ->  throw(error(existing_username(Username)))
+    ;   bc_user_hash(User, Hashed),
+        ds_uuid(Key),
+        put_dict(key, Hashed, Key, Keyed),
+        ds_insert(Keyed, Id),
+        debug(bc_data, 'Saved user ~p', [Id])).
 
-convert_content(In, Out):-
-    (   get_dict(content, In, Content)
-    ->  md_html_string(Content, Html),
-        put_dict(html, In, Html, Out)
-    ;   Out = In).
+%! bc_user_username_exists(+Username) is semidet.
+%
+% Checks whether an user with the given
+% username exists.
 
-:- ds_hook(post, before_save, set_author).
+bc_user_username_exists(Username):-
+    ds_find(user, username = Username, Existing),
+    length(Existing, Count),
+    Count > 0.
 
-set_author(In, Out):-
-    (   get_dict(author, In, "")
-    ->  author(User),
-        get_dict_ex('$id', User, Id),
-        atom_string(Id, IdString),
-        put_dict(author, In, IdString, Out)
-    ;   Out = In).
+%! bc_user_update(+Id, +User) is det.
+%
+% Updates the given user. Throws
+% error(cannot_demote_last_admin(Id)) when the user
+% is the last admin.
 
-% Hook to remove comments when a post is removed.
+bc_user_update(Id, User):-
+    get_dict_ex(type, User, Type),
+    (   bc_user_last_admin(Id), Type=normal
+    ->  throw(error(cannot_demote_last_admin(Id)))
+    ;   bc_user_hash(User, Hashed),
+        put_dict('$id', Hashed, Id, Update),
+        ds_update(Update),
+        debug(bc_data, 'Updated user ~p', [Id])).
 
-:- ds_hook(post, before_remove, remove_comments).
+% (Re)hashes the user password when password
+% is set in the user dict. Replaces the password
+% in user dict with salted hash. Uses freshly
+% generated UUID as salt.
 
-remove_comments(Id):-
-    ds_remove(comment, post=Id).
+bc_user_hash(UserIn, UserOut):-
+    ds_uuid(Salt),
+    get_dict_ex(password, UserIn, Password),
+    atom_concat(Salt, Password, Data),
+    sha_hash(Data, Hash, [encoding(utf8), algorithm(sha256)]),
+    hash_atom(Hash, HashAtom),
+    put_dict(_{ password: HashAtom, salt: Salt }, UserIn, UserOut).
 
-% Hook to add API key to the user.
+%! bc_user_remove(+Id) is det.
+%
+% Removes the given user. Throws
+% error(cannot_remove_last_admin(Id)) when
+% the user is the last admin. Throws
+% user_has_existing_posts(Id) when the user has
+% existing posts.
 
-:- ds_hook(user, before_save, add_api_key).
+bc_user_remove(Id):-
+    (   bc_user_has_posts(Id)
+    ->  throw(error(user_has_existing_posts(Id)))
+    ;   (   bc_user_last_admin(Id)
+        ->  throw(error(cannot_remove_last_admin(Id)))
+        ;   ds_remove(Id),
+            debug(bc_data, 'Removed user ~p', [Id]))).
 
-% Key cleared, generate new.
+%! bc_user_last_admin(+Id) is semidet.
+%
+% Succeeds when the given user is the single admin.
 
-add_api_key(In, Out):-
-    (   get_dict(key, In, "")
-    ->  ds_uuid(Key),
-        put_dict(key, In, Key, Out)
-    ;   Out = In).
+bc_user_last_admin(Id):-
+    ds_find(user, type=admin, [type], [Admin]),
+    get_dict_ex('$id', Admin, Id).
+
+%! bc_user_has_posts(+Id) is semidet.
+%
+% Checks whether the given user has posts.
+
+bc_user_has_posts(Id):-
+    bc_user_post_count(Id, Count),
+    Count > 0.
+
+%! bc_user_post_count(+Id, -Count) is det.
+%
+% Finds the count of posts by the given user.
+
+bc_user_post_count(Id, Count):-
+    ds_find(post, author=Id, [author], Posts),
+    length(Posts, Count).

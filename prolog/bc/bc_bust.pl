@@ -2,11 +2,20 @@
     bc_bust_token/1 % -Atomic
 ]).
 
+/** <module> Client-side cache busting
+
+This module provides client-side cache busting support
+by rewriting request paths that contain specifically
+formatted prefix. Adds `cache_token` global to
+simple-template.
+*/
+
+:- use_module(library(http/http_wrapper)).
 :- use_module(library(st/st_expr)).
 :- use_module(library(dcg/basics)).
 :- use_module(bc_router).
 
-%% bs_bust_token(-Token) is det.
+%! bc_bust_token(-Token) is det.
 %
 % Retrieves the token for cache
 % busting. Currently it is set to
@@ -31,12 +40,13 @@ set_start_time:-
 % Registers rewrite hook to remove
 % the cache busting prefix.
 
-:- bc_rewrite_hook(rewrite_cache_buster).
-
-rewrite_cache_buster(In, Out):-
-    atom_codes(In, InCodes),
-    phrase(cache_busting_prefix, InCodes, Rest),
-    atom_codes(Out, Rest).
+http:request_expansion(RequestIn, RequestOut):-
+    select(path(PathIn), RequestIn, Request),
+    atom_codes(PathIn, CodesIn),
+    phrase(cache_busting_prefix, CodesIn, OutCodes),
+    atom_codes(PathOut, OutCodes),
+    RequestOut = [path(PathOut)|Request],
+    debug(bc_bust, 'Rewrote cache bust prefixed path ~p', [PathIn]).
 
 cache_busting_prefix -->
     "/t-", integer(_).
@@ -44,4 +54,5 @@ cache_busting_prefix -->
 % Add token value to simple-template
 % global values.
 
-:- bc_bust_token(Token), st_set_global(cache_token, Token).
+:- bc_bust_token(Token),
+    st_set_global(cache_token, Token).
