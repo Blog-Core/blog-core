@@ -9,4 +9,11 @@ package: test
 upload: package
 	scp blog-core-$(version).tgz packs@packs.rlaanemets.com:/usr/share/nginx/packs.rlaanemets.com/blog-core/blog-core-$(version).tgz
 
-.PHONY: test package upload
+admin: prolog/bc/public/admin.min.js
+
+prolog/bc/public/admin.min.js: admin/*.js admin/controller/*.js
+	browserify --noparse=admin/lib/knockout.js \
+		--noparse=admin/lib/q.js \
+		--outfile $@ admin/admin.js
+
+.PHONY: test package upload admin
