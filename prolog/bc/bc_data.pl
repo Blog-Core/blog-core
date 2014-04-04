@@ -6,6 +6,7 @@
     bc_post_remove/1,       % +Id
     bc_post_find_by_slug/2, % +Slug, -Post
     bc_post_list/1,         % -List
+    bc_post_list/2,         % +Type, -List
     bc_post/2,              % +Id, -Post
     bc_comment_list/2,      % +PostId, -Comments
     bc_comment_save/2,      % +PostId, +Comment
@@ -76,7 +77,10 @@ bc_post_save(Post, Id):-
     (   Length > 0
     ->  throw(error(existing_slug(Slug)))
     ;   bc_post_format(Post, Formatted),
-        ds_insert(Formatted, Id),
+        user(User),
+        get_dict_ex('$id', User, UserId),
+        put_dict(author, Formatted, UserId, Processed),
+        ds_insert(Processed, Id),
         debug(bc_data, 'saved post ~p', [Id])).
 
 %! bc_post_update(+Id, +Post) is det.
@@ -124,7 +128,19 @@ bc_post_find_by_slug(Slug, Post):-
 
 bc_post_list(List):-
     ds_all(post, [slug, type, date_published,
-        commenting, published, title, author], List).
+        date_updated, commenting, published,
+        title, author], List).
+
+%! bc_post_list(+Type, -List) is det.
+%
+% Retrieves the list of posts of certain type.
+% Does not include contents and HTML.
+% FIXME add comment count.
+
+bc_post_list(Type, List):-
+    ds_find(post, type=Type, [slug, type, date_published,
+        date_updated, commenting, published,
+        title, author], List).
 
 %! bc_post(+Id, -Post) is det.
 %
@@ -133,7 +149,8 @@ bc_post_list(List):-
 
 bc_post(Id, Post):-
     (   ds_get(Id, [slug, type, date_published, date_updated,
-            commenting, published, title, author, content], Post)
+            commenting, published, title, author,
+            content, description, content_type, tags], Post)
     ;   throw(error(no_post(Id)))), !.
 
 %! bc_comment_list(+PostId, -Comments) is det.

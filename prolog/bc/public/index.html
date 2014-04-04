@@ -1,19 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf8">
-        <title>Admin</title>
-        <link rel="stylesheet" href="/admin/admin.css">
-    </head>
-    <body>
-        <div class="container">
-            <h1>Admin</h1>
-            <div id="content"></div>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/admin/css/bootstrap.min.css">
+    <title>Admin</title>
+    <style>
+        body { margin-top: 1em; margin-bottom: 1em; }
+        .nav { margin-bottom: 1em; }
+        .messages { position: absolute; top: 2em; left: 2em; z-index: 10000; opacity: 0.95; }
+        .text-right { text-align: right; }
+        .content { font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Blog admin</h1>
+        <div class="btn-group">
+            <a class="btn btn-default" href="#posts">Posts</a>
+            <a class="btn btn-default" href="#pages">Pages</a>
+            <a class="btn btn-default" href="#blocks">Blocks</a>
+            <a class="btn btn-default" href="#new">New</a>
         </div>
-        <div class="spinner" id="spinner" style="display: none">
-            <span><strong>Transferring data ...</strong></span><br>
-            <img src="/admin/spinner.gif">
-        </div>
-        <script src="/admin/admin.min.js"></script>
-    </body>
+        <div id="messages" class="messages"></div>
+        <div id="content"></div>
+    </div>
+    <script src="/admin/admin.min.js"></script>
+</body>
 </html>

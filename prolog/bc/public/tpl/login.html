@@ -1,0 +1,24 @@
+<h2>Login</h2>
+<form data-bind="submit: login" class="form-horizontal" autocomplete="off">
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Username</label>
+                <div class="col-sm-10">
+                    <input data-bind="value: username"
+                        type="text" name="username" title="Username"
+                        placeholder="Username" required="true" class="form-control">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Password</label>
+                <div class="col-sm-10">
+                    <input data-bind="value: password"
+                        type="password" name="password" title="Password"
+                        placeholder="Password" required="true" class="form-control">
+                </div>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-default">Login</button>
+</form>

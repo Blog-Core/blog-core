@@ -1,0 +1,12 @@
+<h2>Posts</h2>
+
+<div data-bind="foreach: posts" class="list-group">
+    <a data-bind="attr: { href: '#post/' + $id }" href="#" class="list-group-item">
+        <h4 data-bind="text: title" class="list-group-item-heading"></h4>
+        <p class="list-group-item-text">
+            Publish date: <span data-bind="text: formatDate(date_published)"></span>
+        </p>
+    </a>
+</div>
+
+<a data-bind="click: more" class="btn btn-default" href="#">Show more</a>

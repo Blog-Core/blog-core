@@ -1,0 +1,54 @@
+<h2 data-bind="text: title"></h2>
+
+<form data-bind="submit: save" role="form">
+    <div class="form-group">
+        <label for="post-title">Title</label>
+        <input data-bind="value: title"
+            type="text" class="form-control" id="post-title"
+            placeholder="Title" required="true">
+    </div>
+    <div class="form-group">
+        <label for="post-slug">Slug</label>
+        <input data-bind="value: slug"
+            type="text" class="form-control" id="post-slug"
+            placeholder="Slug" required="true">
+        <p class="help-block">Slug should not be modified after publishing as it will break links.</p>
+    </div>
+    <div class="form-group">
+        <label for="post-description">Description</label>
+        <textarea
+            data-bind="value: description"
+            class="form-control" rows="3" id="post-description" placeholder="Description"></textarea>
+        <p class="help-block">Description is used by search engines to show the page snippet.</p>
+    </div>
+    <div class="form-group">
+        <label for="post-content">Content</label>
+        <!--<a data-bind="click: dfmode" class="btn btn-default btn-xs" href="#">Distraction free mode</a>-->
+        <textarea
+            data-bind="value: content"
+            class="form-control content" rows="20" id="post-content"
+            placeholder="Content" required="true"></textarea>
+    </div>
+    <div class="form-group">
+        <label for="post-type">Type</label>
+        <select data-bind="value: type" class="form-control" id="post-type">
+            <option value="post">Post</option>
+            <option value="page">Page</option>
+            <option value="block">Block</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="post-content-type">Content type</label>
+        <select data-bind="value: content_type" class="form-control" id="post-content-type">
+            <option value="markdown">Markdown</option>
+            <option value="raw">Raw</option>
+        </select>
+    </div>
+    <div class="checkbox">
+        <label><input data-bind="checked: published" type="checkbox"> Published</label>
+    </div>
+    <div class="checkbox">
+        <label><input data-bind="checked: commenting" type="checkbox"> Commenting</label>
+    </div>
+    <button type="submit" class="btn btn-default">Save</button>
+</form>

@@ -135,6 +135,14 @@ post_list:-
     bc_post_list(List),
     reply_success(List).
 
+% List of posts of certain type.
+
+:- route_get(api/posts/Type, auth, post_list(Type)).
+
+post_list(Type):-
+    bc_post_list(Type, List),
+    reply_success(List).
+
 % Single post with contents.
 
 :- route_get(api/post/Id, auth, post_get(Id)).

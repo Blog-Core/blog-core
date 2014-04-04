@@ -1,5 +1,5 @@
 :- use_module(prolog/bc/bc_main).
-:- bc_main('test.docstore', [port(18008)]).
+:- bc_main('blog.docstore', [port(18008)]).
 
 :- load_files([
     tests/api,

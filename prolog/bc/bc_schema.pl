@@ -42,8 +42,9 @@ The module defines schemas for API data.
         content: string,
         content_type: _{ type: enum, values: [markdown, raw] },
         description: string,
-        type: _{ type: enum, values: [page, post] }
-    }
+        type: _{ type: enum, values: [page, post, block] }
+    },
+    optional: [ author ]
 }).
 
 % Generic config entry.
