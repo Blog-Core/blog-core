@@ -99,7 +99,93 @@ exports.savePost = function(data) {
     });
 };
 
-function apiKey() {
+exports.directory = function(directory) {
+
+    var options = {
+
+        url: '/api/directory/' + encodeURIComponent(window.btoa(directory)),
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response).data;
+    });
+};
+
+exports.createDirectory = function(directory, subdirectory) {
+
+    var options = {
+
+        method: 'POST',
+
+        url: '/api/directory/' + encodeURIComponent(window.btoa(directory)) + '/' +
+            encodeURIComponent(subdirectory),
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response);
+    });
+};
+
+exports.removeDirectory = function(directory) {
+
+    var options = {
+
+        method: 'DELETE',
+
+        url: '/api/directory/' + encodeURIComponent(window.btoa(directory)),
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response);
+    });
+};
+
+// Retrieves file metainfo.
+
+exports.file = function(file) {
+
+    var options = {
+
+        url: '/api/file/' + encodeURIComponent(window.btoa(file)),
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response);
+    });
+};
+
+// Removes the given file.
+
+exports.removeFile = function(file) {
+
+    var options = {
+
+        method: 'DELETE',
+
+        url: '/api/file/' + encodeURIComponent(window.btoa(file)),
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response);
+    });
+};
+
+var apiKey = exports.apiKey = function() {
 
     var key = sessionStorage.getItem('api-key');
 

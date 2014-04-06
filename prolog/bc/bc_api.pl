@@ -2,6 +2,9 @@
 
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_wrapper)).
+:- use_module(library(http/http_client)).
+:- use_module(library(http/http_mime_plugin)).
+:- use_module(library(filesex)).
 
 :- use_module(library(arouter)).
 :- use_module(library(dict_schema)).
@@ -14,7 +17,7 @@
 % Pre-action for handlers that need
 % the user to be authenticated.
 
-:- meta_predicate(auth_admin(0)).
+:- meta_predicate(auth(0)).
 
 auth(Next):-
     (   auth_user_by_key(User)
@@ -188,6 +191,141 @@ comment_save(PostId):-
     bc_comment_save(PostId, Comment),
     bc_view_purge_cache,
     reply_success(PostId).
+
+% Sends directory listing in public directory.
+
+:- route_get(api/directory/Base64,
+    auth, directory_get(Base64)).
+
+directory_get(Base64):-
+    base64(Path, Base64),
+    check_safe_path(Path),
+    atom_concat(public, Path, Full),
+    directory_files(Full, Entries),
+    entry_records(Entries, Full, List),
+    reply_success(List).
+
+entry_records(['.'|Entries], Dir, Records):- !,
+    entry_records(Entries, Dir, Records).
+
+entry_records(['..'|Entries], Dir, Records):- !,
+    entry_records(Entries, Dir, Records).
+
+entry_records([Entry|Entries], Dir, [Record|Records]):-
+    atomic_list_concat([Dir, '/', Entry], File),
+    (   exists_directory(File)
+    ->  Directory = true,
+        Size = 0
+    ;   Directory = false,
+        size_file(File, Size)),
+    set_time_file(File, [modified(Time)], []),
+    Ts is floor(Time),
+    Record = _{
+        modified: Ts,
+        name: Entry,
+        directory: Directory,
+        size: Size
+    },
+    entry_records(Entries, Dir, Records).
+
+entry_records([], _, []).
+
+check_safe_path(Path):-
+    (   sub_atom(Path, _, _, _, '..')
+    ->  throw(error(unsafe_path(Path)))
+    ;   true).
+
+% Creates new subdirectory in the given path.
+
+:- route_post(api/directory/Base64/Sub,
+    auth, directory_new(Base64, Sub)).
+
+directory_new(Base64, Sub):-
+    base64(Path, Base64),
+    atomic_list_concat([public, Path, '/', Sub], Full),
+    check_safe_path(Full),
+    make_directory(Full),
+    reply_success(true).
+
+% Receives uploaded file.
+
+:- route_post(api/upload/Base64,
+    auth, upload_file(Base64)).
+
+upload_file(Base64):-
+    base64(Path, Base64),
+    http_current_request(Request),
+    memberchk(x_file_name(Target), Request),
+    atomic_list_concat([public, Path, '/', Target], Full),
+    check_safe_path(Full),
+    memberchk(input(In), Request),
+    setup_call_cleanup(
+        open(Full, write, Stream, [encoding(octet)]),
+        (   memberchk(content_length(Len), Request)
+        ->  copy_stream_data(In, Stream, Len)
+        ;   copy_stream_data(In, Stream)),
+        close(Stream)),
+    reply_success(true).
+
+% Removes the given directory.
+
+:- route_del(api/directory/Base64,
+    auth, directory_remove(Base64)).
+
+directory_remove(Base64):-
+    base64(Path, Base64),
+    atom_concat(public, Path, Full),
+    check_safe_path(Full),
+    delete_directory_rec(Full),
+    reply_success(true).
+
+% Recursively removes the directory.
+
+delete_directory_rec(Path):-
+    directory_files(Path, Entries),
+    delete_directory_entries(Entries, Path),
+    delete_directory(Path).
+
+delete_directory_entries(['.'|Entries], Path):- !,
+    delete_directory_entries(Entries, Path).
+
+delete_directory_entries(['..'|Entries], Path):- !,
+    delete_directory_entries(Entries, Path).
+
+delete_directory_entries([Entry|Entries], Path):-
+    atomic_list_concat([Path, '/', Entry], File),
+    (   exists_directory(File)
+    ->  delete_directory_rec(File)
+    ;   delete_file(File)),
+    delete_directory_entries(Entries, Path).
+
+delete_directory_entries([], _).
+
+% File metainfo.
+
+:- route_get(api/file/Base64,
+    auth, file_get(Base64)).
+
+file_get(Base64):-
+    base64(Path, Base64),
+    atom_concat(public, Path, Full),
+    check_safe_path(Full),
+    set_time_file(Full, [modified(Time)], []),
+    Ts is floor(Time),
+    size_file(Full, Size),
+    reply_success(_{ modified: Ts, size: Size }).
+
+% Removes the given file.
+
+:- route_del(api/file/Base64,
+    auth, file_remove(Base64)).
+
+file_remove(Base64):-
+    base64(Path, Base64),
+    atom_concat(public, Path, Full),
+    check_safe_path(Full),
+    delete_file(Full),
+    reply_success(true).
 
 % TODO modify comment.
 

@@ -2,7 +2,9 @@
 var ko = require('./lib/knockout');
 var auth = require('./controller/auth');
 var post = require('./controller/post');
+var file = require('./controller/file');
 var route = require('./lib/router');
+var hex = require('./hex');
 
 route(/^posts/, function() {
 
@@ -29,12 +31,27 @@ route(/^new/, function(id) {
     post.create().done();
 });
 
+route(/^files/, function() {
+
+    route.go('directory/' + hex.hex('/'));
+});
+
+route(/^directory\/([^\/]+)/, function(directory) {
+
+    file.directory(hex.string(directory)).done();
+});
+
+route(/^file\/([^\/]+)/, function(filename) {
+
+    file.file(hex.string(filename)).done();
+});
+
 route(/^login/, function() {
 
     auth.form().done();
 });
 
-},{"./controller/auth":3,"./controller/post":4,"./lib/knockout":5,"./lib/router":7}],2:[function(require,module,exports){
+},{"./controller/auth":3,"./controller/file":4,"./controller/post":5,"./hex":6,"./lib/knockout":7,"./lib/router":9}],2:[function(require,module,exports){
 var Q = require('./lib/q');
 var xhr = require('./xhr');
 
@@ -136,7 +153,93 @@ exports.savePost = function(data) {
     });
 };
 
-function apiKey() {
+exports.directory = function(directory) {
+
+    var options = {
+
+        url: '/api/directory/' + encodeURIComponent(window.btoa(directory)),
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response).data;
+    });
+};
+
+exports.createDirectory = function(directory, subdirectory) {
+
+    var options = {
+
+        method: 'POST',
+
+        url: '/api/directory/' + encodeURIComponent(window.btoa(directory)) + '/' +
+            encodeURIComponent(subdirectory),
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response);
+    });
+};
+
+exports.removeDirectory = function(directory) {
+
+    var options = {
+
+        method: 'DELETE',
+
+        url: '/api/directory/' + encodeURIComponent(window.btoa(directory)),
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response);
+    });
+};
+
+// Retrieves file metainfo.
+
+exports.file = function(file) {
+
+    var options = {
+
+        url: '/api/file/' + encodeURIComponent(window.btoa(file)),
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response);
+    });
+};
+
+// Removes the given file.
+
+exports.removeFile = function(file) {
+
+    var options = {
+
+        method: 'DELETE',
+
+        url: '/api/file/' + encodeURIComponent(window.btoa(file)),
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response);
+    });
+};
+
+var apiKey = exports.apiKey = function() {
 
     var key = sessionStorage.getItem('api-key');
 
@@ -148,7 +251,7 @@ function apiKey() {
     return key;
 }
 
-},{"./lib/q":6,"./xhr":10}],3:[function(require,module,exports){
+},{"./lib/q":8,"./xhr":13}],3:[function(require,module,exports){
 var view = require('../view');
 var api = require('../api');
 var ko = require('../lib/knockout');
@@ -176,7 +279,228 @@ exports.form = function() {
     return view.show('login', model);
 };
 
-},{"../api":2,"../lib/knockout":5,"../view":8}],4:[function(require,module,exports){
+},{"../api":2,"../lib/knockout":7,"../view":11}],4:[function(require,module,exports){
+var view = require('../view');
+var api = require('../api');
+var ko = require('../lib/knockout');
+var route = require('../lib/router');
+var hex = require('../hex');
+var message = require('../message');
+
+// Comparator function to sort
+// directories before files and both
+// then by name.
+
+function compareEntry(entry1, entry2) {
+
+    // Compares directory entries by name.
+
+    function compareName() {
+
+        return entry1.name < entry2.name ? -1 : 1;
+    }
+
+    if (entry1.directory) {
+
+        if (entry2.directory) {
+
+            return compareName();
+
+        } else {
+
+            return -1;
+        }
+
+    } else {
+
+        if (entry2.directory) {
+
+            return 1;
+
+        } else {
+
+            return compareName();
+        }
+    }
+}
+
+exports.directory = function(directory) {
+
+    return api.directory(directory).then(function(entries) {
+
+        entries.sort(compareEntry);
+
+        entries.forEach(function(entry) {
+
+            entry.encoded = hex.hex((directory === '/' ? '' : directory) + '/' + entry.name);
+        });
+
+        var parent = '/';
+
+        if (directory !== '/') {
+
+            var tokens = directory.split(/\//);
+
+            parent = hex.hex('/' + tokens.slice(1, tokens.length - 1).join('/'));
+        }
+
+        var model = {
+
+            directory: directory,
+            entries: entries,
+            subdirectory: ko.observable(),
+            subdirectory_form: ko.observable(false),
+            upload_form: ko.observable(false),
+            parent: parent,
+
+            addSubdirectory: function() {
+
+                api.createDirectory(directory, model.subdirectory()).then(function(response) {
+
+                    if (response.status === 'success') {
+
+                        route.refresh();
+                    }
+                });
+            },
+
+            showSubdirectoryForm: function() {
+
+                model.subdirectory_form(true);
+                model.upload_form(false);
+            },
+
+            cancelDirectoryForm: function() {
+
+                model.subdirectory_form(false);
+            },
+
+            removeDirectory: function() {
+
+                if (confirm('Remove current directory?')) {
+
+                    api.removeDirectory(directory).then(function(response) {
+
+                        if (response.status === 'success') {
+
+                            message.info('Directory successfully removed.');
+
+                            route.go('directory/' + parent);
+                        }
+                    });
+                }
+            },
+
+            upload: function(form) {
+
+                var file = document.getElementById('directory-file').files[0];
+
+                if (file) {
+
+                    var reader = new FileReader();
+
+                    reader.onload = function() {
+
+                        var xhr = new XMLHttpRequest();
+
+                        xhr.upload.addEventListener('progress', model.uploadProgress, false);
+
+                        xhr.addEventListener('load', model.uploadComplete, false);
+                        xhr.addEventListener('error', model.uploadFailed, false);
+                        xhr.addEventListener('abort', model.uploadCanceled, false);
+
+                        xhr.open('POST', '/api/upload/' + encodeURIComponent(window.btoa(directory)));
+
+                        xhr.setRequestHeader('X-Key', api.apiKey());
+                        xhr.setRequestHeader('X-File-Name', file. name);
+                        xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+
+                        xhr.send(new Uint8Array(reader.result));
+                    }
+
+                    reader.readAsArrayBuffer(file);
+                }
+            },
+
+            uploadProgress: function(e) {
+
+                if (e.lengthComputable) {
+
+                    var percentComplete = Math.round(e.loaded * 100 / e.total);
+
+                    console.log(percentComplete);
+                }
+            },
+
+            uploadComplete: function() {
+
+                route.refresh();
+                message.info('File uploaded.');
+            },
+
+            uploadFailed: function() {
+
+
+            },
+
+            uploadCanceled: function() {
+
+                model.upload_form(false);
+            },
+
+            showUploadForm: function() {
+
+                model.upload_form(true);
+                model.subdirectory_form(false);
+            },
+
+            cancelUploadForm: function() {
+
+                model.upload_form(false);
+            }
+        };
+
+        return view.show('directory', model);
+    });
+};
+
+exports.file = function(file) {
+
+    return api.file(file).then(function(response) {
+
+        var tokens = file.split(/\//);
+
+        var parent = hex.hex('/' + tokens.slice(1, tokens.length - 1).join('/'));
+
+        var model = {
+
+            file: file,
+            parent: parent,
+            size: response.data.size,
+            date: response.data.modified,
+
+            remove: function() {
+
+                if (confirm('Remove file ' + file + '?')) {
+
+                    api.removeFile(file).then(function(response) {
+
+                        if (response.status === 'success') {
+
+                            message.info('File removed.');
+
+                            route.go('directory/' + parent);
+                        }
+                    });
+                }
+            }
+        };
+
+        return view.show('file', model);
+    });
+};
+
+},{"../api":2,"../hex":6,"../lib/knockout":7,"../lib/router":9,"../message":10,"../view":11}],5:[function(require,module,exports){
 var view = require('../view');
 var api = require('../api');
 var ko = require('../lib/knockout');
@@ -238,7 +562,37 @@ exports.create = function() {
     return view.show('post', postVm.create());
 };
 
-},{"../api":2,"../lib/knockout":5,"../view":8,"../vm/post_vm":9}],5:[function(require,module,exports){
+},{"../api":2,"../lib/knockout":7,"../view":11,"../vm/post_vm":12}],6:[function(require,module,exports){
+exports.hex = function(string) {
+
+    var hex = '';
+
+    for(var i = 0; i < string.length; i++) {
+
+        hex += string.charCodeAt(i).toString(16);
+    }
+
+    return hex;
+};
+
+exports.string = function(hex) {
+
+    if (typeof hex !== 'string') {
+
+        hex = hex.toString();
+    }
+
+    var string = '';
+
+    for (var i = 0; i < hex.length; i += 2) {
+
+        string += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+    }
+
+    return string;
+};
+
+},{}],7:[function(require,module,exports){
 // Knockout JavaScript library v3.1.0
 // (c) Steven Sanderson - http://knockoutjs.com/
 // License: MIT (http://www.opensource.org/licenses/mit-license.php)
@@ -4709,7 +5063,7 @@ ko.exportSymbol('nativeTemplateEngine', ko.nativeTemplateEngine);
 }());
 })();
 
-},{}],6:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 // vim:ts=4:sts=4:sw=4:
 /*!
  *
@@ -6615,7 +6969,7 @@ return Q;
 
 });
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 // Simplest hashchange router.
 // Chrome 5, Firefox 3.6, IE 8.
 // (c) Raivo Laanemets 2013
@@ -6685,7 +7039,27 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = route;
 }
 
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
+// Shows informational message.
+
+exports.info = function(text) {
+
+    var messages = document.getElementById('messages');
+    var message = document.createElement('div');
+
+    message.className = 'alert alert-success';
+    message.innerHTML = text;
+
+    messages.appendChild(message);
+
+    setTimeout(function() {
+
+        messages.removeChild(message);
+
+    }, 2000);
+};
+
+},{}],11:[function(require,module,exports){
 var xhr = require('./xhr');
 var ko = require('./lib/knockout');
 
@@ -6722,7 +7096,7 @@ window.formatDate = function(ts) {
     return new Date(1000 * ts).toISOString().substring(0, 10);
 };
 
-},{"./lib/knockout":5,"./xhr":10}],9:[function(require,module,exports){
+},{"./lib/knockout":7,"./xhr":13}],12:[function(require,module,exports){
 var ko = require('../lib/knockout');
 var api = require('../api');
 
@@ -6813,7 +7187,7 @@ exports.create = function(data) {
     return post;
 };
 
-},{"../api":2,"../lib/knockout":5}],10:[function(require,module,exports){
+},{"../api":2,"../lib/knockout":7}],13:[function(require,module,exports){
 var Q = require('./lib/q');
 
 // From https://gist.github.com/matthewp/3099268
@@ -6853,4 +7227,4 @@ module.exports = function(options) {
     return deferred.promise;
 };
 
-},{"./lib/q":6}]},{},[1])
+},{"./lib/q":8}]},{},[1])
