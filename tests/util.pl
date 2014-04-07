@@ -18,13 +18,20 @@ for unit/integration testing.
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_client)).
 :- use_module(library(docstore)).
+
 :- use_module(prolog/bc/bc_data).
+:- use_module(prolog/bc/bc_data_user).
+:- use_module(prolog/bc/bc_data_comment).
+:- use_module(prolog/bc/bc_data_post).
+:- use_module(prolog/bc/bc_data_cur_user).
 
 % Recreates the test database.
 
 new_database:-
     bc_data_close,
-    delete_file('test.docstore'),
+    (   exists_file('test.docstore')
+    ->  delete_file('test.docstore')
+    ;   true),
     bc_data_open('test.docstore'),
     bc_user_save(user{
         username: default_test,
@@ -32,6 +39,8 @@ new_database:-
         fullname: 'Default Test User',
         type: admin
     }, UserId),
+    ds_get(UserId, User),
+    bc_set_user(User),
     bc_post_save(post{
         author: UserId,
         title: "Default Test post",
@@ -46,6 +55,7 @@ new_database:-
         description: "Test",
         type: post
     }, PostId),
+    bc_unset_user,
     bc_comment_save(PostId, comment{
         author: "RLa",
         content: "Test comment"

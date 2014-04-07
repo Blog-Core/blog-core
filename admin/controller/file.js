@@ -70,6 +70,7 @@ exports.directory = function(directory) {
             subdirectory_form: ko.observable(false),
             upload_form: ko.observable(false),
             parent: parent,
+            progress: ko.observable(0),
 
             addSubdirectory: function() {
 
@@ -144,9 +145,7 @@ exports.directory = function(directory) {
 
                 if (e.lengthComputable) {
 
-                    var percentComplete = Math.round(e.loaded * 100 / e.total);
-
-                    console.log(percentComplete);
+                    model.progress(Math.round(e.loaded * 100 / e.total));
                 }
             },
 

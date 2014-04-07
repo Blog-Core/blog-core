@@ -2,7 +2,7 @@
 
 :- use_module(library(arouter)).
 :- use_module(prolog/bc/bc_view).
-:- use_module(prolog/bc/bc_data).
+:- use_module(prolog/bc/bc_data_post).
 :- use_module(util).
 
 % Test handler for viewing a single post.

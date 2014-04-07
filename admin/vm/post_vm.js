@@ -1,5 +1,7 @@
 var ko = require('../lib/knockout');
+var route = require('../lib/router');
 var api = require('../api');
+var message = require('../message');
 
 exports.create = function(data) {
 
@@ -14,6 +16,7 @@ exports.create = function(data) {
         published: ko.observable(false),
         commenting: ko.observable(true),
         date_published: ko.observable(Math.floor(Date.now() / 1000)),
+        tags: ko.observable(''),
 
         dfmode: function() {
 
@@ -34,7 +37,9 @@ exports.create = function(data) {
 
                     if (response.status === 'success') {
 
-                        window.location.hash = '#posts';
+                        message.info('Post updated.');
+
+                        route.go('posts')
                     }
 
                 }).done();
@@ -45,13 +50,17 @@ exports.create = function(data) {
 
                     if (response.status === 'success') {
 
-                        window.location.hash = '#post/' + response.data;
+                        message.info('Post saved.');
+
+                        route.go('post/' + response.data);
                     }
                 });
             }
         },
 
         toJS: function() {
+
+            var tags = post.tags().trim();
 
             return {
 
@@ -66,7 +75,8 @@ exports.create = function(data) {
                 date_updated: Math.floor(Date.now() / 1000),
                 commenting: post.commenting(),
                 published: post.published(),
-                content_type: post.content_type()
+                content_type: post.content_type(),
+                tags: tags === '' ? [] : tags.split(/\, */)
             };
         }
     };
@@ -83,6 +93,7 @@ exports.create = function(data) {
         post.content_type(data.content_type);
         post.published(data.published);
         post.commenting(data.commenting);
+        post.tags(data.tags.join(', '));
     }
 
     return post;

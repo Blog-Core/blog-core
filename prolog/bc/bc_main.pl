@@ -8,6 +8,7 @@
 % when they occur.
 
 % FIXME source_sink `prolog/bc/bc_data2' does not exist
+% FIXME goal directive failed
 
 user:message_hook(Term, error, _):-
     Term = error(syntax_error(_), _),
@@ -19,13 +20,16 @@ user:message_hook(Term, error, _):-
 :- use_module(library(debug)).
 :- use_module(library(docstore)).
 :- use_module(library(arouter)).
+:- use_module(library(st/st_expr)).
 :- use_module(library(st/st_file)).
+:- use_module(library(st/st_parse)).
 
 :- use_module(bc_api).
 :- use_module(bc_router).
 :- use_module(bc_bust).
 :- use_module(bc_view).
 :- use_module(bc_admin).
+:- use_module(bc_excerpt).
 
 %! bc_environment(-Env) is det.
 %
@@ -55,6 +59,12 @@ user:message_hook(Term, error, _):-
     :- debug(bc_view).
     :- debug(bc_bust).
 :- endif.
+
+% Sets up simple-template.
+
+:- st_enable_strip_white.
+:- st_set_extension(html).
+:- st_set_function(excerpt, 1, bc_excerpt).
 
 % When platform is not Windows then it assumed that
 % http_unix_daemon is supported.

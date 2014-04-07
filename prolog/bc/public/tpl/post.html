@@ -1,6 +1,6 @@
 <h2 data-bind="text: title"></h2>
 
-<form data-bind="submit: save" role="form">
+<form data-bind="submit: save" role="form" autocomplete="off">
     <div class="form-group">
         <label for="post-title">Title</label>
         <input data-bind="value: title"
@@ -43,6 +43,12 @@
             <option value="markdown">Markdown</option>
             <option value="raw">Raw</option>
         </select>
+    </div>
+    <div class="form-group">
+        <label for="post-tags">Tags</label>
+        <input data-bind="value: tags"
+            type="text" class="form-control" id="post-tags"
+            placeholder="Tags">
     </div>
     <div class="checkbox">
         <label><input data-bind="checked: published" type="checkbox"> Published</label>

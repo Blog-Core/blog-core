@@ -352,6 +352,7 @@ exports.directory = function(directory) {
             subdirectory_form: ko.observable(false),
             upload_form: ko.observable(false),
             parent: parent,
+            progress: ko.observable(0),
 
             addSubdirectory: function() {
 
@@ -426,9 +427,7 @@ exports.directory = function(directory) {
 
                 if (e.lengthComputable) {
 
-                    var percentComplete = Math.round(e.loaded * 100 / e.total);
-
-                    console.log(percentComplete);
+                    model.progress(Math.round(e.loaded * 100 / e.total));
                 }
             },
 
@@ -7098,7 +7097,9 @@ window.formatDate = function(ts) {
 
 },{"./lib/knockout":7,"./xhr":13}],12:[function(require,module,exports){
 var ko = require('../lib/knockout');
+var route = require('../lib/router');
 var api = require('../api');
+var message = require('../message');
 
 exports.create = function(data) {
 
@@ -7113,6 +7114,7 @@ exports.create = function(data) {
         published: ko.observable(false),
         commenting: ko.observable(true),
         date_published: ko.observable(Math.floor(Date.now() / 1000)),
+        tags: ko.observable(''),
 
         dfmode: function() {
 
@@ -7133,7 +7135,9 @@ exports.create = function(data) {
 
                     if (response.status === 'success') {
 
-                        window.location.hash = '#posts';
+                        message.info('Post updated.');
+
+                        route.go('posts')
                     }
 
                 }).done();
@@ -7144,13 +7148,17 @@ exports.create = function(data) {
 
                     if (response.status === 'success') {
 
-                        window.location.hash = '#post/' + response.data;
+                        message.info('Post saved.');
+
+                        route.go('post/' + response.data);
                     }
                 });
             }
         },
 
         toJS: function() {
+
+            var tags = post.tags().trim();
 
             return {
 
@@ -7165,7 +7173,8 @@ exports.create = function(data) {
                 date_updated: Math.floor(Date.now() / 1000),
                 commenting: post.commenting(),
                 published: post.published(),
-                content_type: post.content_type()
+                content_type: post.content_type(),
+                tags: tags === '' ? [] : tags.split(/\, */)
             };
         }
     };
@@ -7182,12 +7191,13 @@ exports.create = function(data) {
         post.content_type(data.content_type);
         post.published(data.published);
         post.commenting(data.commenting);
+        post.tags(data.tags.join(', '));
     }
 
     return post;
 };
 
-},{"../api":2,"../lib/knockout":7}],13:[function(require,module,exports){
+},{"../api":2,"../lib/knockout":7,"../lib/router":9,"../message":10}],13:[function(require,module,exports){
 var Q = require('./lib/q');
 
 // From https://gist.github.com/matthewp/3099268

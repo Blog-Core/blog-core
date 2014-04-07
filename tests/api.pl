@@ -186,7 +186,9 @@ test('POST /api/post/Id/comment', [setup(new_database)]):-
     atomic_list_concat(['/api/post/', Id, '/comment'], Path),
     request_post(Path, _{
         author: "RLa",
-        content: "Test comment"
+        content: "Test comment",
+        question: 1,
+        answer: "3"
     }, Dict),
     get_dict_ex(status, Dict, "success").
 
