@@ -42,11 +42,12 @@ user:message_hook(Term, error, _):-
 :- dynamic(bc_environment/1).
 
 % In development: most debug features.
-% In production: enable simple-template caching.
+% In production: enable simple-template and view caching.
 
 :- if(getenv('PL_ENV', production)).
     :- asserta(bc_environment(production)).
     :- st_enable_cache.
+    :- bc_view_enable_cache.
 :- else.
     :- asserta(bc_environment(development)).
     :- write(user_error, 'Running in development mode!'), nl(user_error).
@@ -64,7 +65,7 @@ user:message_hook(Term, error, _):-
 
 :- st_enable_strip_white.
 :- st_set_extension(html).
-:- st_set_function(excerpt, 1, bc_excerpt).
+:- st_set_function(excerpt, 2, bc_excerpt).
 
 % When platform is not Windows then it assumed that
 % http_unix_daemon is supported.
