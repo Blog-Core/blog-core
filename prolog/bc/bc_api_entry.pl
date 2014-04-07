@@ -1,4 +1,4 @@
-:- module(bc_api_post, []).
+:- module(bc_api_entry, []).
 
 /** <module> HTTP handlers for managing posts */
 
@@ -8,73 +8,63 @@
 :- use_module(bc_view).
 :- use_module(bc_api_io).
 :- use_module(bc_api_auth).
-:- use_module(bc_data_post).
+:- use_module(bc_data_entry).
 
-% Adds new post.
+% Adds new entry.
 
-:- route_post(api/post,
-    bc_auth, post_save).
+:- route_post(api/entry,
+    bc_auth, entry_save).
 
-post_save:-
-    bc_read_by_schema(post, Post),
-    bc_post_save(Post, Id),
+entry_save:-
+    bc_read_by_schema(entry, Post),
+    bc_entry_save(Post, Id),
     bc_view_purge_cache,
     bc_reply_success(Id).
 
-% Updates the given post.
+% Updates the given entry.
 
-:- route_put(api/post/Id,
-    bc_auth, post_update(Id)).
+:- route_put(api/entry/Id,
+    bc_auth, entry_update(Id)).
 
-post_update(Id):-
-    bc_read_by_schema(post, Post),
-    bc_post_update(Id, Post),
+entry_update(Id):-
+    bc_read_by_schema(entry, Entry),
+    bc_entry_update(Id, Entry),
     bc_view_purge_cache,
     bc_reply_success(Id).
 
-% Removes the post.
+% Removes the entry.
 
-:- route_del(api/post/Id,
-    bc_auth, post_remove(Id)).
+:- route_del(api/entry/Id,
+    bc_auth, entry_remove(Id)).
 
-post_remove(Id):-
-    bc_post_remove(Id),
+entry_remove(Id):-
+    bc_entry_remove(Id),
     bc_view_purge_cache,
     bc_reply_success(Id).
 
-% List of all posts.
-% FIXME add comment count.
+% List of entries of certain type.
 
-:- route_get(api/posts,
-    bc_auth, post_list).
+:- route_get(api/entries/Type,
+    bc_auth, entry_list(Type)).
 
-post_list:-
-    bc_post_list(List),
+entry_list(Type):-
+    bc_entry_list(Type, List),
     bc_reply_success(List).
 
-% List of posts of certain type.
+% Single entry with contents.
 
-:- route_get(api/posts/Type,
-    bc_auth, post_list(Type)).
+:- route_get(api/entry/Id,
+    bc_auth, entry_get(Id)).
 
-post_list(Type):-
-    bc_post_list(Type, List),
-    bc_reply_success(List).
-
-% Single post with contents.
-
-:- route_get(api/post/Id,
-    bc_auth, post_get(Id)).
-
-post_get(Id):-
-    bc_post(Id, Post),
-    bc_reply_success(Post).
+entry_get(Id):-
+    bc_entry(Id, Entry),
+    bc_reply_success(Entry).
 
 % Post schema.
 
-:- register_schema(post, _{
+:- register_schema(entry, _{
     type: dict,
-    tag: post,
+    tag: entry,
     keys: _{
         author: _{ type: atom, min_length: 36, max_length: 36 },
         title: _{ type: string, min_length: 1 },

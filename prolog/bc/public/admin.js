@@ -85,8 +85,7 @@ exports.posts = function(type) {
 
     var options = {
 
-        url: typeof type === 'undefined' ?
-            '/api/posts' : '/api/posts/' + type,
+        url: '/api/entries/' + type,
 
         headers: {
 
@@ -104,7 +103,7 @@ exports.post = function(id) {
 
     var options = {
 
-        url: '/api/post/' + id,
+        url: '/api/entry/' + id,
 
         headers: { 'X-Key': apiKey() }
     };
@@ -121,7 +120,7 @@ exports.updatePost = function(id, data) {
 
         method: 'PUT',
 
-        url: '/api/post/' + id,
+        url: '/api/entry/' + id,
 
         data: JSON.stringify(data),
 
@@ -140,7 +139,7 @@ exports.savePost = function(data) {
 
         method: 'POST',
 
-        url: '/api/post',
+        url: '/api/entry',
 
         data: JSON.stringify(data),
 

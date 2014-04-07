@@ -1,8 +1,9 @@
 :- begin_tests(view).
 
 :- use_module(library(arouter)).
+:- use_module(library(docstore)).
 :- use_module(prolog/bc/bc_view).
-:- use_module(prolog/bc/bc_data_post).
+:- use_module(prolog/bc/bc_data_entry).
 :- use_module(util).
 
 % Test handler for viewing a single post.
@@ -10,7 +11,7 @@
 :- route_get(post/Slug, view_post(Slug)).
 
 view_post(Slug):-
-    bc_post_find_by_slug(Slug, Post),
+    ds_find(entry, slug=Slug, [Post]),
     bc_view_send(tests/views/post, Post).
 
 test(post, [setup((bc_view_disable_cache, new_database))]):-
@@ -27,10 +28,10 @@ test(cache_purge, [setup((bc_view_enable_cache, new_database))]):-
     bc_view_purge_cache,
     request_get_content('/post/default-test-post', Html1),
     sub_string(Html1, _, _, _, "<strong>test</strong>"), !,
-    bc_post_find_by_slug('default-test-post', Post),
+    ds_find(entry, slug='default-test-post', [Post]),
     get_dict_ex('$id', Post, Id),
     get_dict_ex(author, Post, Author),
-    atom_concat('/api/post/', Id, Path),
+    atom_concat('/api/entry/', Id, Path),
     request_put(Path, _{
         author: Author,
         title: "Default Test post",

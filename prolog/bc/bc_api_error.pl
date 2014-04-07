@@ -52,8 +52,8 @@ bc_handle_error(error(commenting_disabled(Id))):- !,
     format(atom(Message), 'Commenting disabled for post ~p.', [Id]),
     bc_reply_error(Message).
 
-bc_handle_error(error(no_post(Id))):- !,
-    format(atom(Message), 'No post ~p.', [Id]),
+bc_handle_error(error(no_entry(Id))):- !,
+    format(atom(Message), 'No entry ~p.', [Id]),
     bc_reply_error(Message).
 
 bc_handle_error(Error):-

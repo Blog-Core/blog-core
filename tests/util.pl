@@ -22,7 +22,7 @@ for unit/integration testing.
 :- use_module(prolog/bc/bc_data).
 :- use_module(prolog/bc/bc_data_user).
 :- use_module(prolog/bc/bc_data_comment).
-:- use_module(prolog/bc/bc_data_post).
+:- use_module(prolog/bc/bc_data_entry).
 :- use_module(prolog/bc/bc_data_cur_user).
 
 % Recreates the test database.
@@ -41,7 +41,7 @@ new_database:-
     }, UserId),
     ds_get(UserId, User),
     bc_set_user(User),
-    bc_post_save(post{
+    bc_entry_save(entry{
         author: UserId,
         title: "Default Test post",
         slug: 'default-test-post',

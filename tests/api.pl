@@ -78,7 +78,7 @@ test('POST /api/auth (invalid data)', [setup(new_database)]):-
     get_dict_ex(status, Auth, "error"),
     get_dict_ex(message, Auth, "Invalid input: [no_key(#,username)].").
 
-test('POST /api/post', [setup(new_database)]):-
+test('POST /api/entry', [setup(new_database)]):-
     request_post('/api/user', _{
         username: test,
         password: test123,
@@ -86,7 +86,7 @@ test('POST /api/post', [setup(new_database)]):-
         type: author }, User),
     get_dict_ex(status, User, "success"),
     get_dict_ex(data, User, Author),
-    request_post('/api/post', _{
+    request_post('/api/entry', _{
         author: Author,
         title: "Test post",
         slug: "test-post",
@@ -111,7 +111,7 @@ test('PUT /api/post', [setup(new_database)]):-
         type: author }, User),
     get_dict_ex(status, User, "success"),
     get_dict_ex(data, User, Author),
-    request_post('/api/post', _{
+    request_post('/api/entry', _{
         author: Author,
         title: "Test post",
         slug: "test-post",
@@ -127,7 +127,7 @@ test('PUT /api/post', [setup(new_database)]):-
     }, Post),
     get_dict_ex(status, Post, "success"),
     get_dict_ex(data, Post, PostId),
-    atom_concat('/api/post/', PostId, UpdateUrl),
+    atom_concat('/api/entry/', PostId, UpdateUrl),
     request_put(UpdateUrl, _{
         author: Author,
         title: "Test post 1",
@@ -144,8 +144,8 @@ test('PUT /api/post', [setup(new_database)]):-
     }, Update),
     get_dict_ex(status, Update, "success").
 
-test('GET /api/posts', [setup(new_database)]):-
-    request_get('/api/posts', Dict),
+test('GET /api/entries/post', [setup(new_database)]):-
+    request_get('/api/entries/post', Dict),
     get_dict_ex(status, Dict, "success"),
     get_dict_ex(data, Dict, List),
     assertion(is_list(List)),
@@ -153,10 +153,10 @@ test('GET /api/posts', [setup(new_database)]):-
     get_dict_ex(title, Post, _),
     get_dict_ex(author, Post, _).
 
-test('GET /api/post/Id', [setup(new_database)]):-
-    ds_all(post, [Post]),
+test('GET /api/entry/Id', [setup(new_database)]):-
+    ds_all(entry, [Post]),
     get_dict_ex('$id', Post, Id),
-    atom_concat('/api/post/', Id, Path),
+    atom_concat('/api/entry/', Id, Path),
     request_get(Path, Dict),
     get_dict_ex(status, Dict, "success"),
     get_dict_ex(data, Dict, PostDict),
@@ -181,7 +181,7 @@ test('PUT /api/config', [setup(new_database)]):-
     get_dict_ex(status, Dict, "success").
 
 test('POST /api/post/Id/comment', [setup(new_database)]):-
-    ds_all(post, [Post]),
+    ds_all(entry, [Post]),
     get_dict_ex('$id', Post, Id),
     atomic_list_concat(['/api/post/', Id, '/comment'], Path),
     request_post(Path, _{
@@ -193,7 +193,7 @@ test('POST /api/post/Id/comment', [setup(new_database)]):-
     get_dict_ex(status, Dict, "success").
 
 test('GET /api/post/Id/comments', [setup(new_database)]):-
-    ds_all(post, [Post]),
+    ds_all(entry, [Post]),
     get_dict_ex('$id', Post, Id),
     atomic_list_concat(['/api/post/', Id, '/comments'], Path),
     request_get(Path, Dict),
