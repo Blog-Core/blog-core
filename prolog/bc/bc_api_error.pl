@@ -44,5 +44,17 @@ bc_handle_error(error(no_config(Name))):- !,
     format(atom(Message), 'No configuration entry ~p.', [Name]),
     bc_reply_error(Message).
 
+bc_handle_error(error(invalid_answer(Answer))):- !,
+    format(atom(Message), 'Invalid answer: ~p.', [Answer]),
+    bc_reply_error(Message).
+
+bc_handle_error(error(commenting_disabled(Id))):- !,
+    format(atom(Message), 'Commenting disabled for post ~p.', [Id]),
+    bc_reply_error(Message).
+
+bc_handle_error(error(no_post(Id))):- !,
+    format(atom(Message), 'No post ~p.', [Id]),
+    bc_reply_error(Message).
+
 bc_handle_error(Error):-
     throw(Error).

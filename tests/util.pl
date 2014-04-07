@@ -58,7 +58,9 @@ new_database:-
     bc_unset_user,
     bc_comment_save(PostId, comment{
         author: "RLa",
-        content: "Test comment"
+        content: "Test comment",
+        question: 1,
+        answer: '3'
     }).
 
 % Auth key for the test user.

@@ -1,8 +1,9 @@
 :- module(bc_comment, [
-    bc_comment_list/2,   % +PostId, -Comments
-    bc_comment_save/2,   % +PostId, +Comment
-    bc_comment_remove/1, % +Id
-    bc_random_question/2 % -Id, -Question
+    bc_comment_list/2,      % +PostId, -Comments
+    bc_comment_list_full/2, % +PostId, -Comments
+    bc_comment_save/2,      % +PostId, +Comment
+    bc_comment_remove/1,    % +Id
+    bc_random_question/2    % -Id, -Question
 ]).
 
 /** <module> Commenting support
@@ -13,8 +14,9 @@ module handles questions.
 */
 
 :- use_module(library(http/html_write)).
-:- use_module(library(docstore)).
 :- use_module(library(md/md_span)).
+:- use_module(library(sort_dict)).
+:- use_module(library(docstore)).
 
 :- use_module(bc_walk).
 
@@ -23,9 +25,20 @@ module handles questions.
 % Retrieves the list of comments
 % for the given post. Includes
 % `author`, `date` and `$id` fields only.
+% Sorts by date.
 
-bc_comment_list(PostId, Comments):-
-    ds_find(comment, post=PostId, [author, date], Comments).
+bc_comment_list(PostId, Sorted):-
+    ds_find(comment, post=PostId, [author, date], Comments),
+    sort_dict(date, desc, Comments, Sorted).
+
+%! bc_comment_list_full(+PostId, -Comments) is det.
+%
+% Retrieves the list of comments.
+% Includes full comment data. Sorts by date.
+
+bc_comment_list_full(PostId, Sorted):-
+    ds_find(comment, post=PostId, Comments),
+    sort_dict(date, desc, Comments, Sorted).
 
 %! bc_comment_save(+PostId, +Comment) is det.
 %
@@ -34,18 +47,39 @@ bc_comment_list(PostId, Comments):-
 % commenting_disabled(PostId)) when commenting
 % is disabled on the post.
 
-% FIXME process links.
-
 bc_comment_save(PostId, Comment):-
+    comment_check_answer(Comment),
     (   ds_get(PostId, [commenting], Post)
     ->  (   get_dict_ex(commenting, Post, true)
-        ->  get_time(Time),
-            Ts is floor(Time),
-            put_dict(_{ date: Ts, post: PostId },
-                Comment, Processed),
-            ds_insert(Processed)
+        ->  comment_save(PostId, Comment)
         ;   throw(error(commenting_disabled(PostId))))
     ;   throw(error(no_post(PostId)))).
+
+% Attaches comment timestamp,
+% formats comment content and
+% saves into docstore.
+
+comment_save(PostId, Comment):-
+    get_dict_ex(content, Comment, Content),
+    format_comment(Content, Formatted),
+    get_time(Time),
+    Ts is floor(Time),
+    put_dict(_{
+        date: Ts,
+        post: PostId,
+        html: Formatted }, Comment, Processed),
+    ds_insert(Processed).
+
+% Checks the human validation
+% question answer. Throws
+% error(invalid_answer(Answer))) when
+% answer is not correct.
+
+comment_check_answer(Comment):-
+    get_dict_ex(question, Comment, Id),
+    get_dict_ex(answer, Comment, Answer),
+    (   question(Id, _, Answer)
+    ;   throw(error(invalid_answer(Answer)))), !.
 
 %! bc_comment_remove(+Id) is det.
 %
