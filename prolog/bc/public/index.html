@@ -13,10 +13,18 @@
         .text-right { text-align: right; }
         .content { font-family: monospace; }
         .container { position: relative; }
+        .spinner { position: absolute; top: 2em; right: 2em; }
+        .post-item h4 { cursor: pointer; }
+        .post-controls { margin-top: 10px; }
+        .post-controls .panel { margin-bottom: 10px; }
+        .post-controls .panel-body { padding: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="spinner" id="spinner" style="display: none">
+            <img src="/admin/img/spinner.gif">
+        </div>
         <h1>Blog admin</h1>
         <div class="btn-group">
             <a class="btn btn-default" href="#posts">Posts</a>

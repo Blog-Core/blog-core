@@ -1,24 +1,26 @@
-:- module(bc_tags_stat, [
-    bc_tags_stat/1 % -Dict
+:- module(bc_tag_stat, [
+    bc_tag_stat/1 % -Tags
 ]).
 
 :- use_module(library(docstore)).
+:- use_module(library(sort_dict)).
 
-%! bc_tags_stat(-Dict) is det.
+%! bc_tag_stat(-Tags) is det.
 %
 % Finds tags that are used by published
-% posts. Gives dict that has tags as keys.
+% posts. Gives list of dicts
+% _{ tag: Tag, count: Count }
 
-bc_tags_stat(Tags):-
-    ds_find(post, (published=true, type=post), [tags], Posts),
-    tags_statistics(Posts, _{}, Tags).
+bc_tag_stat(Tags):-
+    ds_find(entry, (published=true, type=post), [tags], Posts),
+    tag_statistics(Posts, _{}, Tags).
 
-tags_statistics([Post|Posts], Acc, Tags):-
+tag_statistics([Post|Posts], Acc, Tags):-
     get_dict_ex(tags, Post, PostTags),
     update_tagstat(PostTags, Acc, Tmp),
-    tags_statistics(Posts, Tmp, Tags).
+    tag_statistics(Posts, Tmp, Tags).
 
-tags_statistics([], Acc, Sorted):-
+tag_statistics([], Acc, Sorted):-
     tag_stat_dicts(Acc, Tags),
     sort_dict(count, desc, Tags, Sorted).
 

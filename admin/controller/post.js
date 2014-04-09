@@ -14,6 +14,23 @@ exports.list = function(type) {
             return post2.date_updated - post1.date_updated;
         });
 
+        posts.forEach(function(post) {
+
+            post.expanded = ko.observable(false);
+
+            post.expand = function() {
+
+                if (post.expanded()) {
+
+                    post.expanded(false);
+
+                } else {
+
+                    post.expanded(true);
+                }
+            };
+        });
+
         var start = 0;
 
         var model = {

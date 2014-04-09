@@ -45,7 +45,7 @@ bc_handle_error(error(no_config(Name))):- !,
     bc_reply_error(Message).
 
 bc_handle_error(error(invalid_answer(Answer))):- !,
-    format(atom(Message), 'Invalid answer: ~p.', [Answer]),
+    format(atom(Message), 'Invalid answer: ~w.', [Answer]),
     bc_reply_error(Message).
 
 bc_handle_error(error(commenting_disabled(Id))):- !,

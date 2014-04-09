@@ -61,6 +61,8 @@ bc_view_cached(Path):-
 % Stores rendering result in cache when caching
 % is enabled.
 
+% FIXME version with content-type
+
 bc_view_send(Name, Data):-
     cache_enabled, !,
     http_current_request(Request),

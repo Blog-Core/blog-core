@@ -17,6 +17,7 @@ exports.create = function(data) {
         commenting: ko.observable(true),
         date_published: ko.observable(Math.floor(Date.now() / 1000)),
         tags: ko.observable(''),
+        comments: ko.observable(0),
 
         dfmode: function() {
 
@@ -94,6 +95,7 @@ exports.create = function(data) {
         post.published(data.published);
         post.commenting(data.commenting);
         post.tags(data.tags.join(', '));
+        post.comments(data.comments);
     }
 
     return post;

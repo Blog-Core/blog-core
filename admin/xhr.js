@@ -1,6 +1,9 @@
 var Q = require('./lib/q');
+var spin = require('./spin');
 
 // From https://gist.github.com/matthewp/3099268
+
+var count = 0;
 
 module.exports = function(options) {
 
@@ -22,6 +25,13 @@ module.exports = function(options) {
             return;
         }
 
+        count -= 1;
+
+        if (count === 0) {
+
+            spin.hide();
+        }
+
         if (req.status !== 200) {
 
             deferred.reject(new Error('Server responded with a status of ' + req.status));
@@ -31,6 +41,13 @@ module.exports = function(options) {
             deferred.resolve(req.responseText);
         }
     };
+
+    if (count === 0) {
+
+        spin.show();
+    }
+
+    count += 1;
 
     req.send(options.data);
 

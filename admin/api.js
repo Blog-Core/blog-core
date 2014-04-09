@@ -49,7 +49,7 @@ exports.post = function(id) {
 
     var options = {
 
-        url: '/api/entry/' + id,
+        url: '/api/entry/' + encodeURIComponent(id),
 
         headers: { 'X-Key': apiKey() }
     };
@@ -57,6 +57,57 @@ exports.post = function(id) {
     return xhr(options).then(function(response) {
 
         return JSON.parse(response).data;
+    });
+};
+
+exports.entryInfo = function(id) {
+
+    var options = {
+
+        url: '/api/entry/' + encodeURIComponent(id) + '/info',
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response).data;
+    });
+};
+
+// Retrieves the given post comments.
+
+exports.comments = function(id) {
+
+    var options = {
+
+        url: '/api/post/' + encodeURIComponent(id) + '/comments',
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response).data;
+    });
+};
+
+// Removes the given comment.
+
+exports.removeComment = function(id) {
+
+    var options = {
+
+        method: 'DELETE',
+
+        url: '/api/comment/' + encodeURIComponent(id),
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response);
     });
 };
 
@@ -182,6 +233,13 @@ exports.removeFile = function(file) {
 
         return JSON.parse(response);
     });
+};
+
+// Checks whether the API key has been set.
+
+exports.hasKey = function() {
+
+    return !!sessionStorage.getItem('api-key');
 };
 
 var apiKey = exports.apiKey = function() {

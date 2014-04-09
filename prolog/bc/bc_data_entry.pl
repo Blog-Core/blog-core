@@ -3,7 +3,8 @@
     bc_entry_update/2,        % +Id, +Entry
     bc_entry_remove/1,        % +Id
     bc_entry_list/2,          % +Type, -List
-    bc_entry/2                % +Id, -Entry
+    bc_entry/2,               % +Id, -Entry
+    bc_entry_info/2           % +Id, -Entry
 ]).
 
 /** <module> Handles entry data */
@@ -88,8 +89,22 @@ attach_comment_count(EntryIn, EntryOut):-
 % Retrieves a single entry by ID. Throws
 % error(no_entry(Id)) when there is no such entry.
 
-bc_entry(Id, Entry):-
+bc_entry(Id, WithCount):-
     (   ds_get(Id, [slug, type, date_published, date_updated,
             commenting, published, title, author,
-            content, description, content_type, tags], Entry)
+            content, description, content_type, tags], Entry),
+        attach_comment_count(Entry, WithCount)
+    ;   throw(error(no_entry(Id)))), !.
+
+%! bc_entry_info(+Id, -Entry) is det.
+%
+% Retrieves a single entry by ID. Throws
+% error(no_entry(Id)) when there is no such entry.
+% Does not include content.
+
+bc_entry_info(Id, WithCount):-
+    (   ds_get(Id, [slug, type, date_published, date_updated,
+            commenting, published, title, author,
+            description, content_type, tags], Entry),
+        attach_comment_count(Entry, WithCount)
     ;   throw(error(no_entry(Id)))), !.

@@ -16,3 +16,16 @@ exports.info = function(text) {
 
     }, 2000);
 };
+
+// Shows error message.
+
+exports.error = function(err) {
+
+    var messages = document.getElementById('messages');
+    var message = document.createElement('div');
+
+    message.className = 'alert alert-danger';
+    message.innerHTML = text;
+
+    messages.appendChild(message);
+};

@@ -23,12 +23,10 @@ module handles questions.
 %! bc_comment_list(+PostId, -Comments) is det.
 %
 % Retrieves the list of comments
-% for the given post. Includes
-% `author`, `date` and `$id` fields only.
-% Sorts by date.
+% for the given post.
 
 bc_comment_list(PostId, Sorted):-
-    ds_find(comment, post=PostId, [author, date], Comments),
+    ds_find(comment, post=PostId, Comments),
     sort_dict(date, desc, Comments, Sorted).
 
 %! bc_comment_list_full(+PostId, -Comments) is det.

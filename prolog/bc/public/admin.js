@@ -3,8 +3,10 @@ var ko = require('./lib/knockout');
 var auth = require('./controller/auth');
 var post = require('./controller/post');
 var file = require('./controller/file');
+var comment = require('./controller/comment');
 var route = require('./lib/router');
 var hex = require('./hex');
+var api = require('./api');
 
 route(/^posts/, function() {
 
@@ -46,12 +48,22 @@ route(/^file\/([^\/]+)/, function(filename) {
     file.file(hex.string(filename)).done();
 });
 
+route(/^comments\/([^\/]+)/, function(id) {
+
+    comment.list(id).done();
+});
+
 route(/^login/, function() {
 
     auth.form().done();
 });
 
-},{"./controller/auth":3,"./controller/file":4,"./controller/post":5,"./hex":6,"./lib/knockout":7,"./lib/router":9}],2:[function(require,module,exports){
+route(/.*/, function() {
+
+    route.go(api.hasKey() ? 'posts' : 'login');
+});
+
+},{"./api":2,"./controller/auth":3,"./controller/comment":4,"./controller/file":5,"./controller/post":6,"./hex":7,"./lib/knockout":8,"./lib/router":10}],2:[function(require,module,exports){
 var Q = require('./lib/q');
 var xhr = require('./xhr');
 
@@ -103,7 +115,7 @@ exports.post = function(id) {
 
     var options = {
 
-        url: '/api/entry/' + id,
+        url: '/api/entry/' + encodeURIComponent(id),
 
         headers: { 'X-Key': apiKey() }
     };
@@ -111,6 +123,57 @@ exports.post = function(id) {
     return xhr(options).then(function(response) {
 
         return JSON.parse(response).data;
+    });
+};
+
+exports.entryInfo = function(id) {
+
+    var options = {
+
+        url: '/api/entry/' + encodeURIComponent(id) + '/info',
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response).data;
+    });
+};
+
+// Retrieves the given post comments.
+
+exports.comments = function(id) {
+
+    var options = {
+
+        url: '/api/post/' + encodeURIComponent(id) + '/comments',
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response).data;
+    });
+};
+
+// Removes the given comment.
+
+exports.removeComment = function(id) {
+
+    var options = {
+
+        method: 'DELETE',
+
+        url: '/api/comment/' + encodeURIComponent(id),
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response);
     });
 };
 
@@ -238,6 +301,13 @@ exports.removeFile = function(file) {
     });
 };
 
+// Checks whether the API key has been set.
+
+exports.hasKey = function() {
+
+    return !!sessionStorage.getItem('api-key');
+};
+
 var apiKey = exports.apiKey = function() {
 
     var key = sessionStorage.getItem('api-key');
@@ -250,7 +320,7 @@ var apiKey = exports.apiKey = function() {
     return key;
 }
 
-},{"./lib/q":8,"./xhr":13}],3:[function(require,module,exports){
+},{"./lib/q":9,"./xhr":15}],3:[function(require,module,exports){
 var view = require('../view');
 var api = require('../api');
 var ko = require('../lib/knockout');
@@ -278,7 +348,67 @@ exports.form = function() {
     return view.show('login', model);
 };
 
-},{"../api":2,"../lib/knockout":7,"../view":11}],4:[function(require,module,exports){
+},{"../api":2,"../lib/knockout":8,"../view":13}],4:[function(require,module,exports){
+var message = require('../message');
+var route = require('../lib/router');
+var view = require('../view');
+var api = require('../api');
+var ko = require('../lib/knockout');
+
+exports.list = function(id) {
+
+    return api.entryInfo(id).then(function(info) {
+
+        return api.comments(id).then(function(comments) {
+
+            comments.forEach(function(comment) {
+
+                comment.expanded = ko.observable(false);
+
+                comment.expand = function() {
+
+                    if (comment.expanded()) {
+
+                        comment.expanded(false);
+
+                    } else {
+
+                        comment.expanded(true);
+                    }
+                };
+
+                comment.remove = function() {
+
+                    if (confirm('Remove the comment?')) {
+
+                        api.removeComment(comment.$id).then(function(response) {
+
+                            if (response.status === 'success') {
+
+                                route.refresh();
+
+                            } else {
+
+                                message.error(response.message);
+                            }
+
+                        }, message.error);
+                    }
+                };
+            });
+
+            var model = {
+
+                title: info.title,
+                comments: comments
+            };
+
+            return view.show('comments', model);
+        });
+    });
+};
+
+},{"../api":2,"../lib/knockout":8,"../lib/router":10,"../message":11,"../view":13}],5:[function(require,module,exports){
 var view = require('../view');
 var api = require('../api');
 var ko = require('../lib/knockout');
@@ -498,7 +628,7 @@ exports.file = function(file) {
     });
 };
 
-},{"../api":2,"../hex":6,"../lib/knockout":7,"../lib/router":9,"../message":10,"../view":11}],5:[function(require,module,exports){
+},{"../api":2,"../hex":7,"../lib/knockout":8,"../lib/router":10,"../message":11,"../view":13}],6:[function(require,module,exports){
 var view = require('../view');
 var api = require('../api');
 var ko = require('../lib/knockout');
@@ -513,6 +643,23 @@ exports.list = function(type) {
         posts.sort(function(post1, post2) {
 
             return post2.date_updated - post1.date_updated;
+        });
+
+        posts.forEach(function(post) {
+
+            post.expanded = ko.observable(false);
+
+            post.expand = function() {
+
+                if (post.expanded()) {
+
+                    post.expanded(false);
+
+                } else {
+
+                    post.expanded(true);
+                }
+            };
         });
 
         var start = 0;
@@ -560,7 +707,7 @@ exports.create = function() {
     return view.show('post', postVm.create());
 };
 
-},{"../api":2,"../lib/knockout":7,"../view":11,"../vm/post_vm":12}],6:[function(require,module,exports){
+},{"../api":2,"../lib/knockout":8,"../view":13,"../vm/post_vm":14}],7:[function(require,module,exports){
 exports.hex = function(string) {
 
     var hex = '';
@@ -590,7 +737,7 @@ exports.string = function(hex) {
     return string;
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 // Knockout JavaScript library v3.1.0
 // (c) Steven Sanderson - http://knockoutjs.com/
 // License: MIT (http://www.opensource.org/licenses/mit-license.php)
@@ -5061,7 +5208,7 @@ ko.exportSymbol('nativeTemplateEngine', ko.nativeTemplateEngine);
 }());
 })();
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 // vim:ts=4:sts=4:sw=4:
 /*!
  *
@@ -6967,7 +7114,7 @@ return Q;
 
 });
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 // Simplest hashchange router.
 // Chrome 5, Firefox 3.6, IE 8.
 // (c) Raivo Laanemets 2013
@@ -7037,7 +7184,7 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = route;
 }
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 // Shows informational message.
 
 exports.info = function(text) {
@@ -7057,7 +7204,31 @@ exports.info = function(text) {
     }, 2000);
 };
 
-},{}],11:[function(require,module,exports){
+// Shows error message.
+
+exports.error = function(err) {
+
+    var messages = document.getElementById('messages');
+    var message = document.createElement('div');
+
+    message.className = 'alert alert-danger';
+    message.innerHTML = text;
+
+    messages.appendChild(message);
+};
+
+},{}],12:[function(require,module,exports){
+exports.show = function() {
+
+    document.getElementById('spinner').style.display = 'block';
+};
+
+exports.hide = function() {
+
+    document.getElementById('spinner').style.display = 'none';
+};
+
+},{}],13:[function(require,module,exports){
 var xhr = require('./xhr');
 var ko = require('./lib/knockout');
 
@@ -7094,7 +7265,7 @@ window.formatDate = function(ts) {
     return new Date(1000 * ts).toISOString().substring(0, 10);
 };
 
-},{"./lib/knockout":7,"./xhr":13}],12:[function(require,module,exports){
+},{"./lib/knockout":8,"./xhr":15}],14:[function(require,module,exports){
 var ko = require('../lib/knockout');
 var route = require('../lib/router');
 var api = require('../api');
@@ -7114,6 +7285,7 @@ exports.create = function(data) {
         commenting: ko.observable(true),
         date_published: ko.observable(Math.floor(Date.now() / 1000)),
         tags: ko.observable(''),
+        comments: ko.observable(0),
 
         dfmode: function() {
 
@@ -7191,15 +7363,19 @@ exports.create = function(data) {
         post.published(data.published);
         post.commenting(data.commenting);
         post.tags(data.tags.join(', '));
+        post.comments(data.comments);
     }
 
     return post;
 };
 
-},{"../api":2,"../lib/knockout":7,"../lib/router":9,"../message":10}],13:[function(require,module,exports){
+},{"../api":2,"../lib/knockout":8,"../lib/router":10,"../message":11}],15:[function(require,module,exports){
 var Q = require('./lib/q');
+var spin = require('./spin');
 
 // From https://gist.github.com/matthewp/3099268
+
+var count = 0;
 
 module.exports = function(options) {
 
@@ -7221,6 +7397,13 @@ module.exports = function(options) {
             return;
         }
 
+        count -= 1;
+
+        if (count === 0) {
+
+            spin.hide();
+        }
+
         if (req.status !== 200) {
 
             deferred.reject(new Error('Server responded with a status of ' + req.status));
@@ -7231,9 +7414,16 @@ module.exports = function(options) {
         }
     };
 
+    if (count === 0) {
+
+        spin.show();
+    }
+
+    count += 1;
+
     req.send(options.data);
 
     return deferred.promise;
 };
 
-},{"./lib/q":8}]},{},[1])
+},{"./lib/q":9,"./spin":12}]},{},[1])

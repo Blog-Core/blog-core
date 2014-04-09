@@ -60,6 +60,15 @@ entry_get(Id):-
     bc_entry(Id, Entry),
     bc_reply_success(Entry).
 
+% Single entry without contents.
+
+:- route_get(api/entry/Id/info,
+    bc_auth, entry_get_info(Id)).
+
+entry_get_info(Id):-
+    bc_entry_info(Id, Entry),
+    bc_reply_success(Entry).
+
 % Post schema.
 
 :- register_schema(entry, _{
