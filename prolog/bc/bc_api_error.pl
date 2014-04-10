@@ -56,5 +56,14 @@ bc_handle_error(error(no_entry(Id))):- !,
     format(atom(Message), 'No entry ~p.', [Id]),
     bc_reply_error(Message).
 
+bc_handle_error(error(cannot_demote_last_admin(_))):- !,
+    bc_reply_error('Cannot demote the last admin.').
+
+bc_handle_error(error(cannot_remove_last_admin(_))):- !,
+    bc_reply_error('Cannot remove the last admin.').
+
+bc_handle_error(error(user_has_existing_posts(_))):- !,
+    bc_reply_error('Cannot remove user with posts.').
+
 bc_handle_error(Error):-
     throw(Error).

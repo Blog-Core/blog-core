@@ -4,20 +4,29 @@
     <li class="list-group-item post-item">
         <h4 data-bind="click: expand, text: title" class="list-group-item-heading"></h4>
         <div class="list-group-item-text">
-            Publish date: <span data-bind="text: formatDate(date_published)"></span>,
-            comments: <span data-bind="text: comments" href="#">a</span>
+            Update date: <span data-bind="text: formatDate(date_updated)"></span>,
+            comments: <span data-bind="text: comments"></span>
             <div data-bind="visible: expanded" class="post-controls">
-                <a data-bind="attr: { href: '#post/' + $id }"
+                <a data-bind="attr: { href: '#post/' + $id }, css: { disabled: !editable }"
                     class="btn btn-default btn-sm" href="#">
                     <span class="glyphicon glyphicon-edit"></span> Edit
                 </a>
-                <a data-bind="attr: { href: '#comments/' + $id }, visible: type === 'post'"
+                <a data-bind="attr: { href: '#comments/' + $id }, visible: type === 'post', css: { disabled: comments === 0 || !editable }"
                     class="btn btn-default btn-sm" href="#">
                     <span class="glyphicon glyphicon-comment"></span> Comments
+                </a>
+                <a data-bind="click: remove, css: { disabled: !editable }"
+                    class="btn btn-default btn-sm" href="#">
+                    <span class="glyphicon glyphicon-edit"></span> Remove
                 </a>
             </div>
         </div>
     </li>
 </ul>
 
-<a data-bind="click: more" class="btn btn-default" href="#">Show more</a>
+<a data-bind="click: more, css: { disabled: !hasMore() }" class="btn btn-default" href="#">
+    <span class="glyphicon glyphicon-list-alt"></span> Show more
+</a>
+<a data-bind="attr: { href: '#new/' + type }" class="btn btn-default" href="#">
+    <span class="glyphicon glyphicon-plus"></span> Add
+</a>

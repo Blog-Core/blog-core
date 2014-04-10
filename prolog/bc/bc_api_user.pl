@@ -38,6 +38,24 @@ user_remove(Id):-
     bc_user_remove(Id),
     bc_reply_success(Id).
 
+% Sends list of users.
+
+:- route_get(api/users,
+    bc_auth, users_list).
+
+users_list:-
+    bc_user_list(Users),
+    bc_reply_success(Users).
+
+% Sends the given user.
+
+:- route_get(api/user/Id,
+    bc_auth, user_get(Id)).
+
+user_get(Id):-
+    bc_user(Id, User),
+    bc_reply_success(User).
+
 % Schema for user data.
 
 :- register_schema(user, _{
@@ -47,6 +65,8 @@ user_remove(Id):-
         fullname: _{ type: atom, min_length: 1 },
         username: _{ type: atom, min_length: 1 },
         password: _{ type: atom, min_length: 6 },
-        type: _{ type: enum, values: [author, admin] }
-    }
+        type: _{ type: enum, values: [author, admin] },
+        link: string
+    },
+    optional: [ password ]
 }).

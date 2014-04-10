@@ -88,5 +88,5 @@ entry_get_info(Id):-
         description: string,
         type: _{ type: enum, values: [page, post, block] }
     },
-    optional: [ author ]
+    optional: [ author, date_published ]
 }).

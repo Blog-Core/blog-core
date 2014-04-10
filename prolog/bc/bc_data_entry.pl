@@ -69,14 +69,14 @@ bc_entry_remove(Id):-
 %
 % Retrieves the list of entries of certain
 % type. Does not include contents and HTML.
-% Sorts by date_published desc.
+% Sorts by date_updated desc.
 
 bc_entry_list(Type, Sorted):-
     ds_find(entry, type=Type, [slug, type, date_published,
         date_updated, commenting, published,
         title, author], Entries),
     maplist(attach_comment_count, Entries, List),
-    sort_dict(date_published, desc, List, Sorted).
+    sort_dict(date_updated, desc, List, Sorted).
 
 attach_comment_count(EntryIn, EntryOut):-
     get_dict_ex('$id', EntryIn, Id),

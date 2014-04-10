@@ -14,6 +14,7 @@ admin: prolog/bc/public/admin.min.js
 prolog/bc/public/admin.js: admin/*.js admin/controller/*.js admin/vm/*.js
 	browserify --noparse=admin/lib/knockout.js \
 		--noparse=admin/lib/q.js \
+		--noparse=admin/lib/speakingurl.js \
 		--outfile $@ admin/admin.js
 
 prolog/bc/public/admin.min.js: prolog/bc/public/admin.js

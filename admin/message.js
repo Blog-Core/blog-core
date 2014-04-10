@@ -25,7 +25,7 @@ exports.error = function(err) {
     var message = document.createElement('div');
 
     message.className = 'alert alert-danger';
-    message.innerHTML = text;
+    message.innerHTML = err.toString();
 
     messages.appendChild(message);
 };

@@ -18,6 +18,7 @@
         .post-controls { margin-top: 10px; }
         .post-controls .panel { margin-bottom: 10px; }
         .post-controls .panel-body { padding: 10px; }
+        .error-message { color: #a94442; margin: 5px 0; }
     </style>
 </head>
 <body>
@@ -26,12 +27,12 @@
             <img src="/admin/img/spinner.gif">
         </div>
         <h1>Blog admin</h1>
-        <div class="btn-group">
-            <a class="btn btn-default" href="#posts">Posts</a>
-            <a class="btn btn-default" href="#pages">Pages</a>
-            <a class="btn btn-default" href="#blocks">Blocks</a>
-            <a class="btn btn-default" href="#new">New</a>
-            <a class="btn btn-default" href="#files">Files</a>
+        <div data-bind="visible: visible" class="btn-group" id="menu">
+            <a data-bind="css: { active: active() === 'posts' }" class="btn btn-default" href="#posts">Posts</a>
+            <a data-bind="css: { active: active() === 'pages' }" class="btn btn-default" href="#pages">Pages</a>
+            <a data-bind="css: { active: active() === 'blocks' }" class="btn btn-default" href="#blocks">Blocks</a>
+            <a data-bind="css: { active: active() === 'users' }" class="btn btn-default" href="#users">Users</a>
+            <a data-bind="css: { active: active() === 'files' }" class="btn btn-default" href="#files">Files</a>
         </div>
         <div id="messages" class="messages"></div>
         <div id="content"></div>

@@ -235,6 +235,101 @@ exports.removeFile = function(file) {
     });
 };
 
+// Retrieves all users.
+
+exports.users = function() {
+
+    var options = {
+
+        url: '/api/users',
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response).data;
+    });
+};
+
+// Retrieves the given user.
+
+exports.user = function(id) {
+
+    var options = {
+
+        url: '/api/user/' + encodeURIComponent(id),
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response).data;
+    });
+};
+
+// Updates the given user.
+
+exports.updateUser = function(id, data) {
+
+    var options = {
+
+        method: 'PUT',
+
+        data: JSON.stringify(data),
+
+        url: '/api/user/' + encodeURIComponent(id),
+
+        headers: { 'X-Key': apiKey(), 'Content-Type': 'application/json' }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response);
+    });
+};
+
+// Saves the new user.
+
+exports.saveUser = function(data) {
+
+    var options = {
+
+        method: 'POST',
+
+        data: JSON.stringify(data),
+
+        url: '/api/user',
+
+        headers: { 'X-Key': apiKey(), 'Content-Type': 'application/json' }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response);
+    });
+};
+
+// Removes the given user.
+
+exports.removeUser = function(id) {
+
+    var options = {
+
+        method: 'DELETE',
+
+        url: '/api/user/' + encodeURIComponent(id),
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response);
+    });
+};
+
 // Checks whether the API key has been set.
 
 exports.hasKey = function() {

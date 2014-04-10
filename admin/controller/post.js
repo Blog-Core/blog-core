@@ -1,11 +1,15 @@
 var view = require('../view');
 var api = require('../api');
+var message = require('../message');
 var ko = require('../lib/knockout');
 var postVm = require('../vm/post_vm');
 
 exports.list = function(type) {
 
     var type = type || 'post';
+
+    var mytype = sessionStorage.getItem('user-type');
+    var myid = sessionStorage.getItem('user-id');
 
     return api.posts(type).then(function(posts) {
 
@@ -29,13 +33,40 @@ exports.list = function(type) {
                     post.expanded(true);
                 }
             };
+
+            post.editable = mytype === 'admin' || myid === post.author;
+
+            post.remove = function() {
+
+                if (confirm('Remove the post?')) {
+
+                    api.removePost(post.$id).then(function(response) {
+
+                        if (response.status === 'success') {
+
+                            message.info('The post was removed.');
+
+                            route.go(type + 's');
+
+                        } else {
+
+                            message.error(response.message);
+                        }
+
+                    }, message.error).done();
+                }
+            };
         });
 
         var start = 0;
 
         var model = {
 
+            type: type,
+
             posts: ko.observableArray([]),
+
+            hasMore: ko.observable(start + 5 < posts.length),
 
             more: function() {
 
@@ -47,6 +78,8 @@ exports.list = function(type) {
 
                     model.posts.push(posts[i]);
                 }
+
+                model.hasMore(start + 5 < posts.length);
             }
         };
 
@@ -58,20 +91,30 @@ exports.list = function(type) {
 
 exports.edit = function(id) {
 
-    return api.post(id).then(function(post) {
+    return api.users().then(function(users) {
 
-        return view.show('post', postVm.create(post)).then(function() {
+        return api.post(id).then(function(post) {
 
-            // Autoset initial textarea height.
+            return view.show('post', postVm.create(users, post)).then(function() {
 
-            var editor = document.getElementById('post-content');
+                // Autoset initial textarea height.
 
-            editor.style.height = (editor.scrollHeight + 10) + 'px';
+                var editor = document.getElementById('post-content');
+
+                editor.style.height = (editor.scrollHeight + 10) + 'px';
+            });
         });
     });
 };
 
-exports.create = function() {
+exports.create = function(type) {
 
-    return view.show('post', postVm.create());
+    return api.users().then(function(users) {
+
+        var model = postVm.create(users);
+
+        model.type(type);
+
+        return view.show('post', model);
+    });
 };

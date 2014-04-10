@@ -5,13 +5,13 @@
         <label for="post-title">Title</label>
         <input data-bind="value: title"
             type="text" class="form-control" id="post-title"
-            placeholder="Title" required="true">
+            placeholder="Title">
     </div>
     <div class="form-group">
         <label for="post-slug">Slug</label>
         <input data-bind="value: slug"
             type="text" class="form-control" id="post-slug"
-            placeholder="Slug" required="true">
+            placeholder="Slug">
         <p class="help-block">Slug should not be modified after publishing as it will break links.</p>
     </div>
     <div class="form-group">
@@ -27,7 +27,7 @@
         <textarea
             data-bind="value: content"
             class="form-control content" rows="20" id="post-content"
-            placeholder="Content" required="true"></textarea>
+            placeholder="Content"></textarea>
     </div>
     <div class="form-group">
         <label for="post-type">Type</label>
@@ -45,6 +45,11 @@
         </select>
     </div>
     <div class="form-group">
+        <label for="post-author">Author</label>
+        <select data-bind="value: author, options: authors, optionsText: 'fullname', attr: { disabled: !author_selectable }"
+            class="form-control" id="post-author"></select>
+    </div>
+    <div class="form-group">
         <label for="post-tags">Tags</label>
         <input data-bind="value: tags"
             type="text" class="form-control" id="post-tags"
@@ -53,8 +58,19 @@
     <div class="checkbox">
         <label><input data-bind="checked: published" type="checkbox"> Published</label>
     </div>
+    <div class="form-group">
+        <label for="post-date">Publish date</label>
+        <input data-bind="value: date"
+            type="text" class="form-control" id="post-date"
+            placeholder="YYYY-MM-DD">
+    </div>
     <div class="checkbox">
         <label><input data-bind="checked: commenting" type="checkbox"> Commenting</label>
     </div>
-    <button type="submit" class="btn btn-default">Save</button>
+    <button type="submit" class="btn btn-default">
+        <span class="glyphicon glyphicon-ok"></span> Save
+    </button>
+    <a data-bind="attr: { href: '#' + type() + 's' }" class="btn btn-default" href="#">
+        <span class="glyphicon glyphicon-arrow-left"></span> Cancel
+    </a>
 </form>

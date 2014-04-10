@@ -44,8 +44,8 @@ auth_user_by_key(User):-
 
 user_auth:-
     bc_read_by_schema(user_auth, Auth),
-    bc_user_auth(Auth, Key),
-    bc_reply_success(Key).
+    bc_user_auth(Auth, Info),
+    bc_reply_success(Info).
 
 % Schema for authentication requests.
 
@@ -54,6 +54,6 @@ user_auth:-
     tag: user,
     keys: _{
         username: _{ type: atom, min_length: 1 },
-        password: _{ type: atom, min_length: 6 }
+        password: _{ type: atom, min_length: 1 }
     }
 }).
