@@ -10,6 +10,27 @@ var api = require('./api');
 var menu = require('./menu');
 var message = require('./message');
 
+// Helper to trim whitespace from values.
+
+ko.subscribable.fn.trimmed = function() {
+
+    return ko.computed({
+
+        read: function() {
+
+            return this().trim();
+        },
+
+        write: function(value) {
+
+            this(value.trim());
+            this.valueHasMutated();
+        },
+
+        owner: this
+    });
+};
+
 route(/^posts/, function() {
 
     menu.active('posts');

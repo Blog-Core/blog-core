@@ -66,7 +66,7 @@ exports.directory = function(directory) {
 
             directory: directory,
             entries: entries,
-            subdirectory: ko.observable(),
+            subdirectory: ko.observable('').trimmed(),
             subdirectory_form: ko.observable(false),
             upload_form: ko.observable(false),
             parent: parent,
