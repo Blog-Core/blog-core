@@ -20,8 +20,11 @@ prolog/bc/public/admin.js: admin/*.js admin/controller/*.js admin/vm/*.js
 prolog/bc/public/admin.min.js: prolog/bc/public/admin.js
 	uglifyjs $< --screw-ie8 --output $@
 
+check:
+	jshint --exclude=admin/lib/* admin
+
 clean:
 	rm -f prolog/bc/public/admin.js
 	rm -f prolog/bc/public/admin.min.js
 
-.PHONY: test package upload admin clean
+.PHONY: test package upload admin clean check
