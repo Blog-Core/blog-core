@@ -1,6 +1,6 @@
 <h2 data-bind="text: title"></h2>
 
-<form data-bind="submit: save" role="form" autocomplete="off">
+<form data-bind="submit: submit" autocomplete="off" id="post-form">
     <div class="form-group">
         <label for="post-title">Title</label>
         <input data-bind="value: title"
@@ -23,7 +23,6 @@
     </div>
     <div class="form-group">
         <label for="post-content">Content</label>
-        <!--<a data-bind="click: dfmode" class="btn btn-default btn-xs" href="#">Distraction free mode</a>-->
         <textarea
             data-bind="value: content"
             class="form-control content" rows="20" id="post-content"
@@ -64,13 +63,22 @@
             type="text" class="form-control" id="post-date"
             placeholder="YYYY-MM-DD">
     </div>
+    <div class="form-group">
+        <label for="post-update">Update date</label>
+        <input data-bind="value: update"
+            type="text" class="form-control" id="post-update"
+            placeholder="YYYY-MM-DD">
+    </div>
     <div class="checkbox">
         <label><input data-bind="checked: commenting" type="checkbox"> Commenting</label>
     </div>
+    <button data-bind="click: save" class="btn btn-default">
+        <span class="glyphicon glyphicon-ok"></span> Save/leave
+    </button>
     <button type="submit" class="btn btn-default">
-        <span class="glyphicon glyphicon-ok"></span> Save
+        <span class="glyphicon glyphicon-ok"></span> Save/continue
     </button>
     <a data-bind="attr: { href: '#' + type() + 's' }" class="btn btn-default" href="#">
-        <span class="glyphicon glyphicon-arrow-left"></span> Cancel
+        <span class="glyphicon glyphicon-arrow-left"></span> Posts
     </a>
 </form>

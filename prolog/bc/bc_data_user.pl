@@ -71,6 +71,7 @@ bc_user_username_exists(Username):-
 % Updates the given user. Throws
 % error(cannot_demote_last_admin(Id)) when the user
 % is the last admin.
+% FIXME username uniqueness
 
 bc_user_update(Id, User):-
     get_dict_ex(type, User, Type),
@@ -104,7 +105,7 @@ bc_user_list(Sorted):-
 % FIXME comment
 
 bc_user(Id, User):-
-    (   ds_get(Id, [username, fullname, type, link], User)
+    (   ds_get(Id, [username, fullname, type, link, files], User)
     ;   throw(error(no_user(Id)))), !.
 
 %! bc_user_remove(+Id) is det.

@@ -6,6 +6,8 @@ var validate = require('../validate');
 
 exports.create = function(data) {
 
+    var mytype = sessionStorage.getItem('user-type');
+
     var user = {
 
         username: ko.observable(''),
@@ -17,6 +19,8 @@ exports.create = function(data) {
         password_text: ko.observable(false),
         error: ko.observable(''),
         creating: true,
+        files: ko.observable(false),
+        mytype: mytype,
 
         save: function(form) {
 
@@ -113,7 +117,8 @@ exports.create = function(data) {
                 username: user.username(),
                 fullname: user.fullname(),
                 type: user.type(),
-                link: user.link()
+                link: user.link(),
+                files: user.files()
             };
 
             if (user.password_edit()) {
@@ -146,6 +151,7 @@ exports.create = function(data) {
         user.type(data.type);
         user.link(data.link);
         user.password_edit(false);
+        user.files(data.files);
     }
 
     return user;

@@ -3,16 +3,17 @@
 exports.clear = function(form) {
 
     var errors = form.querySelectorAll('.error-message');
+    var error, i;
 
-    for (var i = 0; i < errors.length; i++) {
+    for (i = 0; i < errors.length; i++) {
 
-        var error = errors.item(i);
+        error = errors.item(i);
 
         error.parentNode.classList.remove('has-error');
         error.parentNode.removeChild(error);
     }
 
-    var errors = form.parentNode.querySelectorAll('.alert-danger');
+    errors = form.parentNode.querySelectorAll('.alert-danger');
 
     for (i = 0; i < errors.length; i++) {
 

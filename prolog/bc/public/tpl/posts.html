@@ -7,7 +7,7 @@
             Update date: <span data-bind="text: formatDate(date_updated)"></span>,
             comments: <span data-bind="text: comments"></span>
             <div data-bind="visible: expanded" class="post-controls">
-                <a data-bind="attr: { href: '#post/' + $id }, css: { disabled: !editable }"
+                <a data-bind="attr: { href: '#' + type + '/' + $id }, css: { disabled: !editable }"
                     class="btn btn-default btn-sm" href="#">
                     <span class="glyphicon glyphicon-edit"></span> Edit
                 </a>

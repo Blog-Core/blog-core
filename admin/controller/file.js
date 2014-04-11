@@ -135,7 +135,7 @@ exports.directory = function(directory) {
                         xhr.setRequestHeader('Content-Type', 'application/octet-stream');
 
                         xhr.send(new Uint8Array(reader.result));
-                    }
+                    };
 
                     reader.readAsArrayBuffer(file);
                 }

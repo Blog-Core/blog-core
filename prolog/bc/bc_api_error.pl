@@ -65,5 +65,8 @@ bc_handle_error(error(cannot_remove_last_admin(_))):- !,
 bc_handle_error(error(user_has_existing_posts(_))):- !,
     bc_reply_error('Cannot remove user with posts.').
 
+bc_handle_error(error(existing_username(_))):- !,
+    bc_reply_error('Username already exists.').
+
 bc_handle_error(Error):-
     throw(Error).

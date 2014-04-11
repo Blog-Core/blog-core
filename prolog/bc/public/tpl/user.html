@@ -27,6 +27,9 @@
             placeholder="Link">
     </div>
     <div class="checkbox">
+        <label><input data-bind="checked: files, disable: mytype !== 'admin'" type="checkbox"> Allow file management</label>
+    </div>
+    <div class="checkbox">
         <label><input data-bind="checked: password_edit, disable: creating" type="checkbox"> Edit password</label>
     </div>
     <div data-bind="visible: password_edit" class="form-group">

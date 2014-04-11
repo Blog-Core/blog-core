@@ -2,13 +2,13 @@ var view = require('../view');
 var api = require('../api');
 var message = require('../message');
 var ko = require('../lib/knockout');
+var route = require('../lib/router');
 var postVm = require('../vm/post_vm');
 
 exports.list = function(type) {
 
-    var type = type || 'post';
-
     var mytype = sessionStorage.getItem('user-type');
+
     var myid = sessionStorage.getItem('user-id');
 
     return api.posts(type).then(function(posts) {
@@ -46,7 +46,7 @@ exports.list = function(type) {
 
                             message.info('The post was removed.');
 
-                            route.go(type + 's');
+                            route.refresh();
 
                         } else {
 

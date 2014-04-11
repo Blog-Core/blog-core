@@ -9,19 +9,21 @@
     <style>
         body { margin-top: 1em; margin-bottom: 1em; }
         .nav { margin-bottom: 1em; }
-        .messages { position: absolute; top: 0; left: 0; z-index: 10000; opacity: 0.95; }
+        .messages { position: fixed !important; top: 2em; left: 0; right: 0; z-index: 10000; opacity: 0.95; }
         .text-right { text-align: right; }
         .content { font-family: monospace; }
         .container { position: relative; }
-        .spinner { position: absolute; top: 2em; right: 2em; }
+        .spinner { position: fixed; top: 2em; right: 2em; }
         .post-item h4 { cursor: pointer; }
         .post-controls { margin-top: 10px; }
         .post-controls .panel { margin-bottom: 10px; }
         .post-controls .panel-body { padding: 10px; }
         .error-message { color: #a94442; margin: 5px 0; }
+        .btn { margin-top: 0.5em; }
     </style>
 </head>
 <body>
+    <div id="messages" class="container messages"></div>
     <div class="container">
         <div class="spinner" id="spinner" style="display: none">
             <img src="/admin/img/spinner.gif">
@@ -34,7 +36,6 @@
             <a data-bind="css: { active: active() === 'users' }" class="btn btn-default" href="#users">Users</a>
             <a data-bind="css: { active: active() === 'files' }" class="btn btn-default" href="#files">Files</a>
         </div>
-        <div id="messages" class="messages"></div>
         <div id="content"></div>
     </div>
     <script src="/admin/admin.min.js"></script>

@@ -66,7 +66,8 @@ user_get(Id):-
         username: _{ type: atom, min_length: 1 },
         password: _{ type: atom, min_length: 6 },
         type: _{ type: enum, values: [author, admin] },
-        link: string
+        link: string,
+        files: bool
     },
     optional: [ password ]
 }).

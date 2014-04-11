@@ -9,35 +9,48 @@ var route = require('./lib/router');
 var hex = require('./hex');
 var api = require('./api');
 var menu = require('./menu');
+var message = require('./message');
 
 route(/^posts/, function() {
 
     menu.active('posts');
-    post.list('post').done();
+    post.list('post').catch(message.error);
 });
 
 route(/^pages/, function() {
 
     menu.active('pages');
-    post.list('page').done();
+    post.list('page').catch(message.error);
 });
 
 route(/^blocks/, function() {
 
     menu.active('blocks');
-    post.list('block').done();
+    post.list('block').catch(message.error);
 });
 
 route(/^post\/([^\/]+)/, function(id) {
 
     menu.active('posts');
-    post.edit(id).done();
+    post.edit(id).catch(message.error);
+});
+
+route(/^page\/([^\/]+)/, function(id) {
+
+    menu.active('pages');
+    post.edit(id).catch(message.error);
+});
+
+route(/^block\/([^\/]+)/, function(id) {
+
+    menu.active('blocks');
+    post.edit(id).catch(message.error);
 });
 
 route(/^new\/([^\/]+)/, function(type) {
 
     menu.active(type + 's');
-    post.create(type).done();
+    post.create(type).catch(message.error);
 });
 
 route(/^files/, function() {
@@ -49,43 +62,43 @@ route(/^files/, function() {
 route(/^directory\/([^\/]+)/, function(directory) {
 
     menu.active('files');
-    file.directory(hex.string(directory)).done();
+    file.directory(hex.string(directory)).catch(message.error);
 });
 
 route(/^file\/([^\/]+)/, function(filename) {
 
     menu.active('files');
-    file.file(hex.string(filename)).done();
+    file.file(hex.string(filename)).catch(message.error);
 });
 
 route(/^comments\/([^\/]+)/, function(id) {
 
     menu.active('posts');
-    comment.list(id).done();
+    comment.list(id).catch(message.error);
 });
 
 route(/^users/, function() {
 
     menu.active('users');
-    user.list().done();
+    user.list().catch(message.error);
 });
 
 route(/^user\/new/, function() {
 
     menu.active('users');
-    user.create().done();
+    user.create().catch(message.error);
 });
 
 route(/^user\/([^\/]+)/, function(id) {
 
     menu.active('users');
-    user.edit(id).done();
+    user.edit(id).catch(message.error);
 });
 
 route(/^login/, function() {
 
     menu.active();
-    auth.form().done();
+    auth.form().catch(message.error);
 });
 
 route(/.*/, function() {
@@ -93,7 +106,7 @@ route(/.*/, function() {
     route.go(api.hasKey() ? 'posts' : 'login');
 });
 
-},{"./api":2,"./controller/auth":3,"./controller/comment":4,"./controller/file":5,"./controller/post":6,"./controller/user":7,"./hex":8,"./lib/knockout":9,"./lib/router":11,"./menu":13}],2:[function(require,module,exports){
+},{"./api":2,"./controller/auth":3,"./controller/comment":4,"./controller/file":5,"./controller/post":6,"./controller/user":7,"./hex":8,"./lib/knockout":9,"./lib/router":11,"./menu":13,"./message":14}],2:[function(require,module,exports){
 var Q = require('./lib/q');
 var xhr = require('./xhr');
 
@@ -237,6 +250,25 @@ exports.savePost = function(data) {
         data: JSON.stringify(data),
 
         headers: { 'X-Key': apiKey(), 'Content-Type': 'application/json' }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response);
+    });
+};
+
+// Removes the given post.
+
+exports.removePost = function(id) {
+
+    var options = {
+
+        method: 'DELETE',
+
+        url: '/api/entry/' + encodeURIComponent(id),
+
+        headers: { 'X-Key': apiKey() }
     };
 
     return xhr(options).then(function(response) {
@@ -443,7 +475,7 @@ var apiKey = exports.apiKey = function() {
     }
 
     return key;
-}
+};
 
 },{"./lib/q":10,"./xhr":20}],3:[function(require,module,exports){
 var view = require('../view');
@@ -702,7 +734,7 @@ exports.directory = function(directory) {
                         xhr.setRequestHeader('Content-Type', 'application/octet-stream');
 
                         xhr.send(new Uint8Array(reader.result));
-                    }
+                    };
 
                     reader.readAsArrayBuffer(file);
                 }
@@ -789,13 +821,13 @@ var view = require('../view');
 var api = require('../api');
 var message = require('../message');
 var ko = require('../lib/knockout');
+var route = require('../lib/router');
 var postVm = require('../vm/post_vm');
 
 exports.list = function(type) {
 
-    var type = type || 'post';
-
     var mytype = sessionStorage.getItem('user-type');
+
     var myid = sessionStorage.getItem('user-id');
 
     return api.posts(type).then(function(posts) {
@@ -833,7 +865,7 @@ exports.list = function(type) {
 
                             message.info('The post was removed.');
 
-                            route.go(type + 's');
+                            route.refresh();
 
                         } else {
 
@@ -906,7 +938,7 @@ exports.create = function(type) {
     });
 };
 
-},{"../api":2,"../lib/knockout":9,"../message":14,"../view":17,"../vm/post_vm":18}],7:[function(require,module,exports){
+},{"../api":2,"../lib/knockout":9,"../lib/router":11,"../message":14,"../view":17,"../vm/post_vm":18}],7:[function(require,module,exports){
 var ko = require('../lib/knockout');
 var api = require('../api');
 var view = require('../view');
@@ -8192,7 +8224,7 @@ exports.info = function(text) {
     var messages = document.getElementById('messages');
     var message = document.createElement('div');
 
-    message.className = 'alert alert-success';
+    message.className = 'alert alert-success message';
     message.innerHTML = text;
 
     messages.appendChild(message);
@@ -8208,11 +8240,26 @@ exports.info = function(text) {
 
 exports.error = function(err) {
 
+    var button = document.createElement('button');
+
+    button.className = 'close';
+    button.innerHTML = '&times;';
+
+    var text = document.createElement('span');
+    text.innerHTML = err.toString();
+
     var messages = document.getElementById('messages');
     var message = document.createElement('div');
 
-    message.className = 'alert alert-danger';
-    message.innerHTML = err.toString();
+    message.className = 'alert alert-danger message';
+    message.appendChild(button);
+    message.appendChild(text);
+
+    button.addEventListener('click', function() {
+
+        messages.removeChild(message);
+
+    }, false);
 
     messages.appendChild(message);
 };
@@ -8234,16 +8281,17 @@ exports.hide = function() {
 exports.clear = function(form) {
 
     var errors = form.querySelectorAll('.error-message');
+    var error, i;
 
-    for (var i = 0; i < errors.length; i++) {
+    for (i = 0; i < errors.length; i++) {
 
-        var error = errors.item(i);
+        error = errors.item(i);
 
         error.parentNode.classList.remove('has-error');
         error.parentNode.removeChild(error);
     }
 
-    var errors = form.parentNode.querySelectorAll('.alert-danger');
+    errors = form.parentNode.querySelectorAll('.alert-danger');
 
     for (i = 0; i < errors.length; i++) {
 
@@ -8333,129 +8381,126 @@ var message = require('../message');
 var validate = require('../validate');
 var speakingurl = require('../lib/speakingurl');
 
+// Creates post view model for already
+// existing post or a new post. For new
+// post, data must be unset. The authors
+// argument must contain the list of all
+// users.
+
 exports.create = function(authors, data) {
 
     var myid = sessionStorage.getItem('user-id');
 
     var mytype = sessionStorage.getItem('user-type');
 
+    // Sets author to the current user
+    // by default. Gets overriden by data.
+
     var author = findAuthor(authors, myid);
 
     var post = {
 
+        // List of authors. Used by the
+        // author list dropdown.
+
         authors: authors,
+
+        // The post title. When this is
+        // the new post then initial slug
+        // is generated by it.
+
         title: ko.observable('Untitled'),
+
+        // The post slug. Can contain
+        // "safe" characters only.
+
         slug: ko.observable('untitled'),
+
+        // The post description. Can
+        // be left blank.
+
         description: ko.observable(''),
+
+        // The post content. Can be either
+        // Markdown or raw HTML.
+
         content: ko.observable(''),
+
+        // The post type. Currently
+        // available types are post,
+        // page and block.
+
         type: ko.observable('post'),
+
+        // Type of the post content.
+        // Will be processed by the
+        // Markdown formatter when set
+        // to 'markdown''
+
         content_type: ko.observable('markdown'),
+
+        // Flag to set whether the post
+        // is published or not.
+
         published: ko.observable(false),
+
+        // Flag to set whether commenting
+        // is allowed or not.
+
         commenting: ko.observable(true),
-        date_published: ko.observable(Math.floor(Date.now() / 1000)),
+
+        // List of tags. Tags are separated
+        // by commas.
+
         tags: ko.observable(''),
+
+        // The count of comments.
+        // Currently not used.
+
         comments: ko.observable(0),
+
+
+        // Selected user. Only admins
+        // can select author other than
+        // themself.
+
         author: ko.observable(author),
+
+        // Flag that indicates whether
+        // the current user can select
+        // the post author.
+
         author_selectable: mytype === 'admin',
+
+        // Publish date as a string in
+        // the format YYYY-MM-DD. Might be
+        // unset when published flag is not set.
+
         date: ko.observable(''),
 
-        dfmode: function() {
+        // Update date as a string in
+        // the format YYYY-MM-DD.
 
-            var editor = document.getElementById('post-content');
+        update: ko.observable(''),
 
-            editor.style.border = '0';
-            editor.style.top = '0';
-            editor.style.left = '0';
-            editor.style.position = 'fixed';
-            editor.style.height = '100%';
+        // Validates the post data.
+        // Saves or updates it using the API.
+
+        submit: function() {
+
+            submitPost(post, true);
         },
 
-        save: function(form) {
+        // Similar to submit but leaves
+        // the form.
 
-            validate.clear(form);
+        save: function() {
 
-            if (post.title() === '') {
-
-                validate.error('post-title', 'Title is not entered.');
-            }
-
-            var slug = post.slug();
-
-            if (slug === '') {
-
-                validate.error('post-slug', 'Slug is not entered.');
-
-            } else {
-
-                if (!slug.match(/^[a-z0-9\-_]+$/)) {
-
-                    validate.error('post-slug', 'Use lowercase letters, numbers, hyphen and underscore.');
-                }
-            }
-
-            if (post.content() === '') {
-
-                validate.error('post-content', 'Content is not entered.');
-            }
-
-            var date = post.date();
-
-            if (date === '') {
-
-                if (post.published()) {
-
-                    validate.error('post-date', 'Publish date is not entered.');
-                }
-
-            } else if (!date.match(/^\d{4}\-\d{2}\-\d{2}$/)) {
-
-                validate.error('post-date', 'Date must be in the YYYY-MM-DD format.');
-            }
-
-            if (validate.hasError(form)) {
-
-                return false;
-            }
-
-            if (post.$id) {
-
-                api.updatePost(post.$id, post.toJS()).then(function(response) {
-
-                    if (response.status === 'success') {
-
-                        message.info('Post updated.');
-
-                        route.go(post.type() + 's');
-
-                    } else {
-
-                        validate.formError(form, response.message);
-
-                        window.scroll(0, 0);
-                    }
-
-                }, message.error).done();
-
-            } else {
-
-                api.savePost(post.toJS()).then(function(response) {
-
-                    if (response.status === 'success') {
-
-                        message.info('Post saved.');
-
-                        route.go(post.type() + 's');
-
-                    } else {
-
-                        validate.formError(form, response.message);
-
-                        window.scroll(0, 0);
-                    }
-
-                }, message.error).done();
-            }
+            submitPost(post, false);
         },
+
+        // Returns the plain data object
+        // to send to the backend.
 
         toJS: function() {
 
@@ -8470,20 +8515,10 @@ exports.create = function(authors, data) {
 
             if (date !== '') {
 
-                var match = date.match(/^(\d{4})\-(\d{2})\-(\d{2})$/);
-
-                if (!match) {
-
-                    throw new Error('Date does not match pattern: ' + date);
-                }
-
-                var d = new Date();
-
-                d.setUTCHours(0, 0, 0, 0);
-                d.setUTCFullYear(parseInt(match[1], 10), parseInt(match[2], 10) - 1, parseInt(match[3], 10));
-
-                date_published = Math.floor(d.getTime() / 1000);
+                date_published = isoDateToUnix(date);
             }
+
+            var date_updated = isoDateToUnix(post.update());
 
             return {
 
@@ -8493,9 +8528,8 @@ exports.create = function(authors, data) {
                 description: post.description(),
                 content: post.content(),
                 type: post.type(),
-                tags: [],
                 date_published: date_published,
-                date_updated: Math.floor(Date.now() / 1000),
+                date_updated: date_updated,
                 commenting: post.commenting(),
                 published: post.published(),
                 content_type: post.content_type(),
@@ -8504,9 +8538,15 @@ exports.create = function(authors, data) {
         }
     };
 
+    // Sets the view model values by the
+    // actual data object.
+
     if (data) {
 
-        var author = findAuthor(authors, data.author);
+        author = findAuthor(authors, data.author);
+
+        // When the publish date is set then
+        // set the date field to formatted string.
 
         if (typeof data.date_published !== 'undefined') {
 
@@ -8539,9 +8579,14 @@ exports.create = function(authors, data) {
         });
     }
 
+    // Default update date is the current date.
+
+    post.update(new Date().toISOString().substring(0, 10));
+
     post.published.subscribe(function(value) {
 
         // Set publish date when post is published.
+        // Applies only when no publish date is set.
 
         if (value && post.date() === '') {
 
@@ -8551,6 +8596,9 @@ exports.create = function(authors, data) {
 
     return post;
 };
+
+// Finds matching author from the
+// array of authors.
 
 function findAuthor(authors, id) {
 
@@ -8574,6 +8622,170 @@ function findAuthor(authors, id) {
     return author;
 }
 
+// Converts ISO8601 date part into
+// an Unix timestamp.
+
+function isoDateToUnix(string) {
+
+    var match = string.match(/^(\d{4})\-(\d{2})\-(\d{2})$/);
+
+    if (!match) {
+
+        throw new Error('Date does not match pattern: ' + string);
+    }
+
+    var date = new Date();
+
+    date.setUTCHours(0, 0, 0, 0);
+    date.setUTCFullYear(parseInt(match[1], 10), parseInt(match[2], 10) - 1, parseInt(match[3], 10));
+
+    return Math.floor(date.getTime() / 1000);
+}
+
+// Validates the given post.
+// Adds errors using the validate module.
+
+function validatePost(post) {
+
+    if (post.title() === '') {
+
+        validate.error('post-title', 'Title is not entered.');
+    }
+
+    var slug = post.slug();
+
+    if (slug === '') {
+
+        validate.error('post-slug', 'Slug is not entered.');
+
+    } else {
+
+        if (!slug.match(/^[a-z0-9\-_]+$/)) {
+
+            validate.error('post-slug', 'Use lowercase letters, numbers, hyphen and underscore.');
+        }
+    }
+
+    if (post.content() === '') {
+
+        validate.error('post-content', 'Content is not entered.');
+    }
+
+    var date = post.date();
+
+    if (date === '') {
+
+        if (post.published()) {
+
+            validate.error('post-date', 'Publish date is not entered.');
+        }
+
+    } else if (!date.match(/^\d{4}\-\d{2}\-\d{2}$/)) {
+
+        validate.error('post-date', 'Date must be in the YYYY-MM-DD format.');
+    }
+
+    var update = post.update();
+
+    if (update === '') {
+
+        validate.error('post-update', 'Update date is not entered.');
+
+    } else if (!update.match(/^\d{4}\-\d{2}\-\d{2}$/)) {
+
+        validate.error('post-update', 'Update date must be in the YYYY-MM-DD format.');
+    }
+}
+
+// Handles save and
+// save-with-continue actions.
+
+function submitPost(post, edit) {
+
+    var form = document.getElementById('post-form');
+
+    validate.clear(form);
+
+    validatePost(post);
+
+    if (validate.hasError(form)) {
+
+        return false;
+    }
+
+    // When post has '$id' property
+    // then it's an existing post.
+
+    if (post.$id) {
+
+        updatePost(form, post, edit);
+
+    } else {
+
+        savePost(form, post, edit);
+    }
+}
+
+// Updates the already existing
+// post. Assumes that the post
+// is validated.
+
+function updatePost(form, post, edit) {
+
+    api.updatePost(post.$id, post.toJS()).then(function(response) {
+
+        if (response.status === 'success') {
+
+            message.info('Post updated.');
+
+            if (!edit) {
+
+                route.go(post.type() + 's');
+            }
+
+        } else {
+
+            validate.formError(form, response.message);
+
+            window.scroll(0, 0);
+        }
+
+    }, message.error).done();
+}
+
+// Saves the new post.
+
+function savePost(form, post, edit) {
+
+    api.savePost(post.toJS()).then(function(response) {
+
+        if (response.status === 'success') {
+
+            message.info('Post saved.');
+
+            // Redirect to post page when we
+            // want to keep editing the post.
+            // Otherwise go back to listing page.
+
+            if (edit) {
+
+                route.go(post.type() + '/' + response.data);
+
+            } else {
+
+                route.go(post.type() + 's');
+            }
+
+        } else {
+
+            validate.formError(form, response.message);
+
+            window.scroll(0, 0);
+        }
+
+    }, message.error).done();
+}
+
 },{"../api":2,"../lib/knockout":9,"../lib/router":11,"../lib/speakingurl":12,"../message":14,"../validate":16}],19:[function(require,module,exports){
 var message = require('../message');
 var ko = require('../lib/knockout');
@@ -8582,6 +8794,8 @@ var api = require('../api');
 var validate = require('../validate');
 
 exports.create = function(data) {
+
+    var mytype = sessionStorage.getItem('user-type');
 
     var user = {
 
@@ -8594,6 +8808,8 @@ exports.create = function(data) {
         password_text: ko.observable(false),
         error: ko.observable(''),
         creating: true,
+        files: ko.observable(false),
+        mytype: mytype,
 
         save: function(form) {
 
@@ -8690,7 +8906,8 @@ exports.create = function(data) {
                 username: user.username(),
                 fullname: user.fullname(),
                 type: user.type(),
-                link: user.link()
+                link: user.link(),
+                files: user.files()
             };
 
             if (user.password_edit()) {
@@ -8723,6 +8940,7 @@ exports.create = function(data) {
         user.type(data.type);
         user.link(data.link);
         user.password_edit(false);
+        user.files(data.files);
     }
 
     return user;

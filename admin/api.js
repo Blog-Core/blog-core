@@ -149,6 +149,25 @@ exports.savePost = function(data) {
     });
 };
 
+// Removes the given post.
+
+exports.removePost = function(id) {
+
+    var options = {
+
+        method: 'DELETE',
+
+        url: '/api/entry/' + encodeURIComponent(id),
+
+        headers: { 'X-Key': apiKey() }
+    };
+
+    return xhr(options).then(function(response) {
+
+        return JSON.parse(response);
+    });
+};
+
 exports.directory = function(directory) {
 
     var options = {
@@ -347,4 +366,4 @@ var apiKey = exports.apiKey = function() {
     }
 
     return key;
-}
+};
