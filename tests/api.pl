@@ -10,7 +10,9 @@ test('POST /api/user', [setup(new_database)]):-
         username: test,
         password: test123,
         fullname: 'Test',
-        type: author }, Dict),
+        type: author,
+        files: true,
+        link: "" }, Dict),
     get_dict_ex(status, Dict, "success").
 
 % Update an user.
@@ -20,7 +22,9 @@ test('PUT /api/user/Id', [setup(new_database)]):-
         username: testa,
         password: test123,
         fullname: 'Test A',
-        type: author }, Dict1),
+        type: author,
+        files: true,
+        link: "" }, Dict1),
     get_dict_ex(status, Dict1, "success"),
     get_dict_ex(data, Dict1, Id),
     atom_concat('/api/user/', Id, Url),
@@ -28,7 +32,9 @@ test('PUT /api/user/Id', [setup(new_database)]):-
         username: testb,
         password: test321,
         fullname: 'Test B',
-        type: author }, Dict2),
+        type: author,
+        files: true,
+        link: "" }, Dict2),
     get_dict_ex(status, Dict2, "success").
 
 % Remove an user.
@@ -38,7 +44,9 @@ test('DELETE /api/user/Id', [setup(new_database)]):-
         username: test,
         password: test123,
         fullname: 'Test',
-        type: author }, Dict1),
+        type: author,
+        files: true,
+        link: "" }, Dict1),
     get_dict_ex(status, Dict1, "success"),
     get_dict_ex(data, Dict1, Id),
     atom_concat('/api/user/', Id, Url),
@@ -52,7 +60,9 @@ test('POST /api/auth', [setup(new_database)]):-
         username: test,
         password: test123,
         fullname: 'Test',
-        type: author }, User),
+        type: author,
+        files: true,
+        link: "" }, User),
     get_dict_ex(status, User, "success"),
     request_post('/api/auth', _{
         username: test,
@@ -83,7 +93,9 @@ test('POST /api/entry', [setup(new_database)]):-
         username: test,
         password: test123,
         fullname: 'Test',
-        type: author }, User),
+        type: author,
+        files: true,
+        link: "" }, User),
     get_dict_ex(status, User, "success"),
     get_dict_ex(data, User, Author),
     request_post('/api/entry', _{
@@ -103,12 +115,14 @@ test('POST /api/entry', [setup(new_database)]):-
     get_dict_ex(status, Post, "success"),
     get_dict_ex(data, Post, _).
 
-test('PUT /api/post', [setup(new_database)]):-
+test('PUT /api/entry', [setup(new_database)]):-
     request_post('/api/user', _{
         username: test,
         password: test123,
         fullname: 'Test',
-        type: author }, User),
+        type: author,
+        files: true,
+        link: "" }, User),
     get_dict_ex(status, User, "success"),
     get_dict_ex(data, User, Author),
     request_post('/api/entry', _{
