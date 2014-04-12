@@ -38,7 +38,9 @@ bc_init:-
         fullname: 'Admin',
         username: 'admin',
         password: 'admin',
-        type: admin
+        type: admin,
+        files: true,
+        link: ""
     }, _).
 
 bc_init.
