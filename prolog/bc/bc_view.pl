@@ -1,6 +1,7 @@
 :- module(bc_view, [
     bc_view_cached/1,       % +Path
     bc_view_send/2,         % +Name, +Data
+    bc_view_send/3,         % +Name, +Data, +ContentType
     bc_view_enable_cache/0,
     bc_view_disable_cache/0,
     bc_view_purge_cache/0
@@ -15,7 +16,8 @@
 
 :- st_set_extension(html).
 
-:- dynamic(cache_enabled).
+:- dynamic(cache_enabled/0).
+:- dynamic(cache/3).
 
 %! bc_view_enable_cache is det.
 %
@@ -31,7 +33,7 @@ bc_view_enable_cache:-
 
 bc_view_disable_cache:-
     retractall(cache_enabled),
-    retractall(cache(_, _)),
+    retractall(cache(_, _, _)),
     debug(bc_view, 'view caching is disabled', []).
 
 %! bc_view_purge_cache is det.
@@ -39,10 +41,8 @@ bc_view_disable_cache:-
 % Purges all cache entries.
 
 bc_view_purge_cache:-
-    retractall(cache(_, _)),
+    retractall(cache(_, _, _)),
     debug(bc_view, 'purged cache', []).
-
-:- dynamic(cache/2).
 
 %! bc_view_cached(+Path, +Content) is semidet.
 %
@@ -50,34 +50,49 @@ bc_view_purge_cache:-
 % there is no caches result for the URL path.
 
 bc_view_cached(Path):-
-    cache(Path, Content),
+    cache(Path, Content, Type),
     debug(bc_view, 'sending cached view for ~p', [Path]),
-    write_content_type,
+    write_content_type(Type),
     write(Content).
 
 %! bc_view_send(+Name, +Data) is det.
+%
+% Same as bc_view_send/3 with the default
+% content type. The default content type is
+% `Content-type: text/html; charset=UTF-8`.
+
+bc_view_send(Name, Data):-
+    default_content_type(Type),
+    bc_view_send(Name, Data, Type).
+
+%! bc_view_send(+Name, +Data, +ContentType) is det.
 %
 % Renders and sends a simple-template view.
 % Stores rendering result in cache when caching
 % is enabled.
 
-% FIXME version with content-type
-
-bc_view_send(Name, Data):-
+bc_view_send(Name, Data, Type):-
     cache_enabled, !,
     http_current_request(Request),
     memberchk(path(Path), Request),
-    write_content_type,
+    write_content_type(Type),
     with_output_to(string(Content), st_render_file(Name, Data)),
-    asserta(cache(Path, Content)),
+    asserta(cache(Path, Content, Type)),
     debug(bc_view, 'stored view in cache ~p', [Path]),
     write(Content).
 
-bc_view_send(Name, Data):-
-    write_content_type,
+bc_view_send(Name, Data, Type):-
+    write_content_type(Type),
     st_render_file(Name, Data).
 
-% Writes content type header.
+% The default content type for views.
 
-write_content_type:-
-    write('Content-type: text/html; charset=UTF-8\r\n\r\n').
+default_content_type('Content-type: text/html; charset=UTF-8').
+
+%! write_content_type(+Type) is det.
+%
+% Writes the given content type and charset.
+% Does not validate anything.
+
+write_content_type(Type):-
+    format('~w\r\n\r\n', [Type]).
