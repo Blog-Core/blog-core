@@ -19,7 +19,7 @@
 bc_set_user(User):-
     retractall(user(_)),
     assertz(user(User)),
-    get_dict_ex(username, User, Username),
+    Username = User.username,
     debug(bc_data_cur_user, 'set current user to ~p', [Username]).
 
 %! bc_user(-User) is det.

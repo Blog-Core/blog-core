@@ -23,14 +23,14 @@
 % when the entry slug already exists.
 
 bc_entry_save(Entry, Id):-
-    get_dict_ex(slug, Entry, Slug),
+    Slug = Entry.slug,
     ds_find(entry, slug=Slug, Existing),
     length(Existing, Length),
     (   Length > 0
     ->  throw(error(existing_slug(Slug)))
     ;   bc_entry_format(Entry, Formatted),
         bc_user(User),
-        get_dict_ex('$id', User, UserId),
+        UserId = User.'$id',
         put_dict(author, Formatted, UserId, Processed),
         ds_insert(Processed, Id),
         debug(bc_data_entry, 'saved entry ~p', [Id])).
@@ -49,8 +49,8 @@ bc_entry_update(Id, Entry):-
 % the entries content type.
 
 bc_entry_format(EntryIn, EntryOut):-
-    get_dict_ex(content, EntryIn, Content),
-    get_dict_ex(content_type, EntryIn, ContentType),
+    Content = EntryIn.content,
+    ContentType = EntryIn.content_type,
     (   ContentType = markdown
     ->  md_html_string(Content, Html)
     ;   Html = Content),
@@ -79,7 +79,7 @@ bc_entry_list(Type, Sorted):-
     sort_dict(date_updated, desc, List, Sorted).
 
 attach_comment_count(EntryIn, EntryOut):-
-    get_dict_ex('$id', EntryIn, Id),
+    Id = EntryIn.'$id',
     ds_find(comment, post=Id, [post], List),
     length(List, Count),
     put_dict(_{ comments: Count }, EntryIn, EntryOut).

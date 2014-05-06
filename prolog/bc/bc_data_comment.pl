@@ -48,7 +48,7 @@ bc_comment_list_full(PostId, Sorted):-
 bc_comment_save(PostId, Comment):-
     comment_check_answer(Comment),
     (   ds_get(PostId, [commenting], Post)
-    ->  (   get_dict_ex(commenting, Post, true)
+    ->  (   Post.commenting = true
         ->  comment_save(PostId, Comment)
         ;   throw(error(commenting_disabled(PostId))))
     ;   throw(error(no_post(PostId)))).
@@ -58,7 +58,7 @@ bc_comment_save(PostId, Comment):-
 % saves into docstore.
 
 comment_save(PostId, Comment):-
-    get_dict_ex(content, Comment, Content),
+    Content = Comment.content,
     format_comment(Content, Formatted),
     get_time(Time),
     Ts is floor(Time),
@@ -74,8 +74,8 @@ comment_save(PostId, Comment):-
 % answer is not correct.
 
 comment_check_answer(Comment):-
-    get_dict_ex(question, Comment, Id),
-    get_dict_ex(answer, Comment, Answer),
+    Id = Comment.question,
+    Answer = Comment.answer,
     (   question(Id, _, Answer)
     ;   throw(error(invalid_answer(Answer)))), !.
 

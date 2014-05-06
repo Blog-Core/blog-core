@@ -15,7 +15,7 @@
 
 bc_config_get(Name, Value):-
     (   ds_find(config, name=Name, [Doc])
-    ->  get_dict_ex(value, Doc, Value)
+    ->  Value = Doc.value
     ;   throw(error(no_config(Name)))).
 
 %! bc_config_set(+Name, +Value) is det.

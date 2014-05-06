@@ -19,20 +19,20 @@
 % Retrieves the user's API key.
 
 bc_user_auth(Auth, Info):-
-    get_dict_ex(username, Auth, Username),
-    get_dict_ex(password, Auth, Password),
+    Username = Auth.username,
+    Password = Auth.password,
     debug(bc_data, 'authenticating ~p', [Username]),
     (   ds_find(user, username=Username, [User])
-    ->  get_dict_ex(salt, User, Salt),
-        get_dict_ex(password, User, Stored),
+    ->  Salt = User.salt,
+        Stored = User.password,
         atom_concat(Salt, Password, Data),
         sha_hash(Data, Hash, [encoding(utf8), algorithm(sha256)]),
         hash_atom(Hash, HashAtom),
         (   HashAtom = Stored
         ->  debug(bc_data, 'authentication successful', []),
-            get_dict_ex(key, User, Key),
-            get_dict_ex(type, User, Type),
-            get_dict_ex('$id', User, Id),
+            Key = User.key,
+            Type = User.type,
+            Id = User.'$id',
             Info = _{ id: Id, type: Type, key: Key }
         ;   debug(bc_data, 'authentication failed', []),
             throw(error(invalid_credentials)))
@@ -47,7 +47,7 @@ bc_user_auth(Auth, Info):-
 % API key to the user.
 
 bc_user_save(User, Id):-
-    get_dict_ex(username, User, Username),
+    Username = User.username,
     (   bc_user_username_exists(Username)
     ->  throw(error(existing_username(Username)))
     ;   bc_user_hash(User, Hashed),
@@ -74,7 +74,7 @@ bc_user_username_exists(Username):-
 % FIXME username uniqueness
 
 bc_user_update(Id, User):-
-    get_dict_ex(type, User, Type),
+    Type = User.type,
     (   bc_user_last_admin(Id), Type \= admin
     ->  throw(error(cannot_demote_last_admin(Id)))
     ;   bc_user_hash(User, Hashed),
@@ -130,7 +130,7 @@ bc_user_remove(Id):-
 
 bc_user_last_admin(Id):-
     ds_find(user, type=admin, [type], [Admin]),
-    get_dict_ex('$id', Admin, Id).
+    Id = Admin.'$id'.
 
 %! bc_user_has_posts(+Id) is semidet.
 %

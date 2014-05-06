@@ -13,7 +13,7 @@ test('POST /api/user', [setup(new_database)]):-
         type: author,
         files: true,
         link: "" }, Dict),
-    get_dict_ex(status, Dict, "success").
+    Dict.status = "success".
 
 % Update an user.
 
@@ -25,8 +25,8 @@ test('PUT /api/user/Id', [setup(new_database)]):-
         type: author,
         files: true,
         link: "" }, Dict1),
-    get_dict_ex(status, Dict1, "success"),
-    get_dict_ex(data, Dict1, Id),
+    Dict1.status = "success",
+    Dict1.data = Id,
     atom_concat('/api/user/', Id, Url),
     request_put(Url, _{
         username: testb,
@@ -35,7 +35,7 @@ test('PUT /api/user/Id', [setup(new_database)]):-
         type: author,
         files: true,
         link: "" }, Dict2),
-    get_dict_ex(status, Dict2, "success").
+    Dict2.status = "success".
 
 % Remove an user.
 
@@ -47,11 +47,11 @@ test('DELETE /api/user/Id', [setup(new_database)]):-
         type: author,
         files: true,
         link: "" }, Dict1),
-    get_dict_ex(status, Dict1, "success"),
-    get_dict_ex(data, Dict1, Id),
+    Dict1.status = "success",
+    Dict1.data = Id,
     atom_concat('/api/user/', Id, Url),
     request_del(Url, Dict2),
-    get_dict_ex(status, Dict2, "success").
+    Dict2.status = "success".
 
 % Authenticate user.
 
@@ -63,13 +63,13 @@ test('POST /api/auth', [setup(new_database)]):-
         type: author,
         files: true,
         link: "" }, User),
-    get_dict_ex(status, User, "success"),
+    User.status = "success",
     request_post('/api/auth', _{
         username: test,
         password: test123
     }, Auth),
-    get_dict_ex(status, Auth, "success"),
-    get_dict_ex(data, Auth, _).
+    Auth.status = "success",
+    Auth.data = _.
 
 % Invalid credentials.
 
@@ -78,15 +78,15 @@ test('POST /api/auth (invalid credentials)', [setup(new_database)]):-
         username: not_exists,
         password: test123
     }, Auth),
-    get_dict_ex(status, Auth, "error"),
-    get_dict_ex(message, Auth, "Invalid auth credentials.").
+    Auth.status = "error",
+    Auth.message = "Invalid auth credentials.".
 
 test('POST /api/auth (invalid data)', [setup(new_database)]):-
     request_post('/api/auth', _{
         password: test123
     }, Auth),
-    get_dict_ex(status, Auth, "error"),
-    get_dict_ex(message, Auth, "Invalid input: [no_key(#,username)].").
+    Auth.status = "error",
+    Auth.message = "Invalid input: [no_key(#,username)].".
 
 test('POST /api/entry', [setup(new_database)]):-
     request_post('/api/user', _{
@@ -96,8 +96,8 @@ test('POST /api/entry', [setup(new_database)]):-
         type: author,
         files: true,
         link: "" }, User),
-    get_dict_ex(status, User, "success"),
-    get_dict_ex(data, User, Author),
+    User.status = "success",
+    User.data = Author,
     request_post('/api/entry', _{
         author: Author,
         title: "Test post",
@@ -112,8 +112,8 @@ test('POST /api/entry', [setup(new_database)]):-
         description: "Test",
         type: post
     }, Post),
-    get_dict_ex(status, Post, "success"),
-    get_dict_ex(data, Post, _).
+    Post.status = "success",
+    Post.data = _.
 
 test('PUT /api/entry', [setup(new_database)]):-
     request_post('/api/user', _{
@@ -123,8 +123,8 @@ test('PUT /api/entry', [setup(new_database)]):-
         type: author,
         files: true,
         link: "" }, User),
-    get_dict_ex(status, User, "success"),
-    get_dict_ex(data, User, Author),
+    User.status = "success",
+    User.data = Author,
     request_post('/api/entry', _{
         author: Author,
         title: "Test post",
@@ -139,8 +139,8 @@ test('PUT /api/entry', [setup(new_database)]):-
         description: "Test",
         type: post
     }, Post),
-    get_dict_ex(status, Post, "success"),
-    get_dict_ex(data, Post, PostId),
+    Post.status = "success",
+    Post.data = PostId,
     atom_concat('/api/entry/', PostId, UpdateUrl),
     request_put(UpdateUrl, _{
         author: Author,
@@ -156,47 +156,47 @@ test('PUT /api/entry', [setup(new_database)]):-
         description: "Test 1",
         type: post
     }, Update),
-    get_dict_ex(status, Update, "success").
+    Update.status = "success".
 
 test('GET /api/entries/post', [setup(new_database)]):-
     request_get('/api/entries/post', Dict),
-    get_dict_ex(status, Dict, "success"),
-    get_dict_ex(data, Dict, List),
+    Dict.status = "success",
+    Dict.data = List,
     assertion(is_list(List)),
     List = [Post],
-    get_dict_ex(title, Post, _),
-    get_dict_ex(author, Post, _).
+    Post.title = _,
+    Post.author = _.
 
 test('GET /api/entry/Id', [setup(new_database)]):-
     ds_all(entry, [Post]),
-    get_dict_ex('$id', Post, Id),
+    Post.'$id' = Id,
     atom_concat('/api/entry/', Id, Path),
     request_get(Path, Dict),
-    get_dict_ex(status, Dict, "success"),
-    get_dict_ex(data, Dict, PostDict),
-    get_dict_ex(title, PostDict, _),
-    get_dict_ex(author, PostDict, _),
-    get_dict_ex(content, PostDict, _).
+    Dict.status = "success",
+    Dict.data = PostDict,
+    PostDict.title = _,
+    PostDict.author = _,
+    PostDict.content = _.
 
 test('GET /api/configs', [setup(new_database)]):-
     request_get('/api/configs', Dict),
-    get_dict_ex(status, Dict, "success"),
-    get_dict_ex(data, Dict, List),
+    Dict.status = "success",
+    Dict.data = List,
     assertion(is_list(List)),
     List = [TitleConfig],
-    get_dict_ex(name, TitleConfig, _),
-    get_dict_ex(value, TitleConfig, _).
+    TitleConfig.name = _,
+    TitleConfig.value = _.
 
 test('PUT /api/config', [setup(new_database)]):-
     request_put('/api/config', _{
         name: "title",
         value: "Updated title"
     }, Dict),
-    get_dict_ex(status, Dict, "success").
+    Dict.status = "success".
 
 test('POST /api/post/Id/comment', [setup(new_database)]):-
     ds_all(entry, [Post]),
-    get_dict_ex('$id', Post, Id),
+    Post.'$id' = Id,
     atomic_list_concat(['/api/post/', Id, '/comment'], Path),
     request_post(Path, _{
         author: "RLa",
@@ -204,18 +204,18 @@ test('POST /api/post/Id/comment', [setup(new_database)]):-
         question: 1,
         answer: "3"
     }, Dict),
-    get_dict_ex(status, Dict, "success").
+    Dict.status = "success".
 
 test('GET /api/post/Id/comments', [setup(new_database)]):-
     ds_all(entry, [Post]),
-    get_dict_ex('$id', Post, Id),
+    Post.'$id' = Id,
     atomic_list_concat(['/api/post/', Id, '/comments'], Path),
     request_get(Path, Dict),
-    get_dict_ex(status, Dict, "success"),
-    get_dict_ex(data, Dict, List),
+    Dict.status = "success",
+    Dict.data = List,
     assertion(is_list(List)),
     List = [Comment],
-    get_dict_ex(author, Comment, _),
-    get_dict_ex(date, Comment, _).
+    Comment.author = _,
+    Comment.date = _.
 
 :- end_tests(api).

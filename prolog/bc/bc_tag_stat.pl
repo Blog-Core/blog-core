@@ -16,7 +16,7 @@ bc_tag_stat(Tags):-
     tag_statistics(Posts, _{}, Tags).
 
 tag_statistics([Post|Posts], Acc, Tags):-
-    get_dict_ex(tags, Post, PostTags),
+    PostTags = Post.tags,
     update_tagstat(PostTags, Acc, Tmp),
     tag_statistics(Posts, Tmp, Tags).
 

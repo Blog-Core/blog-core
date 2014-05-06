@@ -25,8 +25,8 @@ config_list:-
 
 config_update:-
     bc_read_by_schema(config, Config),
-    get_dict_ex(name, Config, Name),
-    get_dict_ex(value, Config, Value),
+    Name = Config.name,
+    Value = Config.value,
     bc_config_set(Name, Value),
     bc_reply_success(Name).
 

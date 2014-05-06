@@ -9,6 +9,7 @@
 
 % FIXME source_sink `prolog/bc/bc_data2' does not exist
 % FIXME goal directive failed
+% FIXME remove compile messages
 
 user:message_hook(Term, error, _):-
     Term = error(syntax_error(_), _),

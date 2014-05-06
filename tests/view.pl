@@ -29,8 +29,8 @@ test(cache_purge, [setup((bc_view_enable_cache, new_database))]):-
     request_get_content('/post/default-test-post', Html1),
     sub_string(Html1, _, _, _, "<strong>test</strong>"), !,
     ds_find(entry, slug='default-test-post', [Post]),
-    get_dict_ex('$id', Post, Id),
-    get_dict_ex(author, Post, Author),
+    Post.'$id' = Id,
+    Post.author = Author,
     atom_concat('/api/entry/', Id, Path),
     request_put(Path, _{
         author: Author,
@@ -46,7 +46,7 @@ test(cache_purge, [setup((bc_view_enable_cache, new_database))]):-
         description: "Test",
         type: post
     }, Update),
-    get_dict_ex(status, Update, "success"),
+    Update.status = "success",
     request_get_content('/post/default-test-post', Html2),
     sub_string(Html2, _, _, _, "<strong>modified</strong>"), !.
 

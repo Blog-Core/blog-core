@@ -67,7 +67,7 @@ new_database:-
 
 test_auth_key(Key):-
     ds_find(user, username=default_test, [key], [User]),
-    get_dict_ex(key, User, Key).
+    User.key = Key.
 
 request_get(Path, Dict):-
     test_auth_key(Key),
