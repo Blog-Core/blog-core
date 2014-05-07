@@ -50,4 +50,6 @@ test(cache_purge, [setup((bc_view_enable_cache, new_database))]):-
     request_get_content('/post/default-test-post', Html2),
     sub_string(Html2, _, _, _, "<strong>modified</strong>"), !.
 
+% FIXME test case for custom content type.
+
 :- end_tests(view).
