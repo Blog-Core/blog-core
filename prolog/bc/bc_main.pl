@@ -31,6 +31,7 @@ user:message_hook(Term, error, _):-
 :- use_module(bc_view).
 :- use_module(bc_admin).
 :- use_module(bc_excerpt).
+:- use_module(bc_data).
 
 %! bc_environment(-Env) is det.
 %
@@ -92,7 +93,7 @@ bc_main(_):-
     throw(error(no_http_unix_daemon)).
 
 bc_main(File):-
-   ds_open(File),
+   bc_data_open(File),
    http_daemon,
    asserta(initialized).
 
@@ -106,6 +107,6 @@ bc_main(_, _):-
     initialized, !.
 
 bc_main(File, Options):-
-    ds_open(File),
+    bc_data_open(File),
     http_server(bc_route, Options),
     asserta(initialized).
