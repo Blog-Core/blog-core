@@ -1,19 +1,54 @@
 :- module(bc_admin, []).
 
 :- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_wrapper)).
+:- use_module(library(arouter)).
 
-:- http_handler('/admin', serve_admin_file, [prefix]).
+:- route_get(admin/css/File, send_file(css/File)).
 
-serve_admin_file(Request):-
-    memberchk(path(Path), Request),
-    (   Path = '/admin'
-    ->  File = '/index.html'
-    ;   atom_concat('/admin', File, Path)),
+:- route_get(admin/fonts/File, send_file(fonts/File)).
+
+:- route_get(admin/img/File, send_file(img/File)).
+
+:- route_get(admin/tpl/File, send_file(tpl/File)).
+
+:- route_get(admin/File, send_file(File)).
+
+:- route_get(admin, send_file('index.html')).
+
+send_file(Spec):-
+    admin_relative(Spec, Full),
+    check_path(Full),
+    send_file_unsafe(Full).
+
+send_file_unsafe(Path):-
+    http_current_request(Request),
+    http_reply_file(Path, [unsafe(true)], Request).
+
+% Checks that the path is safe. It
+% must not contain '..'.
+
+check_path(Path):-
+    sub_atom(Path, _, _, _, '..'), !,
+    throw(error('Admin path must not contain ..')).
+
+check_path(_).
+
+% Turns admin-local URL path
+% to absolute filesystem path.
+
+admin_relative(Spec, Path):-
     public_path(Public),
-    atom_concat(Public, File, Full),
-    exists_file(Full),
-    \+ sub_atom(Full, _, _, _, '..'),
-    http_reply_file(Full, [unsafe(true)], Request).
+    spec_to_path(Public/Spec, Path).
+
+spec_to_path(Atom, Atom):-
+    atom(Atom), !.
+
+spec_to_path(/(Prefix, Name), Path):-
+    spec_to_path(Prefix, PrefixPath),
+    spec_to_path(Name, NamePath),
+    atom_concat(PrefixPath, '/', PrefixPathSlash),
+    atom_concat(PrefixPathSlash, NamePath, Path).
 
 public_path(Public):-
     module_property(bc_admin, file(File)),
