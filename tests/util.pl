@@ -1,5 +1,6 @@
 :- module(util, [
     new_database/0,
+    default_user_id/1,    % -Id
     request_get/2,        % +Path, -Dict
     request_put/3,        % +Path, +DictIn, -DictOut
     request_del/2,        % +Path, -Dict
@@ -61,7 +62,13 @@ new_database:-
         content: "Test comment",
         question: 1,
         answer: '3'
-    }).
+    }, _).
+
+% Retrieves the default test user id.
+
+default_user_id(UserId):-
+    ds_find(user, username=default_test, [User]),
+    User.'$id' = UserId.
 
 % Auth key for the test user.
 

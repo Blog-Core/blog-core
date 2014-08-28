@@ -3,6 +3,8 @@
 
 :- load_files([
     tests/api,
+    tests/api_comment,
+    tests/api_comment_reply_to,
     tests/files,
     tests/view
 ], [ if(not_loaded) ]).

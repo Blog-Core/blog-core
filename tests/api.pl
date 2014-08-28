@@ -194,28 +194,4 @@ test('PUT /api/config', [setup(new_database)]):-
     }, Dict),
     Dict.status = "success".
 
-test('POST /api/post/Id/comment', [setup(new_database)]):-
-    ds_all(entry, [Post]),
-    Post.'$id' = Id,
-    atomic_list_concat(['/api/post/', Id, '/comment'], Path),
-    request_post(Path, _{
-        author: "RLa",
-        content: "Test comment",
-        question: 1,
-        answer: "3"
-    }, Dict),
-    Dict.status = "success".
-
-test('GET /api/post/Id/comments', [setup(new_database)]):-
-    ds_all(entry, [Post]),
-    Post.'$id' = Id,
-    atomic_list_concat(['/api/post/', Id, '/comments'], Path),
-    request_get(Path, Dict),
-    Dict.status = "success",
-    Dict.data = List,
-    assertion(is_list(List)),
-    List = [Comment],
-    Comment.author = _,
-    Comment.date = _.
-
 :- end_tests(api).
