@@ -8,6 +8,7 @@
 
 :- use_module(bc_data_config).
 :- use_module(bc_data_user).
+:- use_module(bc_data_migrate).
 
 %! bc_data_open(+File) is det.
 %
@@ -31,9 +32,17 @@ bc_data_close:-
 % Inserts the default admin user.
 
 bc_init:-
-    ds_all(config, []), !,
-    debug(bc_data, 'inserting initial data', []),
-    bc_config_set(title, 'Untitled site'),
+    bc_data_migrate(bc_initial_config, 'Inserts the initial config', bc_initial_config),
+    bc_data_migrate(bc_initial_user, 'Inserts the initial user', bc_initial_user).
+
+% Inserts the initial config.
+
+bc_initial_config:-
+    bc_config_set(title, 'Untitled site').
+
+% Inserts the initial user.
+
+bc_initial_user:-
     bc_user_save(user{
         fullname: 'Admin',
         username: 'admin',
@@ -42,5 +51,3 @@ bc_init:-
         files: true,
         link: ""
     }, _).
-
-bc_init.

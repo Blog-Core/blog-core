@@ -32,6 +32,7 @@ user:message_hook(Term, error, _):-
 :- use_module(bc_admin).
 :- use_module(bc_excerpt).
 :- use_module(bc_data).
+:- use_module(bc_data_migrate).
 
 %! bc_environment(-Env) is det.
 %
@@ -58,6 +59,7 @@ user:message_hook(Term, error, _):-
     :- debug(arouter).
     :- debug(docstore).
     :- debug(bc_data).
+    :- debug(bc_data_migrate).
     :- debug(bc_router).
     :- debug(bc_view).
     :- debug(bc_bust).
