@@ -69,7 +69,9 @@ entry_get_info(Id):-
     bc_entry_info(Id, Entry),
     bc_reply_success(Entry).
 
-% Post schema.
+% Entry schema.
+% FIXME max_length of language identifier
+% can probably be reduced.
 
 :- register_schema(entry, _{
     type: dict,
@@ -86,7 +88,8 @@ entry_get_info(Id):-
         content: string,
         content_type: _{ type: enum, values: [markdown, raw] },
         description: string,
-        type: _{ type: enum, values: [page, post, block] }
+        type: _{ type: enum, values: [page, post, block] },
+        language: _{ type: string, min_length: 2, max_length: 10 }
     },
     optional: [ author, date_published ]
 }).

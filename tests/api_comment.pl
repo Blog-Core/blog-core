@@ -33,4 +33,6 @@ test('Commenting not enabled', [setup(new_database)]):-
     new_comment(Post.data, Comment),
     assertion(Comment.status = "error").
 
+% FIXME test with wrong answer.
+
 :- end_tests(api_comment).

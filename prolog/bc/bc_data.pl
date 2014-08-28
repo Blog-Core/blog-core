@@ -32,8 +32,18 @@ bc_data_close:-
 % Inserts the default admin user.
 
 bc_init:-
-    bc_data_migrate(bc_initial_config, 'Inserts the initial config', bc_initial_config),
-    bc_data_migrate(bc_initial_user, 'Inserts the initial user', bc_initial_user).
+    bc_data_migrate(
+        bc_initial_config,
+        'Inserts the initial config',
+        bc_initial_config),
+    bc_data_migrate(
+        bc_initial_user,
+        'Inserts the initial user',
+        bc_initial_user),
+    bc_data_migrate(
+        bc_add_language,
+        'Adds language to posts',
+        bc_add_language).
 
 % Inserts the initial config.
 
@@ -51,3 +61,10 @@ bc_initial_user:-
         files: true,
         link: ""
     }, _).
+
+% Adds and sets language for
+% entries.
+
+bc_add_language:-
+    ds_col_add_key(entry, language, en),
+    bc_config_set(default_language, en).
