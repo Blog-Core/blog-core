@@ -38,6 +38,7 @@ comment_save(PostId):-
 
 comment_remove(Id):-
     bc_comment_remove(Id),
+    bc_view_purge_cache,
     bc_reply_success(Id).
 
 % Human test question. Used in
