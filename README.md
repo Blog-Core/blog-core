@@ -10,6 +10,7 @@ A CMS/blog framework for [Swi-Prolog](http://swi-prolog.org/). It is currently w
  * Built-in client-side cache busting.
  * Administration API.
  * Administration UI that supports mobile devices.
+ * Data migrations.
 
 ## License
 
