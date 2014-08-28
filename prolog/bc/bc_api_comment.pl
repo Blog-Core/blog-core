@@ -13,10 +13,10 @@
 % For admin interface.
 
 :- route_get(api/post/Id/comments,
-    bc_auth, comment_list(Id)).
+    bc_auth, comment_tree(Id)).
 
-comment_list(PostId):-
-    bc_comment_list(PostId, Comments),
+comment_tree(PostId):-
+    bc_comment_tree(PostId, Comments),
     bc_reply_success(Comments).
 
 % Adds new comment. This is available for
@@ -27,9 +27,9 @@ comment_list(PostId):-
 
 comment_save(PostId):-
     bc_read_by_schema(comment, Comment),
-    bc_comment_save(PostId, Comment),
+    bc_comment_save(PostId, Comment, CommentId),
     bc_view_purge_cache,
-    bc_reply_success(PostId).
+    bc_reply_success(CommentId).
 
 % Removes the given comment.
 
@@ -58,7 +58,9 @@ comment_question:-
     keys: _{
         author: _{ type: string, min_length: 1 },
         content: _{ type: string, min_length: 1 },
+        reply_to: _{ type: atom, min_length: 1 },
         question: integer,
         answer: atom
-    }
+    },
+    optional: [ reply_to ]
 }).

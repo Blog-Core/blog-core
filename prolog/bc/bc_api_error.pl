@@ -68,5 +68,11 @@ bc_handle_error(error(user_has_existing_posts(_))):- !,
 bc_handle_error(error(existing_username(_))):- !,
     bc_reply_error('Username already exists.').
 
+bc_handle_error(error(reply_no_comment(_))):- !,
+    bc_reply_error('The comment replied to does not exist.').
+
+bc_handle_error(error(reply_post_id_mismatch(_))):- !,
+    bc_reply_error('The comment replied to does not match the post.').
+
 bc_handle_error(Error):-
     throw(Error).
