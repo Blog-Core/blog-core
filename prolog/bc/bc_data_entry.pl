@@ -19,28 +19,25 @@
 %! bc_entry_save(+Entry, -Id) is det.
 %
 % Saves and formats the new entry.
-% Throws error(existing_slug(Slug))
-% when the entry slug already exists.
 
 bc_entry_save(Entry, Id):-
-    Slug = Entry.slug,
-    ds_find(entry, slug=Slug, Existing),
-    length(Existing, Length),
-    (   Length > 0
-    ->  throw(error(existing_slug(Slug)))
-    ;   bc_entry_format(Entry, Formatted),
-        bc_user(User),
-        UserId = User.'$id',
-        put_dict(author, Formatted, UserId, Processed),
-        ds_insert(Processed, Id),
-        debug(bc_data_entry, 'saved entry ~p', [Id])).
+    check_existing_slug(Entry),
+    entry_format(Entry, Formatted),
+    bc_user(User),
+    put_dict(author, Formatted, User.'$id', Processed),
+    ds_insert(Processed, Id),
+    debug(bc_data_entry, 'saved entry ~p', [Id]).
 
 %! bc_entry_update(+Id, +Entry) is det.
 %
 % Updates the given entry. Reformats HTML.
 
 bc_entry_update(Id, Entry):-
-    bc_entry_format(Entry, Formatted),
+    check_post_exists(Id),
+    check_existing_slug(Id, Entry),
+    check_editing_own_post(Id),
+    check_editing_ownership(Entry),
+    entry_format(Entry, Formatted),
     put_dict('$id', Formatted, Id, Update),
     ds_update(Update),
     debug(bc_data_entry, 'updated entry ~p', [Id]).
@@ -48,7 +45,7 @@ bc_entry_update(Id, Entry):-
 % Formats entry HTML contents based on
 % the entries content type.
 
-bc_entry_format(EntryIn, EntryOut):-
+entry_format(EntryIn, EntryOut):-
     Content = EntryIn.content,
     ContentType = EntryIn.content_type,
     (   ContentType = markdown
@@ -61,6 +58,8 @@ bc_entry_format(EntryIn, EntryOut):-
 % Removes the given entry and its comments.
 
 bc_entry_remove(Id):-
+    check_post_exists(Id),
+    check_editing_own_post(Id),
     ds_remove(Id),
     ds_remove(comment, post=Id),
     debug(bc_data_entry, 'removed entry ~p', [Id]).
@@ -76,7 +75,37 @@ bc_entry_list(Type, Sorted):-
         date_updated, commenting, published,
         title, author], Entries),
     maplist(attach_comment_count, Entries, List),
-    sort_dict(date_updated, desc, List, Sorted).
+    sort_dict(date_updated, desc, List, Sorted),
+    debug(bc_data_entry, 'retrieved entry list', []).
+
+%! bc_entry(+Id, -Entry) is det.
+%
+% Retrieves a single entry by its Id.
+
+bc_entry(Id, WithCount):-
+    check_post_exists(Id),
+    ds_get(Id, [slug, type, date_published, date_updated,
+        commenting, published, title, author,
+        content, description, content_type, tags], Entry), !,
+    attach_comment_count(Entry, WithCount),
+    debug(bc_data_entry, 'retrieved entry ~p', [Id]).
+
+%! bc_entry_info(+Id, -Entry) is det.
+%
+% Retrieves a single entry by its Id.
+% Does not include the content field.
+
+% FIXME maybe it can be removed.
+
+bc_entry_info(Id, WithCount):-
+    check_post_exists(Id),
+    ds_get(Id, [slug, type, date_published, date_updated,
+        commenting, published, title, author,
+        description, content_type, tags], Entry),
+    attach_comment_count(Entry, WithCount),
+    debug(bc_data_entry, 'retrieved entry ~p info', [Id]).
+
+% Attaches comment count to the entry.
 
 attach_comment_count(EntryIn, EntryOut):-
     Id = EntryIn.'$id',
@@ -84,27 +113,38 @@ attach_comment_count(EntryIn, EntryOut):-
     length(List, Count),
     put_dict(_{ comments: Count }, EntryIn, EntryOut).
 
-%! bc_entry(+Id, -Entry) is det.
-%
-% Retrieves a single entry by ID. Throws
-% error(no_entry(Id)) when there is no such entry.
+check_editing_ownership(Update):-
+    bc_user(User),
+    (   User.type = admin
+    ->  true
+    ;   (   Update.author = User.'$id'
+        ->  true
+        ;   throw(error(entry_new_ownership)))).
 
-bc_entry(Id, WithCount):-
-    (   ds_get(Id, [slug, type, date_published, date_updated,
-            commenting, published, title, author,
-            content, description, content_type, tags], Entry),
-        attach_comment_count(Entry, WithCount)
-    ;   throw(error(no_entry(Id)))), !.
+check_editing_own_post(PostId):-
+    bc_user(User),
+    (   User.type = admin
+    ->  true
+    ;   ds_get(PostId, [author], Original),
+        (   Original.author = User.'$id'
+        ->  true
+        ;   throw(error(entry_is_not_own)))).
 
-%! bc_entry_info(+Id, -Entry) is det.
-%
-% Retrieves a single entry by ID. Throws
-% error(no_entry(Id)) when there is no such entry.
-% Does not include content.
+% FIXME use better method.
 
-bc_entry_info(Id, WithCount):-
-    (   ds_get(Id, [slug, type, date_published, date_updated,
-            commenting, published, title, author,
-            description, content_type, tags], Entry),
-        attach_comment_count(Entry, WithCount)
-    ;   throw(error(no_entry(Id)))), !.
+check_post_exists(PostId):-
+    (   ds_get(PostId, [slug], _)
+    ->  true
+    ;   throw(error(entry_not_exists))).
+
+check_existing_slug(Entry):-
+    (   ds_find(entry, slug=Entry.slug, [])
+    ->  true
+    ;   throw(error(entry_existing_slug))).
+
+check_existing_slug(PostId, Update):-
+    (   ds_find(entry, slug=Update.slug, [Post])
+    ->  (   Post.'$id' = PostId
+        ->  true
+        ;   throw(error(entry_existing_slug)))
+    ;   true).

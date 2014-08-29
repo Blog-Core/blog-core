@@ -64,8 +64,17 @@ bc_handle_error(error(user_has_posts)):- !,
 bc_handle_error(error(user_is_last_admin)):- !,
     bc_reply_error('Cannot remove the last admin.').
 
-bc_handle_error(error(existing_slug(_))):- !,
-    bc_reply_error('Post with the same slug exists already.').
+bc_handle_error(error(entry_existing_slug)):- !,
+    bc_reply_error('The entry with the same slug exists already.').
+
+bc_handle_error(error(entry_not_exists)):- !,
+    bc_reply_error('The entry does not exist.').
+
+bc_handle_error(error(entry_is_not_own)):- !,
+    bc_reply_error('The operation requires admin privileges.').
+
+bc_handle_error(error(entry_new_ownership)):- !,
+    bc_reply_error('The operation requires admin privileges.').
 
 bc_handle_error(error(unsafe_path(_))):- !,
     bc_reply_error('The file/directory path is unsafe.').
@@ -80,10 +89,6 @@ bc_handle_error(error(invalid_answer(Answer))):- !,
 
 bc_handle_error(error(commenting_disabled(Id))):- !,
     format(atom(Message), 'Commenting disabled for post ~p.', [Id]),
-    bc_reply_error(Message).
-
-bc_handle_error(error(no_entry(Id))):- !,
-    format(atom(Message), 'No entry ~p.', [Id]),
     bc_reply_error(Message).
 
 bc_handle_error(error(cannot_remove_last_admin(_))):- !,

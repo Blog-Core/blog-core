@@ -1,11 +1,13 @@
 % FIXME rename to util_entry.
 
 :- module(util_post, [
-    new_post/3,    % +AuthorId, +Slug, -Response
-    new_post/4,    % +AuthorId, +Slug, +Override, -Response
-    update_post/3, % +PostId, +Override, -Response
-    list_posts/1,  % -Response,
-    get_entry/2    % +EntryId, -Response
+    new_post/3,      % +AuthorId, +Slug, -Response
+    new_post/4,      % +AuthorId, +Slug, +Override, -Response
+    update_post/3,   % +PostId, +Override, -Response
+    remove_post/2,   % +PostId, -Response
+    list_posts/1,    % -Response,
+    get_entry/2,     % +EntryId, -Response
+    get_entry_info/2 % +EntryId, -Response
 ]).
 
 :- use_module(util).
@@ -57,6 +59,12 @@ update_post(PostId, Override, Response):-
     put_dict(Override, Dict, Data),
     request_put(Url, Data, Response).
 
+% Removes the given post.
+
+remove_post(EntryId, Response):-
+    atom_concat('/api/entry/', EntryId, Path),
+    request_del(Path, Response).
+
 % Retrieves the list of posts.
 
 list_posts(Response):-
@@ -66,4 +74,10 @@ list_posts(Response):-
 
 get_entry(EntryId, Response):-
     atom_concat('/api/entry/', EntryId, Path),
+    request_get(Path, Response).
+
+% Retrieves the given entry info.
+
+get_entry_info(EntryId, Response):-
+    atomic_list_concat(['/api/entry/', EntryId, '/info'], Path),
     request_get(Path, Response).
