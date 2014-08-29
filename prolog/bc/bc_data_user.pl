@@ -114,11 +114,7 @@ bc_user(Id, User):-
 
 %! bc_user_remove(+Id) is det.
 %
-% Removes the given user. Throws
-% error(cannot_remove_last_admin(Id)) when
-% the user is the last admin. Throws
-% user_has_existing_posts(Id) when the user has
-% existing posts.
+% Removes the given user.
 
 bc_user_remove(Id):-
     check_current_user_is_admin,
