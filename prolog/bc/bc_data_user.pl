@@ -132,6 +132,8 @@ password_hash(Password, Salt, Hash):-
     sha_hash(Data, Raw, [encoding(utf8), algorithm(sha256)]),
     hash_atom(Raw, Hash).
 
+% FIXME consolidate to single file.
+
 check_current_user_is_admin:-
     (   bc_user(User), User.type = admin
     ->  true

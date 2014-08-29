@@ -19,6 +19,7 @@ config_list:-
     bc_reply_success(List).
 
 % Updates the config value.
+% FIXME should purge cache.
 
 :- route_put(api/config,
     bc_auth, config_update).
@@ -27,7 +28,7 @@ config_update:-
     bc_read_by_schema(config, Config),
     Name = Config.name,
     Value = Config.value,
-    bc_config_set(Name, Value),
+    bc_config_set_api(Name, Value),
     bc_reply_success(Name).
 
 % Generic config entry.

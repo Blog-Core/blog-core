@@ -261,3 +261,40 @@ Error responses:
 
 Type is not validated at the moment. Empty array will be returned on
 non-existent type.
+
+## Configuration entries
+
+### List of entries
+
+Request URL: `/api/configs`, type `GET`.
+
+Returned fields:
+
+ * name
+ * value
+
+Requires authentication and admin privileges.
+
+Error responses:
+
+ * Invalid or missing API key.
+ * The operation requires admin privileges.
+
+### Update the config entry
+
+Request URL: `/api/configs`, type `PUT`.
+
+Fields:
+
+ * name
+ * value
+
+Requires authentication and admin privileges.
+
+Error responses:
+
+ * Invalid or missing API key.
+ * The operation requires admin privileges.
+ * Invalid data.
+
+If the config entry does not exist then it will be added.

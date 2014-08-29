@@ -5,12 +5,6 @@
 
 :- use_module(bc_api_io).
 
-% Error codes:
-% 1xx - authentication and user-related
-% 2xx - entry related
-% 3xx - comment related
-% 4xx - misc
-
 %! bc_call_handle_error(:Goal) is det.
 %
 % Calls handler through error cather
