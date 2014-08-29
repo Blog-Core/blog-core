@@ -19,11 +19,16 @@ test('Authenticate, invalid data', [setup(new_database)]):-
     authenticate_invalid(Auth),
     assertion(is_invalid_data(Auth)).
 
-% FIXME tests without authentication.
-
 test('New user', [setup(new_database)]):-
     new_user(_{}, User),
     assertion(User.status = "success").
+
+test('New user, no authentication', [setup(new_database)]):-
+    set_no_auth,
+    new_user(_{}, User),
+    writeln(User),
+    assertion(User.status = "error"),
+    assertion(User.message = "Invalid or missing API key.").
 
 test('New user, username not email', [setup(new_database)]):-
     new_user(_{ username: test }, User),
@@ -82,6 +87,13 @@ test('Get user', [setup(new_database)]):-
     assertion(\+ get_dict(salt, Data, _)),
     assertion(\+ get_dict(password, Data, _)).
 
+test('Get user, no authentication', [setup(new_database)]):-
+    default_user_id(UserId),
+    set_no_auth,
+    get_user(UserId, User),
+    assertion(User.status = "error"),
+    assertion(User.message = "Invalid or missing API key.").
+
 test('Get non-existing user', [setup(new_database)]):-
     get_user('xxx-user-not-exists', User),
     assertion(User.status = "error"),
@@ -96,6 +108,14 @@ test('Update user username', [setup(new_database)]):-
     assertion(GetUser.status = "success"),
     Data = GetUser.data,
     assertion(Data.username = "updated@example.com").
+
+test('Update user, no authentication', [setup(new_database)]):-
+    new_user(_{}, User),
+    assertion(User.status = "success"),
+    set_no_auth,
+    update_user(User.data, _{ username: 'updated@example.com' }, Update),
+    assertion(Update.status = "error"),
+    assertion(Update.message = "Invalid or missing API key.").
 
 test('Update user username, current not admin', [setup(new_database)]):-
     new_user(_{ username: 'noadmin@example.com', type: author }, NoAdmin),
@@ -113,7 +133,7 @@ test('Update user, demote the last admin', [setup(new_database)]):-
     assertion(Update.status = "error"),
     assertion(Update.message = "Cannot demote the last admin.").
 
-test('Update user username to existing one', [setup(new_database)]):-
+test('Update user, username to existing one', [setup(new_database)]):-
     new_user(_{}, User),
     assertion(User.status = "success"),
     update_user(User.data, _{ username: 'admin@example.com' }, Update),
@@ -140,6 +160,14 @@ test('Remove the user', [setup(new_database)]):-
     assertion(User.status = "success"),
     remove_user(User.data, Removal),
     assertion(Removal.status = "success").
+
+test('Remove the user, no authentication', [setup(new_database)]):-
+    new_user(_{}, User),
+    assertion(User.status = "success"),
+    set_no_auth,
+    remove_user(User.data, Removal),
+    assertion(Removal.status = "error"),
+    assertion(Removal.message = "Invalid or missing API key.").
 
 test('Remove the user, last admin', [setup(new_database)]):-
     default_user_id(UserId),
@@ -188,5 +216,11 @@ test('List of users, no admin right', [setup(new_database)]):-
     list_users(List),
     assertion(List.status = "error"),
     assertion(List.message = "The operation requires admin privileges.").
+
+test('List of users, no authentication', [setup(new_database)]):-
+    set_no_auth,
+    list_users(List),
+    assertion(List.status = "error"),
+    assertion(List.message = "Invalid or missing API key.").
 
 :- end_tests(api_user).

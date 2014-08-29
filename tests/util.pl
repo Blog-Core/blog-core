@@ -1,6 +1,7 @@
 :- module(util, [
     new_database/0,
     set_default_username/1, % +Username
+    set_no_auth/0,
     default_user_id/1,      % -Id
     request_get/2,          % +Path, -Dict
     request_put/3,          % +Path, +DictIn, -DictOut
@@ -52,6 +53,11 @@ set_default_username(Username):-
     retractall(default_username(_)),
     asserta(default_username(Username)).
 
+% Disables authentication for API calls.
+
+set_no_auth:-
+    asserta(no_auth).
+
 % Retrieves the default test user id.
 
 default_user_id(UserId):-
@@ -67,36 +73,41 @@ test_auth_key(Key):-
     User.key = Key.
 
 request_get(Path, Dict):-
-    test_auth_key(Key),
-    Options = [ request_header('X-Key'=Key) ],
+    request_options(Options),
     atom_concat('http://localhost:18008', Path, Url),
     http_open(Url, Stream, Options),
     json_read_dict(Stream, Dict),
     close(Stream).
 
 request_post(Path, In, Out):-
-    test_auth_key(Key),
-    Options = [ request_header('X-Key'=Key), post(json(In)) ],
+    request_options(BaseOptions),
+    Options = [ post(json(In)) | BaseOptions ],
     atom_concat('http://localhost:18008', Path, Url),
     http_open(Url, Stream, Options),
     json_read_dict(Stream, Out),
     close(Stream).
 
 request_put(Path, In, Out):-
-    test_auth_key(Key),
-    Options = [ request_header('X-Key'=Key), post(json(In)), method(put) ],
+    request_options(BaseOptions),
+    Options = [ post(json(In)), method(put) | BaseOptions ],
     atom_concat('http://localhost:18008', Path, Url),
     http_open(Url, Stream, Options),
     json_read_dict(Stream, Out),
     close(Stream).
 
 request_del(Path, Dict):-
-    test_auth_key(Key),
-    Options = [ request_header('X-Key'=Key), method(delete) ],
+    request_options(BaseOptions),
+    Options = [ method(delete) | BaseOptions ],
     atom_concat('http://localhost:18008', Path, Url),
     http_open(Url, Stream, Options),
     json_read_dict(Stream, Dict),
     close(Stream).
+
+request_options(Options):-
+    (   no_auth
+    ->  Options = []
+    ;   test_auth_key(Key),
+        Options = [ request_header('X-Key'=Key) ]).
 
 request_get_content(Path, String):-
     atom_concat('http://localhost:18008', Path, Url),
