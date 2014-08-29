@@ -3,18 +3,6 @@
 :- use_module(library(docstore)).
 :- use_module(util).
 
-% Add a new user.
-
-test('POST /api/user', [setup(new_database)]):-
-    request_post('/api/user', _{
-        username: test,
-        password: test123,
-        fullname: 'Test',
-        type: author,
-        files: true,
-        link: "" }, Dict),
-    Dict.status = "success".
-
 % Update an user.
 
 test('PUT /api/user/Id', [setup(new_database)]):-

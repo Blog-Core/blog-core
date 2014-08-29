@@ -5,6 +5,12 @@
 
 :- use_module(bc_api_io).
 
+% Error codes:
+% 1xx - authentication and user-related
+% 2xx - entry related
+% 3xx - comment related
+% 4xx - misc
+
 %! bc_call_handle_error(:Goal) is det.
 %
 % Calls handler through error cather
@@ -31,8 +37,32 @@ bc_handle_error(error(invalid_input(Errors))):- !,
     format(atom(Message), 'Invalid input: ~w.', [Errors]),
     bc_reply_error(Message).
 
-bc_handle_error(error(invalid_credentials)):- !,
+bc_handle_error(error(user_invalid_credentials)):- !,
     bc_reply_error('Invalid auth credentials.').
+
+bc_handle_error(error(user_password_is_not_set)):- !,
+    bc_reply_error('The user password is not set.').
+
+bc_handle_error(error(user_username_is_not_email)):- !,
+    bc_reply_error('The username is not an email address.').
+
+bc_handle_error(error(user_username_exists)):- !,
+    bc_reply_error('The username exists.').
+
+bc_handle_error(error(user_current_is_not_admin)):- !,
+    bc_reply_error('The operation requires admin privileges.').
+
+bc_handle_error(error(user_demote_last_admin)):- !,
+    bc_reply_error('Cannot demote the last admin.').
+
+bc_handle_error(error(user_not_exists)):- !,
+    bc_reply_error('The user does not exist.').
+
+bc_handle_error(error(user_has_posts)):- !,
+    bc_reply_error('The user has posts.').
+
+bc_handle_error(error(user_is_last_admin)):- !,
+    bc_reply_error('Cannot remove the last admin.').
 
 bc_handle_error(error(existing_slug(_))):- !,
     bc_reply_error('Post with the same slug exists already.').
@@ -56,17 +86,11 @@ bc_handle_error(error(no_entry(Id))):- !,
     format(atom(Message), 'No entry ~p.', [Id]),
     bc_reply_error(Message).
 
-bc_handle_error(error(cannot_demote_last_admin(_))):- !,
-    bc_reply_error('Cannot demote the last admin.').
-
 bc_handle_error(error(cannot_remove_last_admin(_))):- !,
     bc_reply_error('Cannot remove the last admin.').
 
 bc_handle_error(error(user_has_existing_posts(_))):- !,
     bc_reply_error('Cannot remove user with posts.').
-
-bc_handle_error(error(existing_username(_))):- !,
-    bc_reply_error('Username already exists.').
 
 bc_handle_error(error(reply_no_comment(_))):- !,
     bc_reply_error('The comment replied to does not exist.').

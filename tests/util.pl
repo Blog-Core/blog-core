@@ -1,11 +1,13 @@
 :- module(util, [
     new_database/0,
-    default_user_id/1,    % -Id
-    request_get/2,        % +Path, -Dict
-    request_put/3,        % +Path, +DictIn, -DictOut
-    request_del/2,        % +Path, -Dict
-    request_post/3,       % +Path, +DictIn, -DictOut
-    request_get_content/2 % +Path, -String
+    set_default_username/1, % +Username
+    default_user_id/1,      % -Id
+    request_get/2,          % +Path, -Dict
+    request_put/3,          % +Path, +DictIn, -DictOut
+    request_del/2,          % +Path, -Dict
+    request_post/3,         % +Path, +DictIn, -DictOut
+    request_get_content/2,  % +Path, -String
+    is_invalid_data/1       % +Response
 ]).
 
 /** <module> Test utilities
@@ -26,7 +28,11 @@ for unit/integration testing.
 :- use_module(prolog/bc/bc_data_entry).
 :- use_module(prolog/bc/bc_data_cur_user).
 
+:- dynamic(default_username/1).
+:- dynamic(no_auth/0).
+
 % Recreates the test database.
+% This also runs the initial migrations.
 
 new_database:-
     bc_data_close,
@@ -34,46 +40,30 @@ new_database:-
     ->  delete_file('test.docstore')
     ;   true),
     bc_data_open('test.docstore'),
-    bc_user_save(user{
-        username: default_test,
-        password: default_test,
-        fullname: 'Default Test User',
-        type: admin
-    }, UserId),
-    ds_get(UserId, User),
-    bc_set_user(User),
-    bc_entry_save(entry{
-        author: UserId,
-        title: "Default Test post",
-        slug: 'default-test-post',
-        tags: [test, post],
-        date_published: 1396216490,
-        date_updated: 1396216490,
-        commenting: true,
-        published: true,
-        content: "**test**",
-        content_type: markdown,
-        description: "Test",
-        type: post
-    }, PostId),
-    bc_unset_user,
-    bc_comment_save(PostId, comment{
-        author: "RLa",
-        content: "Test comment",
-        question: 1,
-        answer: '3'
-    }, _).
+    retractall(default_username(_)),
+    asserta(default_username('admin@example.com')),
+    retractall(no_auth).
+
+% Sets default username.
+% Call in the middle of test to
+% set the user.
+
+set_default_username(Username):-
+    retractall(default_username(_)),
+    asserta(default_username(Username)).
 
 % Retrieves the default test user id.
 
 default_user_id(UserId):-
-    ds_find(user, username=default_test, [User]),
+    default_username(Username),
+    ds_find(user, username=Username, [User]),
     User.'$id' = UserId.
 
 % Auth key for the test user.
 
 test_auth_key(Key):-
-    ds_find(user, username=default_test, [key], [User]),
+    default_username(Username),
+    ds_find(user, username=Username, [key], [User]),
     User.key = Key.
 
 request_get(Path, Dict):-
@@ -113,3 +103,9 @@ request_get_content(Path, String):-
     http_open(Url, Stream, []),
     read_string(Stream, _, String),
     close(Stream).
+
+% FIXME rename to is_response_invalid_data
+
+is_invalid_data(Response):-
+    Response.status = "error",
+    sub_string(Response.message, 0, _, _, "Invalid input").

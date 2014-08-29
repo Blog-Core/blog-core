@@ -53,14 +53,14 @@ bc_initial_config:-
 % Inserts the initial user.
 
 bc_initial_user:-
-    bc_user_save(user{
+    bc_user_save_initial(user{
         fullname: 'Admin',
-        username: 'admin',
+        username: 'admin@example.com',
         password: 'admin',
         type: admin,
         files: true,
         link: ""
-    }, _).
+    }).
 
 % Adds and sets language for
 % entries.
