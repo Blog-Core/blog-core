@@ -73,25 +73,19 @@ bc_handle_error(error(entry_new_ownership)):- !,
 bc_handle_error(error(unsafe_path(_))):- !,
     bc_reply_error('The file/directory path is unsafe.').
 
-bc_handle_error(error(no_config(Name))):- !,
-    format(atom(Message), 'No configuration entry ~p.', [Name]),
-    bc_reply_error(Message).
+bc_handle_error(error(comment_invalid_answer)):- !,
+    bc_reply_error('The human question answer is wrong.').
 
-bc_handle_error(error(invalid_answer(Answer))):- !,
-    format(atom(Message), 'Invalid answer: ~w.', [Answer]),
-    bc_reply_error(Message).
+bc_handle_error(error(entry_commenting_disabled)):- !,
+    bc_reply_error('Commenting is disabled for the entry.').
 
-bc_handle_error(error(commenting_disabled(Id))):- !,
-    format(atom(Message), 'Commenting disabled for post ~p.', [Id]),
-    bc_reply_error(Message).
-
-bc_handle_error(error(cannot_remove_last_admin(_))):- !,
-    bc_reply_error('Cannot remove the last admin.').
+bc_handle_error(error(comment_reply_wrong_post)):- !,
+    bc_reply_error('The replied-to comment and the entry do not match.').
 
 bc_handle_error(error(user_has_existing_posts(_))):- !,
     bc_reply_error('Cannot remove user with posts.').
 
-bc_handle_error(error(reply_no_comment(_))):- !,
+bc_handle_error(error(comment_not_exists)):- !,
     bc_reply_error('The comment replied to does not exist.').
 
 bc_handle_error(error(reply_post_id_mismatch(_))):- !,

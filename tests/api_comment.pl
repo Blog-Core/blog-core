@@ -3,6 +3,7 @@
 :- use_module(library(docstore)).
 
 :- use_module(util/util).
+:- use_module(util/util_user).
 :- use_module(util/util_post).
 :- use_module(util/util_comment).
 
@@ -10,8 +11,24 @@ test('Add comment', [setup(new_database)]):-
     default_user_id(AuthorId),
     new_post(AuthorId, test_post, Post),
     assertion(Post.status = "success"),
+    set_no_auth,
     new_comment(Post.data, Comment),
     assertion(Comment.status = "success").
+
+test('Add comment, wrong answer', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    new_post(AuthorId, test_post, Post),
+    assertion(Post.status = "success"),
+    new_comment(Post.data, _{ answer: wrong }, Comment),
+    assertion(Comment.status = "error"),
+    assertion(Comment.message = "The human question answer is wrong.").
+
+test('Add comment, invalid data', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    new_post(AuthorId, test_post, Post),
+    assertion(Post.status = "success"),
+    new_comment(Post.data, _{ content: "" }, Comment),
+    assertion(is_invalid_data(Comment)).
 
 test('Post has comment', [setup(new_database)]):-
     default_user_id(AuthorId),
@@ -31,9 +48,8 @@ test('Commenting not enabled', [setup(new_database)]):-
     new_post(AuthorId, test_post, _{ commenting: false }, Post),
     assertion(Post.status = "success"),
     new_comment(Post.data, Comment),
-    assertion(Comment.status = "error").
-
-% FIXME test with wrong answer.
+    assertion(Comment.status = "error"),
+    assertion(Comment.message = "Commenting is disabled for the entry.").
 
 test('Reply to comment', [setup(new_database)]):-
     default_user_id(AuthorId),
@@ -41,19 +57,21 @@ test('Reply to comment', [setup(new_database)]):-
     assertion(Post.status = "success"),
     new_comment(Post.data, Comment),
     assertion(Comment.status = "success"),
-    new_comment(Post.data, Comment.data, Reply),
+    new_comment(Post.data, _{ reply_to: Comment.data }, Reply),
     assertion(Reply.status = "success").
 
 test('Reply to non-existent comment', [setup(new_database)]):-
     default_user_id(AuthorId),
     new_post(AuthorId, test_post, Post),
     assertion(Post.status = "success"),
-    new_comment(Post.data, 'xxx-comment-not-exists', Reply),
-    assertion(Reply.status = "error").
+    new_comment(Post.data, _{ reply_to: 'xxx-comment-not-exists' }, Reply),
+    assertion(Reply.status = "error"),
+    assertion(Reply.message = "The comment replied to does not exist.").
 
 test('Reply to non-existent comment and post', [setup(new_database)]):-
-    new_comment('xxx-post-not-exists', 'xxx-not-exists', Reply),
-    assertion(Reply.status = "error").
+    new_comment('xxx-post-not-exists', _{ reply_to: 'xxx-not-exists' }, Reply),
+    assertion(Reply.status = "error"),
+    assertion(Reply.message = "The entry does not exist.").
 
 test('Reply to comment under other post', [setup(new_database)]):-
     default_user_id(AuthorId),
@@ -63,8 +81,9 @@ test('Reply to comment under other post', [setup(new_database)]):-
     assertion(OtherPost.status = "success"),
     new_comment(Post.data, Comment),
     assertion(Comment.status = "success"),
-    new_comment(OtherPost.data, Comment.data, Reply),
-    assertion(Reply.status = "error").
+    new_comment(OtherPost.data, _{ reply_to: Comment.data }, Reply),
+    assertion(Reply.status = "error"),
+    assertion(Reply.message = "The replied-to comment and the entry do not match.").
 
 test('Reply to comment, retrieve the tree', [setup(new_database)]):-
     default_user_id(AuthorId),
@@ -72,7 +91,7 @@ test('Reply to comment, retrieve the tree', [setup(new_database)]):-
     assertion(Post.status = "success"),
     new_comment(Post.data, Comment),
     assertion(Comment.status = "success"),
-    new_comment(Post.data, Comment.data, Reply),
+    new_comment(Post.data, _{ reply_to: Comment.data }, Reply),
     assertion(Reply.status = "success"),
     new_comment(Post.data, OtherComment),
     assertion(OtherComment.status = "success"),
@@ -82,5 +101,61 @@ test('Reply to comment, retrieve the tree', [setup(new_database)]):-
     Comments.data = [Second, First],
     assertion(First.replies = [_]),
     assertion(Second.replies = []).
+
+test('Retrieve the post comments tree, no authentication', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    new_post(AuthorId, test_post, Post),
+    assertion(Post.status = "success"),
+    set_no_auth,
+    list_comments(Post.data, Comments),
+    assertion(Comments.status = "error"),
+    assertion(Comments.message = "Invalid or missing API key.").
+
+test('Retrieve the non-existent post comments tree', [setup(new_database)]):-
+    list_comments('xxx-non-existent-entry', Comments),
+    assertion(Comments.status = "error"),
+    assertion(Comments.message = "The entry does not exist.").
+
+test('Remove comment', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    new_post(AuthorId, test_post, Post),
+    assertion(Post.status = "success"),
+    new_comment(Post.data, Comment),
+    assertion(Comment.status = "success"),
+    remove_comment(Comment.data, Removal),
+    assertion(Removal.status = "success").
+
+test('Remove comment, no authentication', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    new_post(AuthorId, test_post, Post),
+    assertion(Post.status = "success"),
+    new_comment(Post.data, Comment),
+    assertion(Comment.status = "success"),
+    set_no_auth,
+    remove_comment(Comment.data, Removal),
+    assertion(Removal.status = "error"),
+    assertion(Removal.message = "Invalid or missing API key.").
+
+test('Remove comment, on other user post', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    new_post(AuthorId, test_post, Post),
+    assertion(Post.status = "success"),
+    new_comment(Post.data, Comment),
+    assertion(Comment.status = "success"),
+    new_user(_{ username: 'author@example.com' }, User),
+    assertion(User.status = "success"),
+    set_default_username('author@example.com'),
+    remove_comment(Comment.data, Removal),
+    assertion(Removal.status = "error"),
+    assertion(Removal.message = "The operation requires admin privileges.").
+
+test('Get random human question', [setup(new_database)]):-
+    set_no_auth,
+    get_question(Question),
+    assertion(Question.status = "success"),
+    assertion(is_dict(Question.data)),
+    Question.data = Data,
+    assertion(string(Data.question)),
+    assertion(number(Data.id)).
 
 :- end_tests(api_comment).

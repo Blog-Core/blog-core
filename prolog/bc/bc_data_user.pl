@@ -17,6 +17,7 @@
 :- use_module(library(sha)).
 
 :- use_module(bc_data_cur_user).
+:- use_module(bc_data_validate).
 
 %! bc_user_auth(+Auth, -Info) is semidet.
 %
@@ -35,7 +36,7 @@ bc_user_auth(Auth, Info):-
 % Saves the new user.
 
 bc_user_save(User, Id):-
-    check_current_user_is_admin,
+    bc_check_current_user_is_admin,
     user_save_common(User, Id).
 
 %! bc_user_save_initial(+User, -Id) is det.
@@ -68,8 +69,8 @@ user_save_common(User, Id):-
 % FIXME user can change own data.
 
 bc_user_update(Id, User):-
-    check_current_user_is_admin,
-    check_user_exists(Id),
+    bc_check_current_user_is_admin,
+    bc_check_user_exists(Id),
     check_user_demoted_as_last_admin(Id, User),
     check_username_is_email(User),
     check_username_is_free(Id, User),
@@ -96,7 +97,7 @@ user_hash(UserIn, UserOut):-
 % fields are `username`, `fullname` and `type`.
 
 bc_user_list(Sorted):-
-    check_current_user_is_admin,
+    bc_check_current_user_is_admin,
     ds_all(user, [username, fullname, type], Users),
     sort_dict(username, asc, Users, Sorted),
     debug(bc_data, 'retrieved the users list', []).
@@ -107,8 +108,8 @@ bc_user_list(Sorted):-
 % fields are `username`, `fullname`, `type`, `link`, `files`.
 
 bc_user(Id, User):-
-    check_current_user_is_admin,
-    check_user_exists(Id),
+    bc_check_current_user_is_admin,
+    bc_check_user_exists(Id),
     ds_get(Id, [username, fullname, type, link, files], User),
     debug(bc_data, 'retrieved the user ~p', [User.username]).
 
@@ -117,8 +118,8 @@ bc_user(Id, User):-
 % Removes the given user.
 
 bc_user_remove(Id):-
-    check_current_user_is_admin,
-    check_user_exists(Id),
+    bc_check_current_user_is_admin,
+    bc_check_user_exists(Id),
     check_user_has_no_posts(Id),
     check_user_is_last_admin(Id),
     ds_remove(Id),
@@ -131,13 +132,6 @@ password_hash(Password, Salt, Hash):-
     atom_concat(Salt, Password, Data),
     sha_hash(Data, Raw, [encoding(utf8), algorithm(sha256)]),
     hash_atom(Raw, Hash).
-
-% FIXME consolidate to single file.
-
-check_current_user_is_admin:-
-    (   bc_user(User), User.type = admin
-    ->  true
-    ;   throw(error(user_current_is_not_admin))).
 
 check_username_is_free(User):-
     (   ds_find(user, username=User.username, [])
@@ -175,13 +169,6 @@ check_username_is_free(UserId, Update):-
         ->  true
         ;   throw(error(user_username_exists)))
     ;   true).
-
-% FIXME fetch empty list.
-
-check_user_exists(Id):-
-    (   ds_get(Id, [username], _)
-    ->  true
-    ;   throw(error(user_not_exists))).
 
 % Checks whether the user is the last admin.
 

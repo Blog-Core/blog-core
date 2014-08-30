@@ -5,7 +5,7 @@
     tests/api_config,
     tests/api_user,
     tests/api_entry,
-    tests/api_comment
-    %tests/files,
-    %tests/view
+    tests/api_comment,
+    tests/files,
+    tests/view
 ], [ if(not_loaded) ]).

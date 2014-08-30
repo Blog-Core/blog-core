@@ -8,6 +8,7 @@
 :- use_module(bc_api_auth).
 :- use_module(bc_api_error).
 :- use_module(bc_data_comment).
+:- use_module(bc_data_comment_question).
 
 % Comments of a single post.
 % For admin interface.
@@ -60,8 +61,10 @@ comment_question:-
         author: _{ type: string, min_length: 1 },
         content: _{ type: string, min_length: 1 },
         reply_to: _{ type: atom, min_length: 1 },
+        email: _{ type: string, min_length: 1 },
+        site: _{ type: string, min_length: 1 },
         question: integer,
         answer: atom
     },
-    optional: [ reply_to ]
+    optional: [ reply_to, email, site ]
 }).

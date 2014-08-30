@@ -1,179 +1,129 @@
-:- module(bc_comment, [
-    bc_comment_list/2,      % +PostId, -Comments
-    bc_comment_list_full/2, % +PostId, -Comments
-    bc_comment_tree/2,      % +PostId, -Comments
-    bc_comment_save/3,      % +PostId, +Comment, -CommentId
-    bc_comment_remove/1,    % +Id
-    bc_random_question/2    % -Id, -Question
+:- module(bc_data_comment, [
+    bc_comment_tree/2,      % +EntryId, -Comments
+    bc_comment_save/3,      % +EntryId, +Comment, -CommentId
+    bc_comment_remove/1     % +EntryId
 ]).
 
-/** <module> Commenting support
+/** <module> Handles post comments */
 
-Comments are checked for spam by asking questions
-that are not easy to answer by a computer. This
-module handles questions.
-*/
-
-:- use_module(library(http/html_write)).
-:- use_module(library(md/md_span)).
 :- use_module(library(sort_dict)).
 :- use_module(library(docstore)).
 :- use_module(library(debug)).
 
-:- use_module(bc_walk).
+:- use_module(bc_data_validate).
+:- use_module(bc_data_comment_question).
+:- use_module(bc_data_comment_format).
+:- use_module(bc_data_comment_tree).
+:- use_module(bc_data_cur_user).
 
-% FIXME remove
-
-%! bc_comment_list(+PostId, -Comments) is det.
-%
-% Retrieves the list of comments
-% for the given post.
-
-bc_comment_list(PostId, Sorted):-
-    ds_find(comment, post=PostId, Comments),
-    sort_dict(date, desc, Comments, Sorted).
-
-% FIXME remove
-
-%! bc_comment_list_full(+PostId, -Comments) is det.
-%
-% Retrieves the list of comments.
-% Includes full comment data. Sorts by date.
-
-bc_comment_list_full(PostId, Sorted):-
-    ds_find(comment, post=PostId, Comments),
-    sort_dict(date, desc, Comments, Sorted).
-
-%! bc_comment_tree(+PostId, -Tree) is det.
+%! bc_comment_tree(+EntryId, -Tree) is det.
 %
 % Retrieves the tree of comments for the post.
 
-bc_comment_tree(PostId, Tree):-
-    ds_find(comment, post=PostId, Comments),
+bc_comment_tree(EntryId, Tree):-
+    bc_check_entry_exists(EntryId),
+    ds_find(comment, post = EntryId, Comments),
     sort_dict(date, desc, Comments, Sorted),
-    build_comment_tree(Sorted, Tree).
+    bc_build_comment_tree(Sorted, Tree),
+    debug(bc_data, 'retrieved comment tree for ~p', [ EntryId ]).
 
-% Builds comments tree from the flat list
-% of comments. Sublist of comments appears
-% as the replies key.
-
-build_comment_tree(Comments, Tree):-
-    comments_filter(Comments, none, Top),
-    build_comment_tree(Top, Comments, Tree).
-
-build_comment_tree([Comment|Top], Comments, [Out|Tree]):-
-    Comment.'$id' = TopId,
-    comments_filter(Comments, option(TopId), Filtered),
-    build_comment_tree(Filtered, Comments, Replies),
-    put_dict(replies, Comment, Replies, Out),
-    build_comment_tree(Top, Comments, Tree).
-
-build_comment_tree([], _, []).
-
-comments_filter([Comment|Comments], ReplyToOption, Filtered):-
-    (   ReplyToOption = none
-    ->  (   get_dict(reply_to, Comment, _)
-        ->  Filtered = Rest
-        ;   Filtered = [Comment|Rest])
-    ;   ReplyToOption = option(CommentId),
-        (   get_dict(reply_to, Comment, CommentId)
-        ->  Filtered = [Comment|Rest]
-        ;   Filtered = Rest)
-    ),
-    comments_filter(Comments, ReplyToOption, Rest).
-
-comments_filter([], _, []).
-
-%! bc_comment_save(+PostId, +Comment, -CommentId) is det.
+%! bc_comment_save(+EntryId, +Comment, -CommentId) is det.
 %
-% Saves the comment. Throws error(no_post(PostId))
-% when the post does not exist, and throws
-% commenting_disabled(PostId)) when commenting
-% is disabled on the post.
+% Saves a new comment.
 
-bc_comment_save(PostId, Comment, CommentId):-
-    comment_check_answer(Comment),
-    comment_check_reply_to(PostId, Comment),
-    (   ds_get(PostId, [commenting], Post)
-    ->  (   Post.commenting = true
-        ->  comment_save(PostId, Comment, CommentId)
-        ;   throw(error(commenting_disabled(PostId))))
-    ;   throw(error(no_post(PostId)))).
-
-% Checks that the comment is reply
-% for another comment under the given post.
-
-comment_check_reply_to(PostId, Comment):-
-    (   get_dict(reply_to, Comment, ReplyTo)
-    ->  debug(bc_data_comment, 'comment reply to ~p', [ReplyTo]),
-        (   ds_get(ReplyTo, [post], RepliedTo)
-        ->  (   RepliedTo.post = PostId
-            ->  true
-            ;   throw(error(reply_post_id_mismatch(PostId))))
-        ;   throw(error(reply_no_comment(ReplyTo))))
-    ;   true).
+bc_comment_save(EntryId, Comment, CommentId):-
+    bc_check_entry_exists(EntryId),
+    check_commenting_enabled(EntryId),
+    check_answer(Comment),
+    check_reply_to_exists(Comment),
+    check_reply_to_same_entry(EntryId, Comment),
+    comment_save(EntryId, Comment, CommentId),
+    debug(bc_data, 'saved comment ~p', [ CommentId ]).
 
 % Attaches comment timestamp,
 % formats comment content and
 % saves into docstore.
 
-comment_save(PostId, Comment, CommentId):-
-    Content = Comment.content,
-    format_comment(Content, Formatted),
+comment_save(EntryId, Comment, CommentId):-
+    bc_format_comment(Comment.content, Formatted),
     get_time(Time),
     Ts is floor(Time),
     put_dict(_{
         date: Ts,
-        post: PostId,
+        post: EntryId,
         html: Formatted }, Comment, Processed),
-    ds_insert(Processed, CommentId),
-    debug(bc_data_comment, 'saved_comment ~p', [CommentId]).
+    ds_insert(Processed, CommentId).
 
-% Checks the human validation
-% question answer. Throws
-% error(invalid_answer(Answer))) when
-% answer is not correct.
-
-comment_check_answer(Comment):-
-    Id = Comment.question,
-    Answer = Comment.answer,
-    (   question(Id, _, Answer)
-    ;   throw(error(invalid_answer(Answer)))), !.
-
-%! bc_comment_remove(+Id) is det.
+%! bc_comment_remove(+CommentId) is det.
 %
 % Removes the given comment.
 
-% FIXME use ds_remove/2?
+bc_comment_remove(CommentId):-
+    bc_check_comment_exists(CommentId),
+    check_is_own_comment(CommentId),
+    comment_remove_rec(CommentId),
+    debug(bc_data, 'removed comment ~p', [ CommentId ]).
 
-bc_comment_remove(Id):-
-    ds_remove(Id).
+% FIXME fetch empty list of keys
 
-%! bc_random_question(-Id, -Question) is det.
-%
-% Picks random clause of question/1.
+comment_remove_rec(CommentId):-
+    ds_find(comment, reply_to = CommentId, [ author ], Replies),
+    comment_remove_rec_list(Replies),
+    ds_remove(CommentId).
 
-bc_random_question(Id, Question):-
-    findall(question(Id, Question),
-        question(Id, Question, _), Questions),
-    random_member(question(Id, Question), Questions).
+comment_remove_rec_list([Comment|Comments]):-
+    comment_remove_rec(Comment.'$id'),
+    comment_remove_rec_list(Comments).
 
-question(1, 'What is 2-nd digit in 03456', '3').
-question(2, 'What is 3-rd digit in 03456', '4').
-question(3, 'What is 4-th digit in 03456', '5').
-question(4, 'Earth, Mercury and Venus are ...', 'planets').
-question(5, 'Is water wet (yes/no)?', 'yes').
+comment_remove_rec_list([]).
 
-% Formats the comment message by
-% running it through span-level Markdown
-% formatter.
+% Checks that comment can be removed
+% by the current user.
 
-format_comment(Message, Formatted):-
-    md_span_string(Message, Blocks),
-    bc_walk(add_nofollow, Blocks, Processed),
-    phrase(html(Processed), Tokens),
-    with_output_to(string(Formatted), print_html(Tokens)).
+check_is_own_comment(CommentId):-
+    bc_user(User),
+    (   User.type = admin
+    ->  true
+    ;   ds_get(CommentId, [ post ], Comment),
+        ds_get(Comment.post, [ author ], Post),
+        (   Post.author = User.'$id'
+        ->  true
+        ;   throw(error(user_current_is_not_admin)))).
 
-% Adds nofollow to links.
+% Checks that the comment replied-to
+% actually exists.
 
-add_nofollow(a(Attrs, Content), a([rel=nofollow|Attrs], Content)).
+check_reply_to_exists(Comment):-
+    (   get_dict(reply_to, Comment, ReplyTo)
+    ->  bc_check_comment_exists(ReplyTo)
+    ;   true).
+
+% Checks that the comment is reply
+% for another comment under the given post.
+
+check_reply_to_same_entry(EntryId, Comment):-
+    (   get_dict(reply_to, Comment, ReplyTo)
+    ->  (   ds_get(ReplyTo, [ post ], RepliedTo)
+        ->  (   RepliedTo.post = EntryId
+            ->  true
+            ;   throw(error(comment_reply_wrong_post)))
+        ;   true)
+    ;   true).
+
+% Checks that the commenting is
+% enabled for the entry.
+
+check_commenting_enabled(EntryId):-
+    (   ds_get(EntryId, [ commenting ], Entry)
+    ->  (   Entry.commenting = true
+        ->  true
+        ;   throw(error(entry_commenting_disabled)))
+    ;   true).
+
+% Checks the human validation
+% question answer.
+
+check_answer(Comment):-
+    (   bc_answer_ok(Comment.question, Comment.answer)
+    ->  true
+    ;   throw(error(comment_invalid_answer))).

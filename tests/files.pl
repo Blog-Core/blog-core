@@ -14,11 +14,11 @@ request_get_file(Path, Content):-
     read_string(Stream, _, Content),
     close(Stream).
 
-test(test_file):-
+test('Download file'):-
     request_get_file('/test.txt', Content),
     assertion(Content = "hello").
 
-test(test_file_bust_token):-
+test('Download file through token'):-
     bc_bust_token(Token),
     atomic_list_concat(['/t-', Token, '/test.txt'], Path),
     request_get_file(Path, Content),

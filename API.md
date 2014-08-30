@@ -40,6 +40,7 @@ Requires the current user to be an admin.
 
 Error responses:
 
+ * Invalid or missing API key.
  * The user password is not set.
  * The username is not an email address.
  * The username exists.
@@ -63,6 +64,7 @@ Requires the current user to be an admin.
 
 Error responses:
 
+ * Invalid or missing API key.
  * The operation requires admin privileges.
  * The user does not exist.
 
@@ -85,6 +87,7 @@ When password is not set then it is not changed.
 
 Error responses:
 
+ * Invalid or missing API key.
  * The username is not an email address.
  * The username exists.
  * The operation requires admin privileges.
@@ -101,6 +104,7 @@ Requires the current user to be an admin.
 
 Error responses:
 
+ * Invalid or missing API key.
  * The operation requires admin privileges.
  * Cannot remove the last admin.
  * The user does not exist.
@@ -121,6 +125,7 @@ Requires the current user to be an admin.
 
 Error responses:
 
+ * Invalid or missing API key.
  * The operation requires admin privileges.
 
 ## Entries (posts)
@@ -261,6 +266,81 @@ Error responses:
 
 Type is not validated at the moment. Empty array will be returned on
 non-existent type.
+
+## Comments
+
+### Add a new comment
+
+Request URL: `/api/post/Id/comment`, type `POST`.
+
+Fields:
+
+ * author
+ * email (optional)
+ * site (optional)
+ * comment
+ * content
+ * reply_to (optional)
+ * question (integer)
+ * answer
+
+This endpoint does not require authentication.
+
+Error responses:
+
+ * The human question answer is wrong.
+ * Commenting is disabled for the entry.
+ * The comment replied to does not exist.
+ * The entry does not exist.
+ * Invalid data.
+
+### Tree of comments
+
+Request URL: `/api/post/Id/comments`, type `GET`.
+
+Returned fields:
+
+ * author
+ * email (optional)
+ * site (optional)
+ * comment
+ * content
+ * reply_to (optional)
+ * comments (array of replies)
+
+The endpoint requires authentication.
+Comments in a single node are ordered by date in descending order.
+
+Error responses:
+
+ * Invalid or missing API key.
+ * The entry does not exist.
+
+### Remove the existing comment
+
+Request URL: `/api/comment/Id`, type `DELETE`.
+
+The endpoint requires authentication.
+Non-admin user can remove only own post comments.
+Returns the removed comment id.
+Comment replies will be removed too.
+
+Error responses:
+
+ * Invalid or missing API key.
+ * The comment does not exist.
+ * The operation requires admin privileges.
+
+### Human check question
+
+Request URL: `/api/question`, type `GET`.
+
+Returned fields:
+
+ * question (string)
+ * id (number)
+
+Does not require authentication and has no error responses.
 
 ## Configuration entries
 

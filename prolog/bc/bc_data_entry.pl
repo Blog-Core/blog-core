@@ -15,6 +15,7 @@
 :- use_module(library(md/md_parse)).
 
 :- use_module(bc_data_cur_user).
+:- use_module(bc_data_validate).
 
 %! bc_entry_save(+Entry, -Id) is det.
 %
@@ -33,7 +34,7 @@ bc_entry_save(Entry, Id):-
 % Updates the given entry. Reformats HTML.
 
 bc_entry_update(Id, Entry):-
-    check_post_exists(Id),
+    bc_check_entry_exists(Id),
     check_existing_slug(Id, Entry),
     check_editing_own_post(Id),
     check_editing_ownership(Entry),
@@ -58,7 +59,7 @@ entry_format(EntryIn, EntryOut):-
 % Removes the given entry and its comments.
 
 bc_entry_remove(Id):-
-    check_post_exists(Id),
+    bc_check_entry_exists(Id),
     check_editing_own_post(Id),
     ds_remove(Id),
     ds_remove(comment, post=Id),
@@ -83,7 +84,7 @@ bc_entry_list(Type, Sorted):-
 % Retrieves a single entry by its Id.
 
 bc_entry(Id, WithCount):-
-    check_post_exists(Id),
+    bc_check_entry_exists(Id),
     ds_get(Id, [slug, type, date_published, date_updated,
         commenting, published, title, author,
         content, description, content_type, tags], Entry), !,
@@ -98,7 +99,7 @@ bc_entry(Id, WithCount):-
 % FIXME maybe it can be removed.
 
 bc_entry_info(Id, WithCount):-
-    check_post_exists(Id),
+    bc_check_entry_exists(Id),
     ds_get(Id, [slug, type, date_published, date_updated,
         commenting, published, title, author,
         description, content_type, tags], Entry),
@@ -129,13 +130,6 @@ check_editing_own_post(PostId):-
         (   Original.author = User.'$id'
         ->  true
         ;   throw(error(entry_is_not_own)))).
-
-% FIXME use better method.
-
-check_post_exists(PostId):-
-    (   ds_get(PostId, [slug], _)
-    ->  true
-    ;   throw(error(entry_not_exists))).
 
 check_existing_slug(Entry):-
     (   ds_find(entry, slug=Entry.slug, [])

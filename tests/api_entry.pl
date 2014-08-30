@@ -32,6 +32,8 @@ test('New entry, duplicate slug', [setup(new_database)]):-
     assertion(Post2.status = "error"),
     assertion(Post2.message = "The entry with the same slug exists already.").
 
+% FIXME test case for custom content type.
+
 test('Update entry', [setup(new_database)]):-
     default_user_id(AuthorId),
     new_post(AuthorId, test_post, Post),
