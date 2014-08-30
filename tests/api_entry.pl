@@ -2,10 +2,10 @@
 
 :- use_module(library(docstore)).
 
-:- use_module(util).
-:- use_module(util_post).
-:- use_module(util_user).
-:- use_module(util_comment).
+:- use_module(util/util).
+:- use_module(util/util_post).
+:- use_module(util/util_user).
+:- use_module(util/util_comment).
 
 test('New entry', [setup(new_database)]):-
     default_user_id(AuthorId),

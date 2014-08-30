@@ -1,8 +1,8 @@
 :- begin_tests(api_config).
 
-:- use_module(util).
-:- use_module(util_config).
-:- use_module(util_user).
+:- use_module(util/util).
+:- use_module(util/util_config).
+:- use_module(util/util_user).
 
 test('List of entries', [setup(new_database)]):-
     list_configs(List),

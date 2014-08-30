@@ -2,9 +2,9 @@
 
 :- use_module(library(docstore)).
 
-:- use_module(util).
-:- use_module(util_user).
-:- use_module(util_post).
+:- use_module(util/util).
+:- use_module(util/util_user).
+:- use_module(util/util_post).
 
 test('Authenticate', [setup(new_database)]):-
     authenticate_user('admin@example.com', admin, Auth),

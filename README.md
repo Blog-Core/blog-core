@@ -4,10 +4,11 @@ A CMS/blog framework for [Swi-Prolog](http://swi-prolog.org/). It is currently w
 
 ## Features
 
- * Document-based in-memory data storage.
  * Simple HTTP request routing.
  * Multiple users.
+ * Markdown for content.
  * Simple security model.
+ * Document-based in-memory data storage.
  * Threaded comments.
  * Built-in view caching.
  * Built-in client-side cache busting.
