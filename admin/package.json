@@ -1,0 +1,9 @@
+{
+  "name": "blog-core-admin",
+  "version": "0.0.1",
+  "devDependencies": {
+    "browserify": "4.x",
+    "minifyify": "~4.1.1",
+    "jshint": "~2.5.5"
+  }
+}
