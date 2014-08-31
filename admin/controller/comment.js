@@ -1,8 +1,6 @@
 var message = require('../message');
-var route = require('../lib/router');
 var view = require('../view');
 var api = require('../api');
-var ko = require('../lib/knockout');
 
 exports.list = function(id) {
 

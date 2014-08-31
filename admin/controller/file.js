@@ -1,7 +1,5 @@
 var view = require('../view');
 var api = require('../api');
-var ko = require('../lib/knockout');
-var route = require('../lib/router');
 var hex = require('../hex');
 var message = require('../message');
 

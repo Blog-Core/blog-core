@@ -1,5 +1,3 @@
-var ko = require('./lib/knockout');
-
 var model = {
 
     visible: ko.observable(false),

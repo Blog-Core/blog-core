@@ -1,4 +1,3 @@
-var Q = require('./lib/q');
 var xhr = require('./xhr');
 
 exports.login = function(username, password) {

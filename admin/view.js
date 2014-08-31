@@ -1,5 +1,4 @@
 var xhr = require('./xhr');
-var ko = require('./lib/knockout');
 
 var content = document.getElementById('content');
 

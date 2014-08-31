@@ -1,6 +1,4 @@
 var message = require('../message');
-var ko = require('../lib/knockout');
-var route = require('../lib/router');
 var api = require('../api');
 var validate = require('../validate');
 
@@ -12,7 +10,7 @@ exports.create = function(data) {
 
         username: ko.observable('').trimmed(),
         fullname: ko.observable('').trimmed(),
-        type: ko.observable('normal'),
+        type: ko.observable('author'),
         link: ko.observable('').trimmed(),
         password: ko.observable('').trimmed(),
         password_edit: ko.observable(true),

@@ -1,9 +1,6 @@
-var ko = require('../lib/knockout');
-var route = require('../lib/router');
 var api = require('../api');
 var message = require('../message');
 var validate = require('../validate');
-var speakingurl = require('../lib/speakingurl');
 
 // Creates post view model for already
 // existing post or a new post. For new

@@ -2,8 +2,6 @@ var view = require('../view');
 var api = require('../api');
 var message = require('../message');
 var validate = require('../validate');
-var ko = require('../lib/knockout');
-var route = require('../lib/router');
 
 exports.form = function() {
 
@@ -49,7 +47,7 @@ exports.form = function() {
                     validate.formError(form, res.message);
                 }
 
-            }, message.error).done();
+            }, message.error);
         }
     };
 

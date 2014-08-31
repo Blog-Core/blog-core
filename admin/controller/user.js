@@ -1,9 +1,7 @@
-var ko = require('../lib/knockout');
 var api = require('../api');
 var view = require('../view');
 var message = require('../message');
 var userVm = require('../vm/user_vm');
-var route = require('../lib/router');
 
 exports.list = function() {
 
