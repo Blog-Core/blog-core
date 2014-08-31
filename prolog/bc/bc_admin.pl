@@ -12,6 +12,12 @@
 
 :- route_get(admin/tpl/File, send_file(tpl/File)).
 
+:- route_get(admin/js/File, send_file(js/File)).
+
+:- route_get(admin/js/shim/File, send_file(js/shim/File)).
+
+:- route_get(admin/js/libs/File, send_file(js/libs/File)).
+
 :- route_get(admin/File, send_file(File)).
 
 :- route_get(admin, send_file('index.html')).
