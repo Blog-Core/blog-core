@@ -6,6 +6,7 @@ A CMS/blog framework for [Swi-Prolog](http://swi-prolog.org/). It is currently w
 
  * Simple HTTP request routing.
  * Multiple users.
+ * Multilanguage support.
  * Markdown for content.
  * Simple security model.
  * Document-based in-memory data storage.
