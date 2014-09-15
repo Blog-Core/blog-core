@@ -1,6 +1,7 @@
 var api = require('../api');
 var message = require('../message');
 var validate = require('../validate');
+var languages = require('../languages');
 
 // Creates post view model for already
 // existing post or a new post. For new
@@ -120,6 +121,16 @@ exports.create = function(authors, data) {
             submitPost(post, false);
         },
 
+        // The post language code. See
+        // languages.js for the list of codes.
+        // FIXME use default code.
+
+        language: ko.observable(),
+
+        // List of available languages.
+
+        languages: languages,
+
         // Returns the plain data object
         // to send to the backend.
 
@@ -154,7 +165,8 @@ exports.create = function(authors, data) {
                 commenting: post.commenting(),
                 published: post.published(),
                 content_type: post.content_type(),
-                tags: tags === '' ? [] : tags.split(/\, */)
+                tags: tags === '' ? [] : tags.split(/\, */),
+                language: post.language()
             };
         }
     };
@@ -188,6 +200,7 @@ exports.create = function(authors, data) {
         post.commenting(data.commenting);
         post.tags(data.tags.join(', '));
         post.comments(data.comments);
+        post.language(data.language);
 
     } else {
 
