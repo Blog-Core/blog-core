@@ -45,7 +45,8 @@
     </div>
     <div class="form-group">
         <label for="post-author">Author</label>
-        <select data-bind="value: author, options: authors, optionsText: 'fullname', attr: { disabled: !author_selectable }"
+        <select data-bind="value: author, options: authors,
+            optionsText: 'fullname', attr: { disabled: !author_selectable }"
             class="form-control" id="post-author"></select>
     </div>
     <div class="form-group">
@@ -71,6 +72,12 @@
     </div>
     <div class="checkbox">
         <label><input data-bind="checked: commenting" type="checkbox"> Commenting</label>
+    </div>
+    <div class="form-group">
+        <label for="post-language">Language</label>
+        <select data-bind="value: language, options: languages,
+            optionsText: 'name', optionsValue: 'code'"
+            class="form-control" id="post-language"></select>
     </div>
     <button data-bind="click: save" class="btn btn-default">
         <span class="glyphicon glyphicon-ok"></span> Save/leave
