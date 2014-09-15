@@ -53,3 +53,14 @@ exports.form = function() {
 
     return view.show('login', model);
 };
+
+// Clears the session tokens.
+
+exports.logout = function() {
+
+    sessionStorage.removeItem('api-key');
+    sessionStorage.removeItem('user-id');
+    sessionStorage.removeItem('user-type');
+
+    route.go('login');
+};

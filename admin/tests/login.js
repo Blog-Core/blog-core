@@ -36,16 +36,18 @@ casper.test.begin('Login/logout', function suite(test) {
         test.assertSelectorHasText('h2', 'Posts');
     });
 
-    /*
-    casper.thenOpen('http://mail.infdot.com/', function() {
+    casper.thenClick('#menu a:last-child');
 
-        test.assert('https://mail.infdot.com/' === this.getCurrentUrl(), 'Canonical redirect');
+    casper.waitFor(function() {
+
+        return this.fetchText('h2') === 'Login';
     });
 
-    casper.thenOpen('https://mail.infdot.com/data/settings/settings.xml', function() {
+    casper.then(function() {
 
-        test.assertTitle('403 Forbidden');
-    });*/
+        test.assertTitle('Blog-Core Administration');
+        test.assertSelectorHasText('h2', 'Login');
+    });
 
     casper.run(function() {
 

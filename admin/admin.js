@@ -119,6 +119,12 @@ route(/^login/, function() {
     auth.form().catch(message.error);
 });
 
+route(/^logout/, function() {
+
+    menu.active();
+    auth.logout();
+});
+
 route(/.*/, function() {
 
     route.go(api.hasKey() ? 'posts' : 'login');
