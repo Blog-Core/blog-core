@@ -1,5 +1,6 @@
 JSHINT = node_modules/.bin/jshint
 BROWSERIFY = node_modules/.bin/browserify
+CASPERJS = node_modules/.bin/casperjs
 
 BUNDLE_JS = ../prolog/bc/public/js/admin.bundle.js
 MAP_JS = $(BUNDLE_JS).map
@@ -18,5 +19,8 @@ clean:
 
 install-tools:
 	npm install
+
+test:
+	$(CASPERJS) test tests/login.js
 
 .PHONY: all check clean install-tools
