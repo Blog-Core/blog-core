@@ -4,6 +4,10 @@
 :- use_module(library(http/http_wrapper)).
 :- use_module(library(arouter)).
 
+:- use_module(bc_view).
+:- use_module(bc_main).
+:- use_module(bc_data_config).
+
 :- route_get(admin/css/File, send_file(css/File)).
 
 :- route_get(admin/fonts/File, send_file(fonts/File)).
@@ -18,9 +22,18 @@
 
 :- route_get(admin/js/libs/File, send_file(js/libs/File)).
 
-:- route_get(admin/File, send_file(File)).
+:- route_get(admin, send_admin).
 
-:- route_get(admin, send_file('index.html')).
+% Renders the main admin HTML page.
+% Provides it configuration info.
+
+send_admin:-
+    bc_environment(Env),
+    bc_config_get(default_language, Lang),
+    bc_view_send(prolog/bc/(public)/index, _{
+        environment: Env,
+        language: Lang
+    }).
 
 send_file(Spec):-
     admin_relative(Spec, Full),
