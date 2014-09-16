@@ -87,7 +87,7 @@ bc_entry(Id, WithCount):-
     bc_check_entry_exists(Id),
     ds_get(Id, [slug, type, date_published, date_updated,
         commenting, published, title, author,
-        content, description, content_type, tags], Entry), !,
+        content, description, content_type, tags, language], Entry), !,
     attach_comment_count(Entry, WithCount),
     debug(bc_data_entry, 'retrieved entry ~p', [Id]).
 
@@ -102,7 +102,7 @@ bc_entry_info(Id, WithCount):-
     bc_check_entry_exists(Id),
     ds_get(Id, [slug, type, date_published, date_updated,
         commenting, published, title, author,
-        description, content_type, tags], Entry),
+        description, content_type, tags, language], Entry),
     attach_comment_count(Entry, WithCount),
     debug(bc_data_entry, 'retrieved entry ~p info', [Id]).
 
