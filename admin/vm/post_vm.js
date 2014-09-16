@@ -123,9 +123,8 @@ exports.create = function(authors, data) {
 
         // The post language code. See
         // languages.js for the list of codes.
-        // FIXME use default code.
 
-        language: ko.observable(),
+        language: ko.observable(bcLanguage),
 
         // List of available languages.
 
@@ -209,7 +208,7 @@ exports.create = function(authors, data) {
 
         post.title.subscribe(function(value) {
 
-            post.slug(speakingurl(value));
+            post.slug(getSlug(value));
         });
     }
 
@@ -336,7 +335,7 @@ function validatePost(post) {
 
 function submitPost(post, edit) {
 
-    var form = document.getElementById('post-form');
+    var form = document.getElementById('post');
 
     validate.clear(form);
 

@@ -1,6 +1,6 @@
 <h2 data-bind="text: title"></h2>
 
-<form data-bind="submit: submit" autocomplete="off" id="post-form">
+<form data-bind="submit: submit" autocomplete="off" id="post">
     <div class="form-group">
         <label for="post-title">Title</label>
         <input data-bind="value: title"
@@ -56,7 +56,8 @@
             placeholder="Tags">
     </div>
     <div class="checkbox">
-        <label><input data-bind="checked: published" type="checkbox"> Published</label>
+        <label><input data-bind="checked: published"
+            type="checkbox" id="post-published"> Published</label>
     </div>
     <div class="form-group">
         <label for="post-date">Publish date</label>

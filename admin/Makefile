@@ -21,6 +21,6 @@ install-tools:
 	npm install
 
 test:
-	$(CASPERJS) test tests/login.js
+	$(CASPERJS) test tests/login.js tests/post_new.js
 
 .PHONY: all check clean install-tools
