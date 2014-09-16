@@ -30,7 +30,8 @@
 send_admin:-
     bc_environment(Env),
     bc_config_get(default_language, Lang),
-    bc_view_send(prolog/bc/(public)/index, _{
+    admin_relative(index, Full),
+    bc_view_send(Full, _{
         environment: Env,
         language: Lang
     }).
