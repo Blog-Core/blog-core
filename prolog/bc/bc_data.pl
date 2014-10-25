@@ -43,12 +43,23 @@ bc_init:-
     bc_data_migrate(
         bc_add_language,
         'Adds language to posts',
-        bc_add_language).
+        bc_add_language),
+    bc_data_migrate(
+        bc_smtp_settings,
+        'Adds SMTP settings',
+        bc_smtp_settings).
 
 % Inserts the initial config.
 
 bc_initial_config:-
     bc_config_set(title, 'Untitled site').
+
+bc_smtp_settings:-
+    bc_config_set(smtp_enabled, false),
+    bc_config_set(smtp_host, 'localhost'),
+    bc_config_set(smtp_user, 'user'),
+    bc_config_set(smtp_password, 'password'),
+    bc_config_set(smtp_auth, 'login').
 
 % Inserts the initial user.
 
