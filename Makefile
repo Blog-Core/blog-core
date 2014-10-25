@@ -1,6 +1,6 @@
 version:=$(shell swipl -q -s pack -g 'version(V),writeln(V)' -t halt)
 packfile=blog_core-$(version).tgz
-remote=packs@packs.rlaanemets.com:/usr/share/nginx/packs.rlaanemets.com/blog-core
+remote=www-data@packs.rlaanemets.com:/sites/packs.rlaanemets.com/public/blog-core
 
 test:
 	swipl -s tests/tests.pl -g run_tests,halt -t 'halt(1)'
