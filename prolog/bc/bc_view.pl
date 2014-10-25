@@ -54,6 +54,15 @@ bc_view_not_found:-
     http_current_request(Request),
     http_404([], Request).
 
+%! bc_view_see_other(+Url) is det.
+%
+% Sends redirect 303 (see other) for
+% the current request.
+
+bc_view_see_other(Url):-
+    http_current_request(Request),
+    http_redirect(see_other, Url, Request).
+
 %! bc_view_cached(+Path, +Content) is semidet.
 %
 % Produces reply from cached view. Fails when
