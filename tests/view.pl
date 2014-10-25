@@ -16,12 +16,21 @@ view_post(Slug):-
     ds_find(entry, slug=Slug, [Post]),
     bc_view_send(tests/views/post, Post).
 
+:- route_get(404, view_not_found).
+
+view_not_found:-
+    bc_view_not_found.
+
 test('Entry without cache', [setup((bc_view_disable_cache, new_database))]):-
     default_user_id(AuthorId),
     new_post(AuthorId, 'view-test', Post),
     assertion(Post.status = "success"),
     request_get_content('/post/view-test', Html),
     assertion(sub_string(Html, _, _, _, "<strong>test</strong>")), !.
+
+test('Response 404', [setup((bc_view_disable_cache, new_database))]):-
+    request_get_content('/404', Html),
+    assertion(sub_string(Html, _, _, _, "not found")), !.
 
 test('Entry with cache', [setup((bc_view_enable_cache, new_database))]):-
     default_user_id(AuthorId),

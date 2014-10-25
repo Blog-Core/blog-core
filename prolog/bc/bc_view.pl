@@ -4,7 +4,8 @@
     bc_view_send/3,         % +Name, +Data, +ContentType
     bc_view_enable_cache/0,
     bc_view_disable_cache/0,
-    bc_view_purge_cache/0
+    bc_view_purge_cache/0,
+    bc_view_not_found/0
 ]).
 
 :- use_module(library(http/http_wrapper)).
@@ -43,6 +44,15 @@ bc_view_disable_cache:-
 bc_view_purge_cache:-
     retractall(cache(_, _, _)),
     debug(bc_view, 'purged cache', []).
+
+%! bc_view_not_found is det.
+%
+% Sends non-cached 404 response.
+% Uses exceptions mechanism to produce the response.
+
+bc_view_not_found:-
+    http_current_request(Request),
+    http_404([], Request).
 
 %! bc_view_cached(+Path, +Content) is semidet.
 %

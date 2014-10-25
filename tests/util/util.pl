@@ -111,7 +111,7 @@ request_options(Options):-
 
 request_get_content(Path, String):-
     atom_concat('http://localhost:18008', Path, Url),
-    http_open(Url, Stream, []),
+    http_open(Url, Stream, [ status_code(_) ]),
     read_string(Stream, _, String),
     close(Stream).
 
