@@ -1,5 +1,5 @@
 :- module(bc_mail, [
-    bc_mail_send/2
+    bc_mail_send/4
 ]).
 
 /** <module> Helper module to send mail notifications */
