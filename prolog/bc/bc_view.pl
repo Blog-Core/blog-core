@@ -5,10 +5,12 @@
     bc_view_enable_cache/0,
     bc_view_disable_cache/0,
     bc_view_purge_cache/0,
-    bc_view_not_found/0
+    bc_view_not_found/0,
+    bc_view_see_other/1     % + URL
 ]).
 
 :- use_module(library(http/http_wrapper)).
+:- use_module(library(http/http_dispatch)).
 :- use_module(library(debug)).
 :- use_module(library(st/st_file)).
 :- use_module(library(st/st_render)).
