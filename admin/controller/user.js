@@ -43,7 +43,7 @@ exports.list = function() {
                             message.error(response.message);
                         }
 
-                    }, message.error).done();
+                    }, message.error);
                 }
             };
 

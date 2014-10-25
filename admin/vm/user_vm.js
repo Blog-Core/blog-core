@@ -46,9 +46,9 @@ exports.create = function(data) {
 
             } else {
 
-                if (!username.match(/^[a-zA-Z0-9]+$/)) {
+                if (!username.match(/^[^@]+@[^@]+$/)) {
 
-                    validate.error('user-username', 'Use letters and numbers only.');
+                    validate.error('user-username', 'Username must be an email address.');
                 }
             }
 

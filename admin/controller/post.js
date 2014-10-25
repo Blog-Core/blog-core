@@ -51,7 +51,7 @@ exports.list = function(type) {
                             message.error(response.message);
                         }
 
-                    }, message.error).done();
+                    }, message.error);
                 }
             };
         });
