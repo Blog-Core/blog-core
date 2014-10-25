@@ -4,15 +4,11 @@
     bc_environment/1 % -Env
 ]).
 
-% Catch uncaught syntax errors and shut down
+% Catch uncaught errors/warnings and shut down
 % when they occur.
 
-% FIXME source_sink `prolog/bc/bc_data2' does not exist
-% FIXME goal directive failed
-% FIXME remove compile messages
-
-user:message_hook(Term, error, _):-
-    Term = error(syntax_error(_), _),
+user:message_hook(Term, Type, _):-
+    ( Type = error ; Type = warning ),
     message_to_string(Term, String),
     write(user_error, String), nl(user_error),
     halt(1).
