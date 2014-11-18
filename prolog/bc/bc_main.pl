@@ -7,11 +7,15 @@
 % Catch uncaught errors/warnings and shut down
 % when they occur.
 
+% FIXME relax in development.
+
 user:message_hook(Term, Type, _):-
     ( Type = error ; Type = warning ),
     message_to_string(Term, String),
     write(user_error, String), nl(user_error),
     halt(1).
+
+:- set_prolog_flag(encoding, utf8).
 
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(debug)).
