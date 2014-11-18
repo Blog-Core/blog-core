@@ -2,7 +2,7 @@ name('blog_core').
 version('0.0.1').
 title('Blog/CMS framework').
 author('Raivo Laanemets', 'http://rlaanemets.com/').
-home('https://github.com/rla/blog-core').
+home('http://blog-core.net/').
 requires('docstore').
 requires('arouter').
 requires('smtp').
