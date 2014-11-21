@@ -7,16 +7,17 @@
 % Catch uncaught errors/warnings and shut down
 % when they occur.
 
-% FIXME relax in development.
-
-user:message_hook(Term, Type, _):-
-    ( Type = error ; Type = warning ),
-    message_to_string(Term, String),
-    write(user_error, String), nl(user_error),
-    halt(1).
+:- if(getenv('PL_ENV', production)).
+    user:message_hook(Term, Type, _):-
+        ( Type = error ; Type = warning ),
+        message_to_string(Term, String),
+        write(user_error, String), nl(user_error),
+        halt(1).
+:- endif.
 
 :- set_prolog_flag(encoding, utf8).
 
+:- use_module(library(dcg/basics)).
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(debug)).
 :- use_module(library(docstore)).
@@ -91,14 +92,30 @@ user:message_hook(Term, Type, _):-
 bc_main(_):-
     initialized, !.
 
-bc_main(_):-
-    current_prolog_flag(windows, true), !,
-    throw(error(no_http_unix_daemon)).
-
 bc_main(File):-
-   bc_data_open(File),
-   http_daemon,
-   asserta(initialized).
+    (   current_prolog_flag(windows, true)
+    ->  write(user_error, 'http_unix_daemon daemon is not supported on Windows'), nl(user_error),
+        write(user_error, 'shim supporting the --port option is used'), nl(user_error),
+        port_option(Port),
+        bc_main(File, [port(Port)])
+    ;   bc_data_open(File),
+        http_daemon,
+        asserta(initialized)).
+
+port_option(Port):-
+    current_prolog_flag(argv, Argv),
+    (   find_port_option(Argv, Port)
+    ->  true
+    ;   Port = 80).
+
+find_port_option([Arg|Argv], Port):-
+    atom_codes(Arg, Codes),
+    (   phrase(port_option_parse(Port), Codes)
+    ->  true
+    ;   find_port_option(Argv, Port)).
+
+port_option_parse(Port) -->
+    "--port=", integer(Port), { Port > 0 }.
 
 %! bc_main(+File, +Options) is det.
 %
