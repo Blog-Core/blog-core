@@ -383,7 +383,7 @@ function updatePost(form, post, edit) {
             window.scroll(0, 0);
         }
 
-    }, message.error).done();
+    }, message.error);
 }
 
 // Saves the new post.
@@ -416,5 +416,5 @@ function savePost(form, post, edit) {
             window.scroll(0, 0);
         }
 
-    }, message.error).done();
+    }, message.error);
 }
