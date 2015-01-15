@@ -3,13 +3,13 @@
 <form data-bind="submit: login" autocomplete="off" id="login">
     <div class="form-group">
         <label class="control-label" for="username">Username</label>
-        <input data-bind="value: username"
+        <input data-bind="textInput: username"
             type="text" name="username" title="Username"
             placeholder="Username" class="form-control" id="username">
     </div>
     <div class="form-group">
         <label class="control-label" for="password">Password</label>
-        <input data-bind="value: password"
+        <input data-bind="textInput: password"
             type="password" name="password" title="Password"
             placeholder="Password" class="form-control" id="password">
     </div>
