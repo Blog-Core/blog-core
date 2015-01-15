@@ -102,11 +102,15 @@ bc_main(File):-
         http_daemon,
         asserta(initialized)).
 
+:- setting(port, number, 80, 'Port to run on in windows').
+
+:- load_settings('settings.db').
+
 port_option(Port):-
     current_prolog_flag(argv, Argv),
     (   find_port_option(Argv, Port)
     ->  true
-    ;   Port = 80).
+    ;   setting(port, Port)).
 
 find_port_option([Arg|Argv], Port):-
     atom_codes(Arg, Codes),
