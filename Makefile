@@ -6,7 +6,7 @@ test:
 	swipl -s tests/tests.pl -g run_tests,halt -t 'halt(1)'
 
 package: test admin
-	tar cvzf $(packfile) prolog tests pack.pl README.md
+	tar cvzf $(packfile) prolog tests pack.pl README.md LICENSE
 
 upload: package
 	scp $(packfile) $(remote)/$(packfile)
