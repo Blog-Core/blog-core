@@ -10,6 +10,8 @@ exports.hex = function(string) {
     return hex;
 };
 
+// FIXME this is broken encoding.
+
 exports.string = function(hex) {
 
     if (typeof hex !== 'string') {

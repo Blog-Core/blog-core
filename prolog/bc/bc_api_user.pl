@@ -8,6 +8,7 @@
 :- use_module(bc_api_io).
 :- use_module(bc_api_auth).
 :- use_module(bc_data_user).
+:- use_module(bc_data_cur_user).
 
 % Creation of new users.
 
@@ -55,6 +56,18 @@ users_list:-
 user_get(Id):-
     bc_user(Id, User),
     bc_reply_success(User).
+
+% Sends the given user information.
+
+:- route_get(api/user/info,
+    bc_auth, user_info).
+
+user_info:-
+    bc_user(User),
+    bc_reply_success(_{
+        '$id': User.'$id',
+        type: User.type,
+        username: User.username }).
 
 % Schema for user data.
 

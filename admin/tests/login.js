@@ -15,7 +15,7 @@ casper.test.begin('Login/logout', function suite(test) {
 
     casper.then(function() {
 
-        this.fillSelectors('form#login', {
+        this.fillSelectors('form', {
 
             'input[name="username"]': 'admin@example.com',
             'input[name="password"]': 'admin'

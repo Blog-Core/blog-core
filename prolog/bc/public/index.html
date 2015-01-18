@@ -33,15 +33,19 @@
             <img src="/t-{{= cache_token }}/admin/img/spinner.gif">
         </div>
         <h1>Blog admin</h1>
-        <div data-bind="visible: visible" class="btn-group" id="menu">
-            <a data-bind="css: { active: active() === 'posts' }" class="btn btn-default" href="#posts">Posts</a>
-            <a data-bind="css: { active: active() === 'pages' }" class="btn btn-default" href="#pages">Pages</a>
-            <a data-bind="css: { active: active() === 'blocks' }" class="btn btn-default" href="#blocks">Blocks</a>
-            <a data-bind="css: { active: active() === 'users' }" class="btn btn-default" href="#users">Users</a>
-            <a data-bind="css: { active: active() === 'files' }" class="btn btn-default" href="#files">Files</a>
-            <a class="btn btn-default" href="#logout">Logout</a>
+        <div data-bind="css: { hidden: bcEnvironment !== 'development'}"
+            class="hidden alert alert-warning" role="alert">
+            You are running in development mode. Many caching features
+            are disabled. You can enable the production mode by setting the
+            environment variable PL_ENV=production prior running the Blog-Core
+            process.
         </div>
-        <div id="content"></div>
+        <bc-menu params="active: menu.active"></bc-menu>
+        <div id="content">
+            <!-- ko if: component() -->
+                <!-- ko component: { name: component, params: params } --><!-- /ko -->
+            <!-- /ko -->
+        </div>
     </div>
     <script src="/t-{{= cache_token }}/admin/js/shim/promise-1.0.0.min.js"></script>
     <script src="/t-{{= cache_token }}/admin/js/libs/knockout-3.2.0.min.js"></script>

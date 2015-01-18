@@ -43,4 +43,9 @@ exports.error = function(err) {
     }, false);
 
     messages.appendChild(message);
+
+    if (err instanceof Error) {
+
+        console.error(err.stack);
+    }
 };

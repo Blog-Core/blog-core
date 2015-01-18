@@ -20,7 +20,7 @@
     </li>
 </ul>
 
-<a data-bind="css: { disabled: $root.mytype !== 'admin' }"
+<a data-bind="css: { disabled: type() !== 'admin' }"
     class="btn btn-default" href="#user/new">
     <span class="glyphicon glyphicon-plus"></span> Add
 </a>

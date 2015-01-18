@@ -15,7 +15,7 @@ casper.test.begin('New post', function suite(test) {
 
     casper.then(function() {
 
-        this.fillSelectors('form#login', {
+        this.fillSelectors('form', {
 
             'input[name="username"]': 'admin@example.com',
             'input[name="password"]': 'admin'
@@ -54,14 +54,14 @@ casper.test.begin('New post', function suite(test) {
         test.assertFieldCSS('#post-language', 'en');
         test.assertFieldCSS('#post-content-type', 'markdown');
         test.assertFieldCSS('#post-update', new Date().toISOString().substring(0, 10));
-        test.assertFieldCSS('#post-date', '');
+        test.assertFieldCSS('#post-date', new Date().toISOString().substring(0, 10));
     });
 
     // Change title.
 
     casper.then(function() {
 
-        this.fillSelectors('form#post', {
+        this.fillSelectors('form', {
 
             '#post-title': 'Hello World'
 
@@ -104,7 +104,7 @@ casper.test.begin('New post', function suite(test) {
 
     casper.then(function() {
 
-        this.fillSelectors('form#post', {
+        this.fillSelectors('form', {
 
             '#post-content': 'This is **Hello World** post.',
             '#post-description': 'Test post.',
@@ -177,7 +177,7 @@ casper.test.begin('New post', function suite(test) {
 
         // Modify values.
 
-        this.fillSelectors('form#post', {
+        this.fillSelectors('form', {
 
             '#post-content': 'This is updated **Hello World** post.',
             '#post-description': 'Updated test post.'

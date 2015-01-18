@@ -1,0 +1,93 @@
+<!-- ko with: post -->
+    <h2 data-bind="text: title"></h2>
+    <form data-bind="submit: submit" autocomplete="off" id="post">
+        <div class="form-group">
+            <label for="post-title">Title</label>
+            <input data-bind="value: title"
+                type="text" class="form-control" id="post-title"
+                placeholder="Title">
+        </div>
+        <div class="form-group">
+            <label for="post-slug">Slug</label>
+            <input data-bind="value: slug"
+                type="text" class="form-control" id="post-slug"
+                placeholder="Slug">
+            <p class="help-block">Slug should not be modified after publishing as it will break links.</p>
+        </div>
+        <div class="form-group">
+            <label for="post-description">Description</label>
+            <textarea
+                data-bind="value: description"
+                class="form-control" rows="3" id="post-description" placeholder="Description"></textarea>
+            <p class="help-block">Description is used by search engines to show the page snippet.</p>
+        </div>
+        <div class="form-group">
+            <label for="post-content">Content</label>
+            <textarea
+                data-bind="value: content"
+                class="form-control content" rows="20" id="post-content"
+                placeholder="Content"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="post-type">Type</label>
+            <select data-bind="value: type" class="form-control" id="post-type">
+                <option value="post">Post</option>
+                <option value="page">Page</option>
+                <option value="block">Block</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="post-content-type">Content type</label>
+            <select data-bind="value: content_type" class="form-control" id="post-content-type">
+                <option value="markdown">Markdown</option>
+                <option value="raw">Raw</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="post-author">Author</label>
+            <select data-bind="value: author, options: authors,
+                optionsText: 'fullname', attr: { disabled: !author_selectable }"
+                class="form-control" id="post-author"></select>
+        </div>
+        <div class="form-group">
+            <label for="post-tags">Tags</label>
+            <input data-bind="value: tags"
+                type="text" class="form-control" id="post-tags"
+                placeholder="Tags">
+        </div>
+        <div class="checkbox">
+            <label><input data-bind="checked: published"
+                type="checkbox" id="post-published"> Published</label>
+        </div>
+        <div class="form-group">
+            <label for="post-date">Publish date</label>
+            <input data-bind="value: date"
+                type="text" class="form-control" id="post-date"
+                placeholder="YYYY-MM-DD">
+        </div>
+        <div class="form-group">
+            <label for="post-update">Update date</label>
+            <input data-bind="value: update"
+                type="text" class="form-control" id="post-update"
+                placeholder="YYYY-MM-DD">
+        </div>
+        <div class="checkbox">
+            <label><input data-bind="checked: commenting" type="checkbox"> Commenting</label>
+        </div>
+        <div class="form-group">
+            <label for="post-language">Language</label>
+            <select data-bind="value: language, options: languages,
+                optionsText: 'name', optionsValue: 'code'"
+                class="form-control" id="post-language"></select>
+        </div>
+        <button data-bind="click: save" class="btn btn-default">
+            <span class="glyphicon glyphicon-ok"></span> Save/leave
+        </button>
+        <button type="submit" class="btn btn-default">
+            <span class="glyphicon glyphicon-ok"></span> Save/continue
+        </button>
+        <a data-bind="attr: { href: '#' + type() + 's' }" class="btn btn-default" href="#">
+            <span class="glyphicon glyphicon-arrow-left"></span> Posts
+        </a>
+    </form>
+<!-- /ko -->

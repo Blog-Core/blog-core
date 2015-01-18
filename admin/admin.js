@@ -1,12 +1,48 @@
-var auth = require('./controller/auth');
-var post = require('./controller/post');
-var file = require('./controller/file');
-var user = require('./controller/user');
-var comment = require('./controller/comment');
 var hex = require('./hex');
 var api = require('./api');
-var menu = require('./menu');
-var message = require('./message');
+
+// Menu component.
+
+require('./components/menu');
+
+// Login component.
+
+require('./components/login');
+
+// Posts list component.
+
+require('./components/posts');
+
+// Posts edit component.
+
+require('./components/post');
+
+// Users list component.
+
+require('./components/users');
+
+// User edit component.
+
+require('./components/user');
+
+// Comments list component.
+
+require('./components/comments');
+
+// Directory listing component.
+
+require('./components/directory');
+
+// File view component.
+
+require('./components/file');
+
+// Global to format dates.
+
+window.formatDate = function(ts) {
+
+    return new Date(1000 * ts).toISOString().substring(0, 10);
+};
 
 // Helper to trim whitespace from values.
 
@@ -29,103 +65,99 @@ ko.subscribable.fn.trimmed = function() {
     });
 };
 
-route(/^posts/, function() {
+// The main model.
 
-    menu.active('posts');
-    post.list('post').catch(message.error);
+var model = {
+
+    component: ko.observable(),
+
+    // FIXME changing this before component
+    // might have side effects.
+
+    params: ko.observable({}),
+
+    menu: {
+
+        active: ko.observable()
+    }
+};
+
+// Shows given component with params.
+
+model.show = function(name, params, menu) {
+
+    model.menu.active(menu);
+    model.params(params);
+    model.component(name);
+};
+
+ko.applyBindings(model);
+
+route(/^entries\/([^\/]+)/, function(type) {
+
+    model.show('posts', { type: type }, type + 's');
 });
 
-route(/^pages/, function() {
+route(/^entry\/([^\/]+)\/([^\/]+)/, function(type, id) {
 
-    menu.active('pages');
-    post.list('page').catch(message.error);
-});
-
-route(/^blocks/, function() {
-
-    menu.active('blocks');
-    post.list('block').catch(message.error);
-});
-
-route(/^post\/([^\/]+)/, function(id) {
-
-    menu.active('posts');
-    post.edit(id).catch(message.error);
-});
-
-route(/^page\/([^\/]+)/, function(id) {
-
-    menu.active('pages');
-    post.edit(id).catch(message.error);
-});
-
-route(/^block\/([^\/]+)/, function(id) {
-
-    menu.active('blocks');
-    post.edit(id).catch(message.error);
+    model.show('post', { id: id }, type + 's');
 });
 
 route(/^new\/([^\/]+)/, function(type) {
 
-    menu.active(type + 's');
-    post.create(type).catch(message.error);
+    model.show('post', { type: type }, type + 's');
 });
 
 route(/^files/, function() {
 
-    menu.active('files');
     route.go('directory/' + hex.hex('/'));
 });
 
 route(/^directory\/([^\/]+)/, function(directory) {
 
-    menu.active('files');
-    file.directory(hex.string(directory)).catch(message.error);
+    model.show('directory', { directory: directory }, 'files');
 });
 
-route(/^file\/([^\/]+)/, function(filename) {
+route(/^file\/([^\/]+)/, function(file) {
 
-    menu.active('files');
-    file.file(hex.string(filename)).catch(message.error);
+    model.show('file', { file: file }, 'files');
 });
 
-route(/^comments\/([^\/]+)/, function(id) {
+route(/^comments\/([^\/]+)\/([^\/]+)/, function(type, id) {
 
-    menu.active('posts');
-    comment.list(id).catch(message.error);
+    model.show('comments', { id: id }, type + 's');
 });
 
 route(/^users/, function() {
 
-    menu.active('users');
-    user.list().catch(message.error);
+    model.show('users', {}, 'users');
 });
 
 route(/^user\/new/, function() {
 
-    menu.active('users');
-    user.create().catch(message.error);
+    model.show('user', {}, 'users');
 });
 
 route(/^user\/([^\/]+)/, function(id) {
 
-    menu.active('users');
-    user.edit(id).catch(message.error);
+    model.show('user', { id: id }, 'users');
 });
 
 route(/^login/, function() {
 
-    menu.active();
-    auth.form().catch(message.error);
+    model.show('login', {});
 });
 
 route(/^logout/, function() {
 
-    menu.active();
-    auth.logout();
+    sessionStorage.removeItem('api-key');
+
+    route.go('login');
 });
 
 route(/.*/, function() {
 
-    route.go(api.hasKey() ? 'posts' : 'login');
+    // FIXME go to first entries.
+
+    route.go(api.hasKey() ? 'entries/post' : 'login');
 });

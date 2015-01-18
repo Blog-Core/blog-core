@@ -7,16 +7,17 @@
 :- use_module(library(filesex)).
 :- use_module(library(arouter)).
 
+:- use_module(bc_hex).
 :- use_module(bc_api_io).
 :- use_module(bc_api_auth).
 
 % Sends directory listing in public directory.
 
-:- route_get(api/directory/Base64,
-    bc_auth, directory_get(Base64)).
+:- route_get(api/directory/Hex,
+    bc_auth, directory_get(Hex)).
 
-directory_get(Base64):-
-    base64(Path, Base64),
+directory_get(Hex):-
+    bc_hex_atom(Hex, Path),
     atom_concat(public, Path, Full),
     check_safe_path(Full),
     directory_files(Full, Entries),
@@ -45,11 +46,11 @@ entry_records([], _, []).
 
 % Creates new subdirectory in the given path.
 
-:- route_post(api/directory/Base64/Sub,
-    bc_auth, directory_new(Base64, Sub)).
+:- route_post(api/directory/Hex/Sub,
+    bc_auth, directory_new(Hex, Sub)).
 
-directory_new(Base64, Sub):-
-    base64(Path, Base64),
+directory_new(Hex, Sub):-
+    bc_hex_atom(Hex, Path),
     atomic_list_concat([public, Path, '/', Sub], Full),
     check_safe_path(Full),
     make_directory(Full),
@@ -57,11 +58,11 @@ directory_new(Base64, Sub):-
 
 % Receives the uploaded file.
 
-:- route_post(api/upload/Base64,
-    bc_auth, upload_file(Base64)).
+:- route_post(api/upload/Hex,
+    bc_auth, upload_file(Hex)).
 
-upload_file(Base64):-
-    base64(Path, Base64),
+upload_file(Hex):-
+    bc_hex_atom(Hex, Path),
     http_current_request(Request),
     memberchk(x_file_name(Target), Request),
     atomic_list_concat([public, Path, '/', Target], Full),
@@ -77,11 +78,11 @@ upload_file(Base64):-
 
 % Removes the given directory.
 
-:- route_del(api/directory/Base64,
-    bc_auth, directory_remove(Base64)).
+:- route_del(api/directory/Hex,
+    bc_auth, directory_remove(Hex)).
 
-directory_remove(Base64):-
-    base64(Path, Base64),
+directory_remove(Hex):-
+    bc_hex_atom(Hex, Path),
     atom_concat(public, Path, Full),
     check_safe_path(Full),
     delete_directory_rec(Full),
@@ -111,11 +112,11 @@ delete_directory_entries([], _).
 
 % File metainfo.
 
-:- route_get(api/file/Base64,
-    bc_auth, file_get(Base64)).
+:- route_get(api/file/Hex,
+    bc_auth, file_get(Hex)).
 
-file_get(Base64):-
-    base64(Path, Base64),
+file_get(Hex):-
+    bc_hex_atom(Hex, Path),
     atom_concat(public, Path, Full),
     check_safe_path(Full),
     set_time_file(Full, [modified(Time)], []),
@@ -125,11 +126,11 @@ file_get(Base64):-
 
 % Removes the given file.
 
-:- route_del(api/file/Base64,
-    bc_auth, file_remove(Base64)).
+:- route_del(api/file/Hex,
+    bc_auth, file_remove(Hex)).
 
-file_remove(Base64):-
-    base64(Path, Base64),
+file_remove(Hex):-
+    bc_hex_atom(Hex, Path),
     atom_concat(public, Path, Full),
     check_safe_path(Full),
     delete_file(Full),

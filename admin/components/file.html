@@ -1,11 +1,11 @@
 <h2 data-bind="text: 'File ' + file"></h2>
 <p>
     File size: <span data-bind="text: size"></span> bytes<br>
-    Last uploaded: <span data-bind="text: formatDate(date)"></span>
+    Last uploaded: <span data-bind="text: formatDate(date())"></span>
 </p>
 <p>
     <a data-bind="attr: { href: '#directory/' + parent }" class="btn btn-default" href="#">
-        <span class="glyphicon glyphicon-arrow-up"></span>
+        <span class="glyphicon glyphicon-arrow-up"></span> Up
     </a>
     <a data-bind="attr: { href: file }" href="#" target="_blank" class="btn btn-default">
         Direct link (opens in new tab)

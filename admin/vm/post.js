@@ -9,16 +9,12 @@ var languages = require('../languages');
 // argument must contain the list of all
 // users.
 
-exports.create = function(authors, data) {
-
-    var myid = sessionStorage.getItem('user-id');
-
-    var mytype = sessionStorage.getItem('user-type');
+exports.create = function(user, authors, data) {
 
     // Sets author to the current user
     // by default. Gets overriden by data.
 
-    var author = findAuthor(authors, myid);
+    var author = findAuthor(authors, user.$id);
 
     var post = {
 
@@ -92,7 +88,7 @@ exports.create = function(authors, data) {
         // the current user can select
         // the post author.
 
-        author_selectable: mytype === 'admin',
+        author_selectable: user.type === 'admin',
 
         // Publish date as a string in
         // the format YYYY-MM-DD. Might be
@@ -210,6 +206,10 @@ exports.create = function(authors, data) {
 
             post.slug(getSlug(value));
         });
+
+        // Default publish date.
+
+        post.date(new Date().toISOString().substring(0, 10));
     }
 
     // Default update date is the current date.
@@ -249,7 +249,7 @@ function findAuthor(authors, id) {
 
     if (!author) {
 
-        throw new Error('No author ' + data.author);
+        throw new Error('No author ' + id);
     }
 
     return author;

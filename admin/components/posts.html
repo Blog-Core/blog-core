@@ -7,11 +7,11 @@
             Update date: <span data-bind="text: formatDate(date_updated)"></span>,
             comments: <span data-bind="text: comments"></span>
             <div data-bind="visible: expanded" class="post-controls">
-                <a data-bind="attr: { href: '#' + type + '/' + $id }, css: { disabled: !editable }"
+                <a data-bind="attr: { href: '#entry/' + type + '/' + $id }, css: { disabled: !editable }"
                     class="btn btn-default btn-sm" href="#">
                     <span class="glyphicon glyphicon-edit"></span> Edit
                 </a>
-                <a data-bind="attr: { href: '#comments/' + $id }, visible: type === 'post', css: { disabled: comments === 0 || !editable }"
+                <a data-bind="attr: { href: '#comments/' + type + '/' + $id }, visible: type === 'post', css: { disabled: comments === 0 || !editable }"
                     class="btn btn-default btn-sm" href="#">
                     <span class="glyphicon glyphicon-comment"></span> Comments
                 </a>
@@ -24,8 +24,11 @@
     </li>
 </ul>
 
-<a data-bind="click: more, css: { disabled: !hasMore() }" class="btn btn-default" href="#">
+<a data-bind="click: showMore, css: { disabled: !hasMore() }" class="btn btn-default" href="#">
     <span class="glyphicon glyphicon-list-alt"></span> Show more
+</a>
+<a data-bind="click: showAll, css: { disabled: !hasMore() }" class="btn btn-default" href="#">
+    <span class="glyphicon glyphicon-list-alt"></span> Show all
 </a>
 <a data-bind="attr: { href: '#new/' + type }" class="btn btn-default" href="#">
     <span class="glyphicon glyphicon-plus"></span> Add

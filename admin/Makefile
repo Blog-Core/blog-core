@@ -5,11 +5,13 @@ CASPERJS = node_modules/.bin/casperjs
 BUNDLE_JS = ../prolog/bc/public/js/admin.bundle.js
 MAP_JS = $(BUNDLE_JS).map
 
+.DELETE_ON_ERROR:
+
 all: $(BUNDLE_JS)
 
-$(BUNDLE_JS): admin.js *.js controller/*.js vm/*.js
+$(BUNDLE_JS): admin.js *.js vm/*.js components/*.js components/*.html
 	rm -f $@ $@.map
-	$(BROWSERIFY) $< -p [minifyify --map admin.bundle.js.map --output $@.map] > $@
+	$(BROWSERIFY) $< -t brfs -p [minifyify --map admin.bundle.js.map --output $@.map] > $@
 
 check:
 	$(JSHINT) --exclude=node_modules .

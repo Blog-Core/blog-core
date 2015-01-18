@@ -1,5 +1,33 @@
 var xhr = require('./xhr');
 
+// FIXME make all API calls use it.
+
+function jsendAuth(options) {
+
+    options.headers = options.headers || {};
+
+    options.headers['X-Key'] = apiKey();
+
+    return jsend(options);
+}
+
+function jsend(options) {
+
+    return xhr(options).then(function(response) {
+
+        var json = JSON.parse(response);
+
+        if (json.status === 'success') {
+
+            return json.data;
+
+        } else {
+
+            throw new Error(json.message);
+        }
+    });
+}
+
 exports.login = function(username, password) {
 
     var options = {
@@ -95,18 +123,11 @@ exports.comments = function(id) {
 
 exports.removeComment = function(id) {
 
-    var options = {
+    return jsendAuth({
 
         method: 'DELETE',
 
-        url: '/api/comment/' + encodeURIComponent(id),
-
-        headers: { 'X-Key': apiKey() }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response);
+        url: '/api/comment/' + encodeURIComponent(id)
     });
 };
 
@@ -171,7 +192,7 @@ exports.directory = function(directory) {
 
     var options = {
 
-        url: '/api/directory/' + encodeURIComponent(window.btoa(directory)),
+        url: '/api/directory/' + encodeURIComponent(directory),
 
         headers: { 'X-Key': apiKey() }
     };
@@ -182,74 +203,55 @@ exports.directory = function(directory) {
     });
 };
 
+// Creates the subdirectory.
+// Assumes that directory is hex-encoded
+// and subdirectory is not.
+
 exports.createDirectory = function(directory, subdirectory) {
 
-    var options = {
+    return jsendAuth({
 
         method: 'POST',
 
-        url: '/api/directory/' + encodeURIComponent(window.btoa(directory)) + '/' +
-            encodeURIComponent(subdirectory),
-
-        headers: { 'X-Key': apiKey() }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response);
+        url: '/api/directory/' + encodeURIComponent(directory) + '/' +
+            encodeURIComponent(subdirectory)
     });
 };
 
+// Removes the directory.
+// Assumes that file path is hex-encoded.
+
 exports.removeDirectory = function(directory) {
 
-    var options = {
+    return jsendAuth({
 
         method: 'DELETE',
 
-        url: '/api/directory/' + encodeURIComponent(window.btoa(directory)),
-
-        headers: { 'X-Key': apiKey() }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response);
+        url: '/api/directory/' + encodeURIComponent(directory)
     });
 };
 
 // Retrieves file metainfo.
+// Assumes that file path is hex-encoded.
 
 exports.file = function(file) {
 
-    var options = {
+    return jsendAuth({
 
-        url: '/api/file/' + encodeURIComponent(window.btoa(file)),
-
-        headers: { 'X-Key': apiKey() }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response);
+        url: '/api/file/' + encodeURIComponent(file)
     });
 };
 
 // Removes the given file.
+// Assumes that file path is hex-encoded.
 
 exports.removeFile = function(file) {
 
-    var options = {
+    return jsendAuth({
 
         method: 'DELETE',
 
-        url: '/api/file/' + encodeURIComponent(window.btoa(file)),
-
-        headers: { 'X-Key': apiKey() }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response);
+        url: '/api/file/' + encodeURIComponent(file)
     });
 };
 
@@ -284,6 +286,16 @@ exports.user = function(id) {
     return xhr(options).then(function(response) {
 
         return JSON.parse(response).data;
+    });
+};
+
+// Retrieves the current user info.
+
+exports.userInfo = function() {
+
+    return jsendAuth({
+
+        url: '/api/user/info'
     });
 };
 

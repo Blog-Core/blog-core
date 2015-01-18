@@ -2,7 +2,9 @@ var message = require('../message');
 var api = require('../api');
 var validate = require('../validate');
 
-exports.create = function(data) {
+// info - the current user info.
+
+exports.create = function(info, data) {
 
     var mytype = sessionStorage.getItem('user-type');
 
@@ -18,7 +20,7 @@ exports.create = function(data) {
         error: ko.observable(''),
         creating: true,
         files: ko.observable(false),
-        mytype: mytype,
+        my_type: info.type,
 
         save: function(form) {
 
