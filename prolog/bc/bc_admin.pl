@@ -14,8 +14,6 @@
 
 :- route_get(admin/img/File, send_file(img/File)).
 
-:- route_get(admin/tpl/File, send_file(tpl/File)).
-
 :- route_get(admin/js/File, send_file(js/File)).
 
 :- route_get(admin/js/shim/File, send_file(js/shim/File)).
