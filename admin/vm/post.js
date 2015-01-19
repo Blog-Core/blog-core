@@ -373,11 +373,11 @@ function updatePost(form, post, edit) {
 
         if (response.status === 'success') {
 
-            message.info('Post updated.');
+            message.info('The post "' + post.title() + '" has been updated.');
 
             if (!edit) {
 
-                route.go(post.type() + 's');
+                route.go('entries/' + post.type());
             }
 
         } else {
@@ -398,7 +398,7 @@ function savePost(form, post, edit) {
 
         if (response.status === 'success') {
 
-            message.info('Post saved.');
+            message.info('Post "' + post.title() + '" has been saved.');
 
             // Redirect to post page when we
             // want to keep editing the post.
@@ -406,11 +406,11 @@ function savePost(form, post, edit) {
 
             if (edit) {
 
-                route.go(post.type() + '/' + response.data);
+                route.go('entry/' + post.type() + '/' + response.data);
 
             } else {
 
-                route.go(post.type() + 's');
+                route.go('entries/' + post.type());
             }
 
         } else {

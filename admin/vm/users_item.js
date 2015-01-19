@@ -32,7 +32,7 @@ exports.create = function(data) {
 
                 if (response.status === 'success') {
 
-                    message.info('The user was removed.');
+                    message.info('User "' + user.username + '" has been removed.');
 
                     route.refresh();
 

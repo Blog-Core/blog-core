@@ -81,6 +81,8 @@ exports.create = function(info, roles, data) {
 
                     if (response.status === 'success') {
 
+                        message.info('User "' + user.username() + '" has been updated.');
+
                         route.go('users');
 
                     } else {
@@ -95,6 +97,8 @@ exports.create = function(info, roles, data) {
                 api.saveUser(user.toJS()).then(function(response) {
 
                     if (response.status === 'success') {
+
+                        message.info('User "' + user.username() + '" has been added.');
 
                         route.go('users');
 
@@ -151,6 +155,10 @@ exports.create = function(info, roles, data) {
         user.link(data.link);
         user.password_edit(false);
         user.files(data.files);
+
+    } else {
+
+        user.fullname('Unnamed');
     }
 
     return user;

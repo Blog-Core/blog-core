@@ -24,12 +24,14 @@
     </li>
 </ul>
 
-<a data-bind="click: showMore, css: { disabled: !hasMore() }" class="btn btn-default" href="#">
-    <span class="glyphicon glyphicon-list-alt"></span> Show more
-</a>
-<a data-bind="click: showAll, css: { disabled: !hasMore() }" class="btn btn-default" href="#">
-    <span class="glyphicon glyphicon-list-alt"></span> Show all
-</a>
-<a data-bind="attr: { href: '#new/' + type }" class="btn btn-default" href="#">
-    <span class="glyphicon glyphicon-plus"></span> Add
-</a>
+<div class="bc-controls">
+    <a data-bind="click: showMore, css: { disabled: !hasMore() }" class="btn btn-default" href="#">
+        <span class="glyphicon glyphicon-list-alt"></span> Show more
+    </a>
+    <a data-bind="click: showAll, css: { disabled: !hasMore() }" class="btn btn-default" href="#">
+        <span class="glyphicon glyphicon-list-alt"></span> Show all
+    </a>
+    <a data-bind="attr: { href: '#new/' + type }" class="btn btn-default" href="#">
+        <span class="glyphicon glyphicon-plus"></span> Add
+    </a>
+</div>

@@ -1,6 +1,5 @@
 var fs = require('fs');
 var api = require('../api');
-var focus = require('../focus');
 var user = require('../vm/user');
 var message = require('../message');
 
@@ -25,8 +24,6 @@ function page(params) {
 
             model.user(user.create(info, roles, userData));
 
-            focus('#user-fullname');
-
         }).catch(message.error);
 
     } else {
@@ -41,7 +38,14 @@ function page(params) {
 
             model.user(user.create(info, roles));
 
-            focus('#user-fullname');
+            var fullname = document.querySelector('#user-fullname');
+
+            fullname.focus();
+
+            if (typeof fullname.setSelectionRange === 'function') {
+
+                fullname.setSelectionRange(0, fullname.value.length);
+            }
 
         }).catch(message.error);
     }

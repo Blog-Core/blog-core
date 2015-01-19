@@ -32,7 +32,7 @@ exports.create = function(data) {
 
                 if (response.status === 'success') {
 
-                    message.info('The post was removed.');
+                    message.info('The post "' + post.title + '" has been removed.');
 
                     route.refresh();
 
