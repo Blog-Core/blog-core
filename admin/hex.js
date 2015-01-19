@@ -2,15 +2,35 @@ exports.hex = function(string) {
 
     var hex = '';
 
-    for(var i = 0; i < string.length; i++) {
+    // This encodes string to escaped UTF-8 octets
+    // interleaved with normal ASCII characters.
 
-        hex += string.charCodeAt(i).toString(16);
+    var encoded = encodeURIComponent(string), i = 0;
+
+    while (i < encoded.length) {
+
+        var ch = encoded.charAt(i);
+
+        if (ch === '%') {
+
+            i += 1;
+
+            hex += encoded.charAt(i);
+
+            i += 1;
+
+            hex += encoded.charAt(i);
+
+        } else {
+
+            hex += encoded.charCodeAt(i).toString(16);
+        }
+
+        i += 1;
     }
 
-    return hex;
+    return hex.toLowerCase();
 };
-
-// FIXME this is broken encoding.
 
 exports.string = function(hex) {
 
@@ -19,12 +39,19 @@ exports.string = function(hex) {
         hex = hex.toString();
     }
 
-    var string = '';
+    var encoded = '';
 
-    for (var i = 0; i < hex.length; i += 2) {
+    // Turns into percent-encoded
+    // UTF-8.
 
-        string += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+    while (hex) {
+
+        encoded += '%' + hex.substring(0, 2);
+
+        hex = hex.substring(2);
     }
 
-    return string;
+    // Decodes to internal representation.
+
+    return decodeURIComponent(encoded);
 };
