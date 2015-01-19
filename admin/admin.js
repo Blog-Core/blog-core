@@ -1,5 +1,6 @@
 var hex = require('./hex');
 var api = require('./api');
+var message = require('./message');
 
 // Menu component.
 
@@ -78,7 +79,9 @@ var model = {
 
     menu: {
 
-        active: ko.observable()
+        active: ko.observable(),
+
+        types: ko.observable()
     }
 };
 
@@ -93,57 +96,117 @@ model.show = function(name, params, menu) {
 
 ko.applyBindings(model);
 
+// Returns a Promise.
+
+function loadMenu() {
+
+    if (model.menu.types()) {
+
+        // Menu updated.
+
+        return Promise.resolve(model.menu.types());
+    }
+
+    return api.types().then(function(types) {
+
+        model.menu.types(types);
+
+        return types;
+    });
+}
+
+// Redirects user if he/she is not
+// authenticated.
+
+function authenticated() {
+
+    if (api.hasKey()) {
+
+        // If user if authenticated then
+        // check if custom menu entries need
+        // reloading.
+
+        loadMenu();
+
+    } else {
+
+        route.go('login');
+    }
+}
+
 route(/^entries\/([^\/]+)/, function(type) {
 
-    model.show('posts', { type: type }, type + 's');
+    authenticated();
+
+    model.show('posts', { type: type }, type);
 });
 
 route(/^entry\/([^\/]+)\/([^\/]+)/, function(type, id) {
 
-    model.show('post', { id: id }, type + 's');
+    authenticated();
+
+    model.show('post', { id: id }, type);
 });
 
 route(/^new\/([^\/]+)/, function(type) {
 
-    model.show('post', { type: type }, type + 's');
+    authenticated();
+
+    model.show('post', { type: type }, type);
 });
 
 route(/^files/, function() {
+
+    authenticated();
 
     route.go('directory/' + hex.hex('/'));
 });
 
 route(/^directory\/([^\/]+)/, function(directory) {
 
+    authenticated();
+
     model.show('directory', { directory: directory }, 'files');
 });
 
 route(/^file\/([^\/]+)/, function(file) {
+
+    authenticated();
 
     model.show('file', { file: file }, 'files');
 });
 
 route(/^comments\/([^\/]+)\/([^\/]+)/, function(type, id) {
 
-    model.show('comments', { id: id }, type + 's');
+    authenticated();
+
+    model.show('comments', { id: id }, type);
 });
 
 route(/^users/, function() {
+
+    authenticated();
 
     model.show('users', {}, 'users');
 });
 
 route(/^user\/new/, function() {
 
+    authenticated();
+
     model.show('user', {}, 'users');
 });
 
 route(/^user\/([^\/]+)/, function(id) {
 
+    authenticated();
+
     model.show('user', { id: id }, 'users');
 });
 
 route(/^login/, function() {
+
+    authenticated();
 
     model.show('login', {});
 });
@@ -152,12 +215,28 @@ route(/^logout/, function() {
 
     sessionStorage.removeItem('api-key');
 
-    route.go('login');
+    window.location = '/admin';
+});
+
+// Temporary route that decides
+// where to go.
+
+route(/^landing/, function() {
+
+    model.show(null, {}, 'landing');
+
+    loadMenu().then(function(types) {
+
+        if (types.length > 0) {
+
+            // Select first type.
+
+            route.go('entries/' + types[0].name);
+        }
+    });
 });
 
 route(/.*/, function() {
 
-    // FIXME go to first entries.
-
-    route.go(api.hasKey() ? 'entries/post' : 'login');
+    route.go(api.hasKey() ? 'landing' : 'login');
 });

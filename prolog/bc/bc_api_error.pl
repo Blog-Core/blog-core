@@ -70,6 +70,9 @@ bc_handle_error(error(entry_is_not_own)):- !,
 bc_handle_error(error(entry_new_ownership)):- !,
     bc_reply_error('The operation requires admin privileges.').
 
+bc_handle_error(error(entry_type_access)):- !,
+    bc_reply_error('The operation requires entry type access.').
+
 bc_handle_error(error(unsafe_path(_))):- !,
     bc_reply_error('The file/directory path is unsafe.').
 

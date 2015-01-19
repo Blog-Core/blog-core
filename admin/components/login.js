@@ -47,7 +47,7 @@ function page() {
 
                 sessionStorage.setItem('api-key', res.data.key);
 
-                route.go('posts');
+                route.go('landing');
 
             } else {
 

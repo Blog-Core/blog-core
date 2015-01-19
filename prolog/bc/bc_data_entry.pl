@@ -16,15 +16,18 @@
 
 :- use_module(bc_data_cur_user).
 :- use_module(bc_data_validate).
+:- use_module(bc_data_type).
 
 %! bc_entry_save(+Entry, -Id) is det.
 %
 % Saves and formats the new entry.
+% FIXME overwrites author.
 
 bc_entry_save(Entry, Id):-
-    check_existing_slug(Entry),
-    entry_format(Entry, Formatted),
     bc_user(User),
+    check_existing_slug(Entry),
+    check_type_access(User, Entry.type),
+    entry_format(Entry, Formatted),
     put_dict(author, Formatted, User.'$id', Processed),
     ds_insert(Processed, Id),
     debug(bc_data_entry, 'saved entry ~p', [Id]).
@@ -34,10 +37,12 @@ bc_entry_save(Entry, Id):-
 % Updates the given entry. Reformats HTML.
 
 bc_entry_update(Id, Entry):-
+    bc_user(User),
     bc_check_entry_exists(Id),
     check_existing_slug(Id, Entry),
     check_editing_own_post(Id),
     check_editing_ownership(Entry),
+    check_type_access(User, Entry.type),
     entry_format(Entry, Formatted),
     put_dict('$id', Formatted, Id, Update),
     ds_update(Update),
@@ -59,8 +64,11 @@ entry_format(EntryIn, EntryOut):-
 % Removes the given entry and its comments.
 
 bc_entry_remove(Id):-
+    bc_user(User),
     bc_check_entry_exists(Id),
     check_editing_own_post(Id),
+    ds_get(Id, [type], Entry), !,
+    check_type_access(User, Entry.type),
     ds_remove(Id),
     ds_remove(comment, post=Id),
     debug(bc_data_entry, 'removed entry ~p', [Id]).
@@ -72,6 +80,8 @@ bc_entry_remove(Id):-
 % Sorts by date_updated desc.
 
 bc_entry_list(Type, Sorted):-
+    bc_user(User),
+    check_type_access(User, Type),
     ds_find(entry, type=Type, [slug, type, date_published,
         date_updated, commenting, published,
         title, author], Entries),
@@ -88,6 +98,8 @@ bc_entry(Id, WithCount):-
     ds_get(Id, [slug, type, date_published, date_updated,
         commenting, published, title, author,
         content, description, content_type, tags, language], Entry), !,
+    bc_user(User),
+    check_type_access(User, Entry.type),
     attach_comment_count(Entry, WithCount),
     debug(bc_data_entry, 'retrieved entry ~p', [Id]).
 
@@ -102,7 +114,9 @@ bc_entry_info(Id, WithCount):-
     bc_check_entry_exists(Id),
     ds_get(Id, [slug, type, date_published, date_updated,
         commenting, published, title, author,
-        description, content_type, tags, language], Entry),
+        description, content_type, tags, language], Entry), !,
+    bc_user(User),
+    check_type_access(User, Entry.type),
     attach_comment_count(Entry, WithCount),
     debug(bc_data_entry, 'retrieved entry ~p info', [Id]).
 
@@ -142,3 +156,11 @@ check_existing_slug(PostId, Update):-
         ->  true
         ;   throw(error(entry_existing_slug)))
     ;   true).
+
+check_type_access(User, Type):-
+    bc_type(Type, _, _, Roles),
+    (   User.type = admin
+    ->  true
+    ;   (   memberchk(User.type, Roles)
+        ->  true
+        ;   throw(error(entry_type_access)))).

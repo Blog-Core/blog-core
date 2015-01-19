@@ -9,3 +9,4 @@
 :- use_module(bc_api_file).
 :- use_module(bc_api_entry).
 :- use_module(bc_api_user).
+:- use_module(bc_api_type).

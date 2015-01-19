@@ -9,7 +9,7 @@ var languages = require('../languages');
 // argument must contain the list of all
 // users.
 
-exports.create = function(user, authors, data) {
+exports.create = function(user, types, authors, data) {
 
     // Sets author to the current user
     // by default. Gets overriden by data.
@@ -44,11 +44,13 @@ exports.create = function(user, authors, data) {
 
         content: ko.observable('').trimmed(),
 
+        types: types,
+
         // The post type. Currently
         // available types are post,
         // page and block.
 
-        type: ko.observable('post'),
+        type: ko.observable(),
 
         // Type of the post content.
         // Will be processed by the
@@ -165,6 +167,8 @@ exports.create = function(user, authors, data) {
             };
         }
     };
+
+    post.type(types[0].name);
 
     // Sets the view model values by the
     // actual data object.

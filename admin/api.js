@@ -360,6 +360,16 @@ exports.removeUser = function(id) {
     });
 };
 
+// Finds entry types.
+
+exports.types = function() {
+
+    return jsendAuth({
+
+        url: '/api/types',
+    });
+};
+
 // Checks whether the API key has been set.
 
 exports.hasKey = function() {

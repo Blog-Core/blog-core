@@ -6,7 +6,9 @@ function menu(params) {
 
     var model = {
 
-        active: params.active
+        active: params.active,
+
+        types: params.types
     };
 
     return model;

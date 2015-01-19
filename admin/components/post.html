@@ -30,11 +30,9 @@
         </div>
         <div class="form-group">
             <label for="post-type">Type</label>
-            <select data-bind="value: type" class="form-control" id="post-type">
-                <option value="post">Post</option>
-                <option value="page">Page</option>
-                <option value="block">Block</option>
-            </select>
+            <select data-bind="value: type, options: types,
+                optionsText: 'label', optionsValue: 'name'"
+                class="form-control" id="post-type"></select>
         </div>
         <div class="form-group">
             <label for="post-content-type">Content type</label>

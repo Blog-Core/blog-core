@@ -9,6 +9,13 @@
 :- use_module(bc_data_config).
 :- use_module(bc_data_user).
 :- use_module(bc_data_migrate).
+:- use_module(bc_data_type).
+
+% Register initial types.
+
+:- bc_register_type(post, 'Post', 'Posts', [admin, author]).
+:- bc_register_type(page, 'Page', 'Pages', [admin, author]).
+:- bc_register_type(block, 'Block', 'Blocks', [admin, author]).
 
 %! bc_data_open(+File) is det.
 %

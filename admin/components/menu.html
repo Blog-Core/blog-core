@@ -1,8 +1,10 @@
 <!-- ko if: active() -->
     <div class="btn-group" id="menu">
-        <a data-bind="css: { active: active() === 'posts' }" class="btn btn-default" href="#entries/post">Posts</a>
-        <a data-bind="css: { active: active() === 'pages' }" class="btn btn-default" href="#entries/page">Pages</a>
-        <a data-bind="css: { active: active() === 'blocks' }" class="btn btn-default" href="#entries/block">Blocks</a>
+        <!-- ko foreach: types -->
+            <a data-bind="css: { active: $parent.active() === name },
+                attr: { href: '#entries/' + name }, text: menu_label"
+                class="btn btn-default" href="#"></a>
+        <!-- /ko -->
         <a data-bind="css: { active: active() === 'users' }" class="btn btn-default" href="#users">Users</a>
         <a data-bind="css: { active: active() === 'files' }" class="btn btn-default" href="#files">Files</a>
         <a class="btn btn-default" href="#logout">Logout</a>

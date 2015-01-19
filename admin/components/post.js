@@ -20,13 +20,14 @@ function page(params) {
 
         // FIXME only admin can call users?
 
-        tasks = [ api.userInfo(), api.users(), api.post(params.id) ];
+        tasks = [ api.userInfo(), api.users(), api.post(params.id), api.types() ];
 
         Promise.all(tasks).then(function(data) {
 
-            var info = data[0], users = data[1], postData = data[2];
+            var info = data[0], users = data[1],
+                postData = data[2], types = data[3];
 
-            model.post(post.create(info, users, postData));
+            model.post(post.create(info, types, users, postData));
 
             // Autoset initial textarea height.
 
@@ -40,13 +41,13 @@ function page(params) {
 
         // Create a new post.
 
-        tasks = [ api.userInfo(), api.users() ];
+        tasks = [ api.userInfo(), api.users(), api.types() ];
 
         Promise.all(tasks).then(function(data) {
 
-            var info = data[0], users = data[1];
+            var info = data[0], users = data[1], types = data[2];
 
-            model.post(post.create(info, users));
+            model.post(post.create(info, types, users));
 
             model.post().type(params.type);
 
