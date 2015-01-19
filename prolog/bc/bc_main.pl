@@ -68,7 +68,8 @@
     :- debug(bc_view).
     :- debug(bc_bust).
     :- debug(bc_main).
-    :- debug(bc_types).
+    :- debug(bc_data_type).
+    :- debug(bc_data_role).
 :- endif.
 
 % Sets up simple-template.

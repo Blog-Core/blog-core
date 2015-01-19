@@ -10,6 +10,13 @@
 :- use_module(bc_data_user).
 :- use_module(bc_data_migrate).
 :- use_module(bc_data_type).
+:- use_module(bc_data_role).
+
+% Register initial roles.
+
+:- bc_register_role(admin, 'Admin', true).
+:- bc_register_role(author, 'Author', true).
+:- bc_register_role(anon, 'Anonymous', false).
 
 % Register initial types.
 

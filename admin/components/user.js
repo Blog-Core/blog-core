@@ -17,13 +17,13 @@ function page(params) {
 
         // Edit existing user.
 
-        var tasks = [ api.userInfo(), api.user(params.id) ];
+        var tasks = [ api.userInfo(), api.roles(), api.user(params.id) ];
 
         Promise.all(tasks).then(function(data) {
 
-            var info = data[0], userData = data[1];
+            var info = data[0], roles = data[1], userData = data[2];
 
-            model.user(user.create(info, userData));
+            model.user(user.create(info, roles, userData));
 
             focus('#user-fullname');
 
@@ -33,9 +33,13 @@ function page(params) {
 
         // Create a new user.
 
-        api.userInfo().then(function(info) {
+        var tasks = [ api.userInfo(), api.roles() ];
 
-            model.user(user.create(info));
+        Promise.all(tasks).then(function(data) {
+
+            var info = data[0], roles = data[1];
+
+            model.user(user.create(info, roles));
 
             focus('#user-fullname');
 

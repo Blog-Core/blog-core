@@ -4,9 +4,7 @@ var validate = require('../validate');
 
 // info - the current user info.
 
-exports.create = function(info, data) {
-
-    var mytype = sessionStorage.getItem('user-type');
+exports.create = function(info, roles, data) {
 
     var user = {
 
@@ -21,6 +19,7 @@ exports.create = function(info, data) {
         creating: true,
         files: ko.observable(false),
         my_type: info.type,
+        roles: roles,
 
         save: function(form) {
 
@@ -89,7 +88,7 @@ exports.create = function(info, data) {
                         validate.formError(form, response.message);
                     }
 
-                }, message.error);
+                }).catch(message.error);
 
             } else {
 
@@ -104,7 +103,7 @@ exports.create = function(info, data) {
                         validate.formError(form, response.message);
                     }
 
-                }, message.error);
+                }).catch(message.error);
             }
 
             return false;

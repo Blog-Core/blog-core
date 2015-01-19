@@ -3,7 +3,6 @@
 /** <module> Type API handlers */
 
 :- use_module(library(arouter)).
-:- use_module(library(dict_schema)).
 
 :- use_module(bc_api_io).
 :- use_module(bc_api_auth).

@@ -370,6 +370,16 @@ exports.types = function() {
     });
 };
 
+// Finds user roles.
+
+exports.roles = function() {
+
+    return jsendAuth({
+
+        url: '/api/roles',
+    });
+};
+
 // Checks whether the API key has been set.
 
 exports.hasKey = function() {

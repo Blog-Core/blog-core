@@ -34,6 +34,9 @@ bc_handle_error(error(invalid_input(Errors))):- !,
 bc_handle_error(error(user_invalid_credentials)):- !,
     bc_reply_error('Invalid auth credentials.').
 
+bc_handle_error(error(user_role_no_login)):- !,
+    bc_reply_error('Assigned role does not permit login.').
+
 bc_handle_error(error(user_password_is_not_set)):- !,
     bc_reply_error('The user password is not set.').
 
@@ -42,6 +45,9 @@ bc_handle_error(error(user_username_is_not_email)):- !,
 
 bc_handle_error(error(user_username_exists)):- !,
     bc_reply_error('The username exists.').
+
+bc_handle_error(error(user_invalid_role)):- !,
+    bc_reply_error('The user role is not valid.').
 
 bc_handle_error(error(user_current_is_not_admin)):- !,
     bc_reply_error('The operation requires admin privileges.').

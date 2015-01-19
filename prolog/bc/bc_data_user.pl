@@ -16,6 +16,7 @@
 :- use_module(library(docstore)).
 :- use_module(library(sha)).
 
+:- use_module(bc_data_role).
 :- use_module(bc_data_cur_user).
 :- use_module(bc_data_validate).
 
@@ -27,8 +28,10 @@
 bc_user_auth(Auth, Info):-
     (   ds_find(user, username=Auth.username, [User]),
         password_hash(Auth.password, User.salt, User.password)
-    ->  Info = _{ id: User.'$id', type: User.type, key: User.key },
-        debug(bc_data, 'authenticated user ~p', [Auth.username])
+    ->  (   bc_role(User.type, _, true)
+        ->  Info = _{ id: User.'$id', type: User.type, key: User.key },
+            debug(bc_data, 'authenticated user ~p', [Auth.username])
+        ;   throw(error(user_role_no_login)))
     ;   throw(error(user_invalid_credentials))).
 
 %! bc_user_save(+User, -Id) is det.
@@ -56,6 +59,7 @@ user_save_common(User, Id):-
     check_password_is_set(User),
     check_username_is_email(User),
     check_username_is_free(User),
+    check_valid_role(User),
     user_hash(User, Hashed),
     ds_uuid(Key),
     put_dict(key, Hashed, Key, Keyed),
@@ -74,6 +78,7 @@ bc_user_update(Id, User):-
     check_user_demoted_as_last_admin(Id, User),
     check_username_is_email(User),
     check_username_is_free(Id, User),
+    check_valid_role(User),
     user_hash(User, Hashed),
     put_dict('$id', Hashed, Id, Update),
     ds_update(Update),
@@ -185,3 +190,12 @@ check_user_is_last_admin(UserId):-
     (   is_user_last_admin(UserId)
     ->  throw(error(user_is_last_admin))
     ;   true).
+
+% Checks that user's role
+% is a valid role.
+
+check_valid_role(User):-
+    bc_role(User.type, _, _), !.
+
+check_valid_role(_):-
+    throw(error(user_invalid_role)).

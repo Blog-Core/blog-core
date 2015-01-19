@@ -6,6 +6,9 @@
 
 :- use_module(library(debug)).
 :- use_module(library(error)).
+:- use_module(bc_data_role).
+
+:- dynamic(type/4).
 
 %! bc_type(Name, Label, MenuLabel, Roles) is nondet.
 %
@@ -14,12 +17,9 @@
 bc_type(Name, Label, MenuLabel, Roles):-
     type(Name, Label, MenuLabel, Roles).
 
-:- dynamic(type/4).
-
 %! bc_register_type(+Name, +Label, +MenuLabel, +Roles) is det.
 %
-% Registers a new type. Does nothing when a type
-% with a same name already exists.
+% Registers a new type. Overwrites existing type.
 
 bc_register_type(Name, Label, MenuLabel, Roles):-
     must_be(atom, Name),
@@ -28,9 +28,10 @@ bc_register_type(Name, Label, MenuLabel, Roles):-
     must_be(list(atom), Roles),
     check_roles(Roles),
     (   type(Name, _, _, _)
-    ->  true
-    ;   assertz(type(Name, Label, MenuLabel, Roles)),
-        debug(bc_data_types, 'type ~w registered', [Name])).
+    ->  retractall(type(Name, _, _, _))
+    ;   true),
+    assertz(type(Name, Label, MenuLabel, Roles)),
+    debug(bc_data_type, 'type ~w registered', [Name]).
 
 %! bc_unregister_type(+Name) is det.
 %
@@ -47,9 +48,12 @@ bc_unregister_type(Name):-
 check_roles([]).
 
 check_roles([Role|Roles]):-
-    (   check_role(Role)
-    ->  check_roles(Roles)
-    ;   throw(error(invalid_role(Role)))).
+    check_role(Role),
+    check_roles(Roles).
 
-check_role(author).
-check_role(admin).
+check_role(Role):-
+    (   bc_role(Role, _, Login)
+    ->  (   Login = false
+        ->  throw(error(role_cannot_login(Role)))
+        ;   true)
+    ;   throw(error(role_not_exists(Role)))).
