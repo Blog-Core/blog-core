@@ -1,7 +1,7 @@
 <!-- ko with: user -->
     <h2 data-bind="text: fullname"></h2>
 
-    <form data-bind="submit: save">
+    <form data-bind="submit: save" autocomplete="off">
         <div class="form-group">
             <label for="user-fullname">Full name</label>
             <input data-bind="value: fullname"
