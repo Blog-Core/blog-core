@@ -26,7 +26,6 @@ test('New user', [setup(new_database)]):-
 test('New user, no authentication', [setup(new_database)]):-
     set_no_auth,
     new_user(_{}, User),
-    writeln(User),
     assertion(User.status = "error"),
     assertion(User.message = "Invalid or missing API key.").
 
@@ -45,7 +44,8 @@ test('New user, fullname empty', [setup(new_database)]):-
 
 test('New user, invalid type', [setup(new_database)]):-
     new_user(_{ type: invalid }, User),
-    assertion(is_invalid_data(User)).
+    assertion(User.status = "error"),
+    assertion(User.message = "The user role is not valid.").
 
 test('New user, files not boolean', [setup(new_database)]):-
     new_user(_{ files: 123 }, User),
