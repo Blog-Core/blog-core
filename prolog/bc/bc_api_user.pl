@@ -67,7 +67,8 @@ user_info:-
     bc_reply_success(_{
         '$id': User.'$id',
         type: User.type,
-        username: User.username }).
+        username: User.username,
+        fullname: User.fullname }).
 
 % Schema for user data.
 

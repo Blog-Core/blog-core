@@ -11,11 +11,6 @@ var languages = require('../languages');
 
 exports.create = function(user, types, authors, data) {
 
-    // Sets author to the current user
-    // by default. Gets overriden by data.
-
-    var author = findAuthor(authors, user.$id);
-
     var post = {
 
         // List of authors. Used by the
@@ -84,13 +79,7 @@ exports.create = function(user, types, authors, data) {
         // can select author other than
         // themself.
 
-        author: ko.observable(author),
-
-        // Flag that indicates whether
-        // the current user can select
-        // the post author.
-
-        author_selectable: user.type === 'admin',
+        author: ko.observable(),
 
         // Publish date as a string in
         // the format YYYY-MM-DD. Might be
@@ -151,7 +140,7 @@ exports.create = function(user, types, authors, data) {
 
             return {
 
-                author: post.author().$id,
+                author: post.author(),
                 title: post.title(),
                 slug: post.slug(),
                 description: post.description(),
@@ -175,8 +164,6 @@ exports.create = function(user, types, authors, data) {
 
     if (data) {
 
-        author = findAuthor(authors, data.author);
-
         // When the publish date is set then
         // set the date field to formatted string.
 
@@ -188,7 +175,7 @@ exports.create = function(user, types, authors, data) {
         }
 
         post.$id = data.$id;
-        post.author(author);
+        post.author(data.author);
         post.title(data.title);
         post.slug(data.slug);
         post.description(data.description || '');
@@ -210,6 +197,10 @@ exports.create = function(user, types, authors, data) {
 
             post.slug(getSlug(value));
         });
+
+        // Select user as post author.
+
+        post.author(user.$id);
 
         // Default publish date.
 
@@ -233,31 +224,6 @@ exports.create = function(user, types, authors, data) {
 
     return post;
 };
-
-// Finds matching author from the
-// array of authors.
-
-function findAuthor(authors, id) {
-
-    var author;
-
-    for (var i = 0; i < authors.length; i++) {
-
-        if (authors[i].$id === id) {
-
-            author = authors[i];
-
-            break;
-        }
-    }
-
-    if (!author) {
-
-        throw new Error('No author ' + id);
-    }
-
-    return author;
-}
 
 // Converts ISO8601 date part into
 // an Unix timestamp.

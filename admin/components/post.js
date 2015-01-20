@@ -18,22 +18,40 @@ function page(params) {
 
         // Edit existing post.
 
-        // FIXME only admin can call users?
+        api.userInfo().then(function(info) {
 
-        tasks = [ api.userInfo(), api.users(), api.post(params.id), api.types() ];
+            if (info.type !== 'admin') {
 
-        Promise.all(tasks).then(function(data) {
+                // User that is not an admin
+                // cannot create posts owned by others.
 
-            var info = data[0], users = data[1],
-                postData = data[2], types = data[3];
+                var users = [{
 
-            model.post(post.create(info, types, users, postData));
+                    $id: info.$id,
 
-            // Autoset initial textarea height.
+                    fullname: info.fullname
+                }];
 
-            var editor = document.getElementById('post-content');
+                tasks = [ Promise.resolve(users), api.post(params.id), api.types() ];
 
-            editor.style.height = (editor.scrollHeight + 10) + 'px';
+            } else {
+
+                tasks = [ api.users(), api.post(params.id), api.types() ];
+            }
+
+            return Promise.all(tasks).then(function(data) {
+
+                var users = data[0], postData = data[1], types = data[2];
+
+                model.post(post.create(info, types, users, postData));
+
+                // Autoset initial textarea height.
+
+                var editor = document.getElementById('post-content');
+
+                editor.style.height = (editor.scrollHeight + 10) + 'px';
+
+            });
 
         }).catch(message.error);
 
@@ -41,24 +59,44 @@ function page(params) {
 
         // Create a new post.
 
-        tasks = [ api.userInfo(), api.users(), api.types() ];
+        api.userInfo().then(function(info) {
 
-        Promise.all(tasks).then(function(data) {
+            if (info.type !== 'admin') {
 
-            var info = data[0], users = data[1], types = data[2];
+                // User that is not an admin
+                // cannot create posts owned by others.
 
-            model.post(post.create(info, types, users));
+                var users = [{
 
-            model.post().type(params.type);
+                    $id: info.$id,
 
-            var title = document.querySelector('#post-title');
+                    fullname: info.fullname
+                }];
 
-            title.focus();
+                tasks = [ Promise.resolve(users), api.types() ];
 
-            if (typeof title.setSelectionRange === 'function') {
+            } else {
 
-                title.setSelectionRange(0, title.value.length);
+                tasks = [ api.users(), api.types() ];
             }
+
+            return Promise.all(tasks).then(function(data) {
+
+                var users = data[0], types = data[1];
+
+                model.post(post.create(info, types, users));
+
+                model.post().type(params.type);
+
+                var title = document.querySelector('#post-title');
+
+                title.focus();
+
+                if (typeof title.setSelectionRange === 'function') {
+
+                    title.setSelectionRange(0, title.value.length);
+                }
+            });
 
         }).catch(message.error);
     }

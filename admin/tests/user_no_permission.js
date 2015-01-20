@@ -1,31 +1,8 @@
-var login = require('../tests_util/login');
-var add_user = require('../tests_util/add_user');
+var login_author = require('../tests_util/login_author');
 
 casper.test.begin('Only admin can manage users', function suite(test) {
 
-    login(casper, test);
-
-    add_user(casper, test);
-
-    // Log out and in as author.
-
-    casper.thenClick('a[href="#logout"]');
-
-    casper.waitForUrl(/#login$/);
-
-    casper.then(function() {
-
-        this.fillSelectors('form', {
-
-            'input[name="username"]': 'new_user@example.com',
-            'input[name="password"]': 'new123'
-
-        }, false);
-    });
-
-    casper.thenClick('button[type="submit"]');
-
-    casper.waitForSelector('a[href="#logout"]');
+    login_author(casper, test);
 
     casper.thenClick('a[href="#users"]');
 
