@@ -11,28 +11,36 @@ function page() {
 
         users: ko.observableArray([]),
 
-        type: ko.observable()
+        permission: ko.observable(false),
+
+        loaded: ko.observable(false)
     };
 
-    // Loads users and current user info.
+    api.userInfo().then(function(info) {
 
-    var tasks = [ api.userInfo(), api.users() ];
+        if (info.type !== 'admin') {
 
-    Promise.all(tasks).then(function(data) {
+            model.loaded(true);
 
-        var info = data[0], users = data[1];
+        } else {
 
-        model.type(info.type);
+            return api.users().then(function(users) {
 
-        model.users(users.map(function(data) {
+                model.users(users.map(function(data) {
 
-            var user = users_item.create(data);
+                    var user = users_item.create(data);
 
-            user.editable = info.type === 'admin' || user.$id === info.$id;
+                    user.editable = info.type === 'admin' || user.$id === info.$id;
 
-            return user;
+                    return user;
 
-        }));
+                }));
+
+                model.permission(true);
+
+                model.loaded(true);
+            });
+        }
 
     }).catch(message.error);
 

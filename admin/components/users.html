@@ -1,26 +1,32 @@
-<h2>Users</h2>
-
-<ul data-bind="foreach: users" class="list-group">
-    <li class="list-group-item post-item">
-        <h4 data-bind="click: expand, text: fullname" class="list-group-item-heading"></h4>
-        <div class="list-group-item-text">
-            Type: <span data-bind="text: type"></span>,
-            username: <span data-bind="text: username"></span>
-            <div data-bind="visible: expanded" class="post-controls">
-                <a data-bind="attr: { href: '#user/' + $id }, css: { disabled: !editable }"
-                    class="btn btn-default btn-sm" href="#">
-                    <span class="glyphicon glyphicon-edit"></span> Edit
-                </a>
-                <a data-bind="click: remove, css: { disabled: !editable }"
-                    class="btn btn-default btn-sm" href="#">
-                    <span class="glyphicon glyphicon-remove"></span> Remove
-                </a>
-            </div>
+<!-- ko if: loaded() -->
+    <h2>Users</h2>
+    <!-- ko if: !permission() -->
+        <div class="alert alert-warning" role="alert">
+            You do not have permissions to manage users.
         </div>
-    </li>
-</ul>
-
-<a data-bind="css: { disabled: type() !== 'admin' }"
-    class="btn btn-default" href="#user/new">
-    <span class="glyphicon glyphicon-plus"></span> Add
-</a>
+    <!-- /ko -->
+    <!-- ko if: permission() -->
+        <ul data-bind="foreach: users" class="list-group">
+            <li class="list-group-item post-item">
+                <h4 data-bind="click: expand, text: fullname" class="list-group-item-heading"></h4>
+                <div class="list-group-item-text">
+                    Type: <span data-bind="text: type"></span>,
+                    username: <span data-bind="text: username"></span>
+                    <div data-bind="visible: expanded" class="post-controls">
+                        <a data-bind="attr: { href: '#user/' + $id }, css: { disabled: !editable }"
+                            class="btn btn-default btn-sm" href="#">
+                            <span class="glyphicon glyphicon-edit"></span> Edit
+                        </a>
+                        <a data-bind="click: remove, css: { disabled: !editable }"
+                            class="btn btn-default btn-sm" href="#">
+                            <span class="glyphicon glyphicon-remove"></span> Remove
+                        </a>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <a class="btn btn-default" href="#user/new">
+            <span class="glyphicon glyphicon-plus"></span> Add
+        </a>
+    <!-- /ko -->
+<!-- /ko -->
