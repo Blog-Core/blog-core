@@ -242,3 +242,23 @@ route(/.*/, function() {
 
     route.go(api.hasKey() ? 'landing' : 'login');
 });
+
+document.body.addEventListener('click', function(e) {
+
+    if (e.target.href && e.target.href.match(/#logout$/)) {
+
+        if (confirm('Do you want to log out?')) {
+
+            return true;
+
+        } else {
+
+            e.stopPropagation();
+
+            e.preventDefault();
+
+            return false;
+        }
+    }
+
+}, false);
