@@ -21,7 +21,8 @@ module.exports = function(casper, test) {
 
             '#user-fullname': 'New user',
             '#user-username': 'new_user@example.com',
-            '#user-password': 'new123'
+            '#user-password': 'new123',
+            '#user-type': 'author',
 
         }, false);
     });

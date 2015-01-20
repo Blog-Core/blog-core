@@ -53,6 +53,12 @@ directory_new(Hex, Sub):-
     bc_hex_atom(Hex, Path),
     atomic_list_concat([public, Path, '/', Sub], Full),
     check_safe_path(Full),
+    (   exists_file(Full)
+    ->  throw(error(file_exists))
+    ;   true),
+    (   exists_directory(Full)
+    ->  throw(error(directory_exists))
+    ;   true),
     make_directory(Full),
     bc_reply_success(true).
 
@@ -62,12 +68,39 @@ directory_new(Hex, Sub):-
     bc_auth, upload_file(Hex)).
 
 upload_file(Hex):-
+    catch(attemp_upload(Hex), Error, true),
+    (   var(Error)
+    ;   (   drain_request,
+            throw(Error))), !.
+
+% Drains the remaining data
+% from the request body.
+
+drain_request:-
+    http_current_request(Request),
+    memberchk(input(In), Request),
+    setup_call_cleanup(
+        open_null_stream(Null),
+        (   memberchk(content_length(Len), Request)
+        ->  copy_stream_data(In, Null, Len)
+        ;   copy_stream_data(In, Null)),
+        close(Null)).
+
+% Runs the actual upload process.
+
+attemp_upload(Hex):-
     bc_hex_atom(Hex, Path),
     http_current_request(Request),
     memberchk(x_file_name(Target), Request),
     atomic_list_concat([public, Path, '/', Target], Full),
-    check_safe_path(Full),
     memberchk(input(In), Request),
+    check_safe_path(Full),
+    (   exists_file(Full)
+    ->  throw(error(file_exists))
+    ;   true),
+    (   exists_directory(Full)
+    ->  throw(error(directory_exists))
+    ;   true),
     setup_call_cleanup(
         open(Full, write, Stream, [encoding(octet)]),
         (   memberchk(content_length(Len), Request)

@@ -82,6 +82,12 @@ bc_handle_error(error(entry_type_access)):- !,
 bc_handle_error(error(unsafe_path(_))):- !,
     bc_reply_error('The file/directory path is unsafe.').
 
+bc_handle_error(error(directory_exists)):- !,
+    bc_reply_error('The directory exists.').
+
+bc_handle_error(error(file_exists)):- !,
+    bc_reply_error('The file exists.').
+
 bc_handle_error(error(comment_invalid_answer)):- !,
     bc_reply_error('The human question answer is wrong.').
 

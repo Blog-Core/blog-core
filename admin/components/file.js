@@ -26,7 +26,7 @@ function page(params) {
 
             api.removeFile(file).then(function() {
 
-                message.info('File "' + path.decode(file) + '" removed.');
+                message.info('File "' + path.decode(file) + '" has been removed.');
 
                 route.go('directory/' + model.parent);
 

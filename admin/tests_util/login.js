@@ -39,4 +39,15 @@ module.exports = function(casper, test) {
     casper.thenClick('button[type=submit]');
 
     casper.waitForSelector('a[href="#logout"]');
+
+    casper.then(function() {
+
+        var key = casper.page.evaluate(function() {
+
+            return sessionStorage.getItem('api-key');
+
+        });
+
+        test.assert(key.length === 36);
+    });
 };

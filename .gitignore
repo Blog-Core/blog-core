@@ -1,3 +1,4 @@
 *.docstore
 *.tgz
 admin/node_modules
+public/*

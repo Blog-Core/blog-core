@@ -3,7 +3,7 @@
     File size: <span data-bind="text: size"></span> bytes<br>
     Last uploaded: <span data-bind="text: formatDate(date())"></span>
 </p>
-<p>
+<div class="bc-controls">
     <a data-bind="attr: { href: '#directory/' + parent }" class="btn btn-default" href="#">
         <span class="glyphicon glyphicon-arrow-up"></span> Up
     </a>
@@ -13,4 +13,4 @@
     <a data-bind="click: remove" class="btn btn-default" href="#">
         <span class="glyphicon glyphicon-remove-circle"></span> Remove
     </a>
-</p>
+</div>

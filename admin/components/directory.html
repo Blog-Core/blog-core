@@ -1,6 +1,6 @@
 <h2 data-bind="text: 'Directory ' + directory"></h2>
 
-<p>
+<div class="bc-controls">
     <!-- ko if: directory !== '/' -->
         <a data-bind="attr: { href: '#directory/' + parent }"
             class="btn btn-default" href="#">
@@ -19,7 +19,7 @@
             <span class="glyphicon glyphicon-remove-circle"></span> Remove
         </a>
     <!-- /ko -->
-</p>
+</div>
 
 <!-- ko if: subdirectory.form() -->
     <div class="panel panel-default">

@@ -27,5 +27,23 @@ reset:-
     ->  delete_file('test.docstore')
     ;   true),
     bc_data_open('test.docstore'),
+    (   exists_directory('public/new')
+    ->  delete_directory('public/new')
+    ;   true),
+    (   exists_file('public/upload.txt')
+    ->  delete_file('public/upload.txt')
+    ;   true),
+    (   exists_file('public/test.txt')
+    ->  true
+    ;   copy_file('tests/test.txt', 'public/test.txt')),
+    (   exists_directory('public/path')
+    ->  true
+    ;   make_directory('public/path')),
+    (   exists_directory('public/path/to')
+    ->  true
+    ;   make_directory('public/path/to')),
+    (   exists_file('public/path/to/file.txt')
+    ->  true
+    ;   copy_file('tests/test.txt', 'public/path/to/file.txt')),
     write('Content-type: text/plain; charset=UTF-8\r\n\r\n'),
     write('OK').
