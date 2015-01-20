@@ -88,28 +88,21 @@ function page(params) {
 
         model.upload.file = file;
 
-        var reader = new FileReader();
+        var xhr = new XMLHttpRequest();
 
-        reader.onload = function() {
+        xhr.upload.addEventListener('progress', model.upload.progress, false);
 
-            var xhr = new XMLHttpRequest();
+        xhr.addEventListener('load', model.upload.complete, false);
+        xhr.addEventListener('error', model.upload.failed, false);
+        xhr.addEventListener('abort', model.upload.aborted, false);
 
-            xhr.upload.addEventListener('progress', model.upload.progress, false);
+        xhr.open('POST', '/api/upload/' + encodeURIComponent(directory));
 
-            xhr.addEventListener('load', model.upload.complete, false);
-            xhr.addEventListener('error', model.upload.failed, false);
-            xhr.addEventListener('abort', model.upload.aborted, false);
+        xhr.setRequestHeader('X-Key', api.apiKey());
+        xhr.setRequestHeader('X-File-Name', file.name);
+        xhr.setRequestHeader('Content-Type', 'application/octet-stream');
 
-            xhr.open('POST', '/api/upload/' + encodeURIComponent(directory));
-
-            xhr.setRequestHeader('X-Key', api.apiKey());
-            xhr.setRequestHeader('X-File-Name', file.name);
-            xhr.setRequestHeader('Content-Type', 'application/octet-stream');
-
-            xhr.send(new Uint8Array(reader.result));
-        };
-
-        reader.readAsArrayBuffer(file);
+        xhr.send(file);
     };
 
     // Cancels and hides the upload form.
@@ -133,12 +126,23 @@ function page(params) {
     // Executed then the upload process
     // is complete.
 
-    model.upload.complete = function() {
+    model.upload.complete = function(e) {
 
-        route.refresh();
+        var res = JSON.parse(e.target.responseText);
 
-        message.info('File "' + path.decode(path.join(directory, model.upload.file.name)) +
-            '" has been uploaded.');
+        if (res.status === 'success') {
+
+            route.refresh();
+
+            message.info('File "' + path.decode(path.join(directory, model.upload.file.name)) +
+                '" has been uploaded.');
+
+        } else {
+
+            // FIXME show error in form.
+
+            message.error(res.message);
+        }
     };
 
     model.upload.failed = function() {
@@ -161,7 +165,7 @@ function page(params) {
             api.removeDirectory(directory).then(function() {
 
                 message.info('Directory "' + path.decode(directory) +
-                    '" has been successfully removed.');
+                    '" has been removed.');
 
                 route.go('directory/' + model.parent);
 
