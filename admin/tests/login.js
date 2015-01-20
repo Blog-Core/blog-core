@@ -11,6 +11,14 @@ casper.test.begin('Login/logout', function suite(test) {
     casper.then(function() {
 
         test.assertSelectorHasText('h2', 'Login');
+
+        var key = casper.page.evaluate(function() {
+
+            return sessionStorage.getItem('api-key') || '';
+
+        });
+
+        test.assert(key.length === 0);
     });
 
     casper.run(function() {

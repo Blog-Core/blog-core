@@ -384,12 +384,14 @@ exports.roles = function() {
 
 exports.hasKey = function() {
 
-    return !!sessionStorage.getItem('api-key');
+    return !!(sessionStorage.getItem('api-key') ||
+        localStorage.getItem('api-key'));
 };
 
 var apiKey = exports.apiKey = function() {
 
-    var key = sessionStorage.getItem('api-key');
+    var key = sessionStorage.getItem('api-key') ||
+        localStorage.getItem('api-key');
 
     if (!key) {
 

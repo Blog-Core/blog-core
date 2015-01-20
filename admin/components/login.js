@@ -11,7 +11,9 @@ function page() {
 
         username: ko.observable('').trimmed(),
 
-        password: ko.observable('').trimmed()
+        password: ko.observable('').trimmed(),
+
+        remember: ko.observable(false)
     };
 
     model.login = function(form) {
@@ -45,7 +47,18 @@ function page() {
 
             if (res.status === 'success') {
 
-                sessionStorage.setItem('api-key', res.data.key);
+                if (model.remember()) {
+
+                    localStorage.setItem('api-key', res.data.key);
+
+                    sessionStorage.removeItem('api-key');
+
+                } else {
+
+                    sessionStorage.setItem('api-key', res.data.key);
+
+                    localStorage.removeItem('api-key');
+                }
 
                 route.go('landing');
 

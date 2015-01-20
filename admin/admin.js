@@ -215,6 +215,8 @@ route(/^logout/, function() {
 
     sessionStorage.removeItem('api-key');
 
+    localStorage.removeItem('api-key');
+
     window.location = '/admin';
 });
 
