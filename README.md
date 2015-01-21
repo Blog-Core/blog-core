@@ -7,6 +7,8 @@ A CMS/blog framework for [Swi-Prolog](http://swi-prolog.org/).
 This version has custom post types, user roles, files associated with entries and
 a completely new permissions model. All standard entries data is backwards-compatible.
 
+The new data model: <http://blog-core.net/page/data-model>.
+
 ## Features
 
  * Multiple users.
