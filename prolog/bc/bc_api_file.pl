@@ -10,23 +10,33 @@
 :- use_module(bc_hex).
 :- use_module(bc_api_io).
 :- use_module(bc_api_auth).
+:- use_module(bc_data_cur_user).
+:- use_module(bc_access).
 
 % Sends directory listing in public directory.
 
-:- route_get(api/directory/Hex,
-    bc_auth, directory_get(Hex)).
+:- route_get(api/files/EntryId,
+    bc_auth, files_get(EntryId)).
 
-directory_get(Hex):-
-    bc_hex_atom(Hex, Path),
-    atom_concat(public, Path, Full),
+files_get(EntryId):-
+    bc_user(Actor),
+    can_list(Actor, EntryId),
+    atomic_list_concat([public, '/', EntryId], Full),
     check_safe_path(Full),
-    directory_files(Full, Entries),
-    entry_records(Entries, Full, List),
+    (   exists_directory(Full)
+    ->  directory_files(Full, Entries),
+        entry_records(Entries, Full, List)
+    ;   List = []),
     bc_reply_success(List).
+
+can_list(Actor, EntryId):-
+    bc_entry_exists(EntryId),
+    bc_type_access_by_id(Actor, EntryId).
 
 % Finds directory entries and turns
 % them into dicts having `name` and
 % `directory` keys.
+% FIXME only files
 
 entry_records(['.'|Entries], Dir, Records):- !,
     entry_records(Entries, Dir, Records).
@@ -44,34 +54,24 @@ entry_records([Entry|Entries], Dir, [Record|Records]):-
 
 entry_records([], _, []).
 
-% Creates new subdirectory in the given path.
-
-:- route_post(api/directory/Hex/Sub,
-    bc_auth, directory_new(Hex, Sub)).
-
-directory_new(Hex, Sub):-
-    bc_hex_atom(Hex, Path),
-    atomic_list_concat([public, Path, '/', Sub], Full),
-    check_safe_path(Full),
-    (   exists_file(Full)
-    ->  throw(error(file_exists))
-    ;   true),
-    (   exists_directory(Full)
-    ->  throw(error(directory_exists))
-    ;   true),
-    make_directory(Full),
-    bc_reply_success(true).
-
 % Receives the uploaded file.
 
-:- route_post(api/upload/Hex,
-    bc_auth, upload_file(Hex)).
+:- route_post(api/upload/EntryId,
+    bc_auth, upload_file(EntryId)).
 
-upload_file(Hex):-
-    catch(attemp_upload(Hex), Error, true),
+upload_file(EntryId):-
+    bc_user(Actor),
+    can_upload(Actor, EntryId),
+    catch(attemp_upload(EntryId), Error, true),
     (   var(Error)
     ;   (   drain_request,
             throw(Error))), !.
+
+can_upload(Actor, EntryId):-
+    bc_entry_exists(EntryId),
+    bc_type_access_by_id(Actor, EntryId),
+    bc_ownership_by_id(Actor, EntryId),
+    bc_files_access(Actor).
 
 % Drains the remaining data
 % from the request body.
@@ -87,14 +87,20 @@ drain_request:-
         close(Null)).
 
 % Runs the actual upload process.
+% Creates the entry directory if
+% it does not exist.
 
-attemp_upload(Hex):-
-    bc_hex_atom(Hex, Path),
+attemp_upload(EntryId):-
     http_current_request(Request),
     memberchk(x_file_name(Target), Request),
-    atomic_list_concat([public, Path, '/', Target], Full),
-    memberchk(input(In), Request),
+    atomic_list_concat([public, '/', EntryId], Directory),
+    check_safe_path(Directory),
+    (   exists_directory(Directory)
+    ->  true
+    ;   make_directory(Directory)),
+    atomic_list_concat([Directory, '/', Target], Full),
     check_safe_path(Full),
+    memberchk(input(In), Request),
     (   exists_file(Full)
     ->  throw(error(file_exists))
     ;   true),
@@ -109,65 +115,24 @@ attemp_upload(Hex):-
         close(Stream)),
     bc_reply_success(true).
 
-% Removes the given directory.
-
-:- route_del(api/directory/Hex,
-    bc_auth, directory_remove(Hex)).
-
-directory_remove(Hex):-
-    bc_hex_atom(Hex, Path),
-    atom_concat(public, Path, Full),
-    check_safe_path(Full),
-    delete_directory_rec(Full),
-    bc_reply_success(true).
-
-% Recursively removes the directory.
-
-delete_directory_rec(Path):-
-    directory_files(Path, Entries),
-    delete_directory_entries(Entries, Path),
-    delete_directory(Path).
-
-delete_directory_entries(['.'|Entries], Path):- !,
-    delete_directory_entries(Entries, Path).
-
-delete_directory_entries(['..'|Entries], Path):- !,
-    delete_directory_entries(Entries, Path).
-
-delete_directory_entries([Entry|Entries], Path):-
-    atomic_list_concat([Path, '/', Entry], File),
-    (   exists_directory(File)
-    ->  delete_directory_rec(File)
-    ;   delete_file(File)),
-    delete_directory_entries(Entries, Path).
-
-delete_directory_entries([], _).
-
-% File metainfo.
-
-:- route_get(api/file/Hex,
-    bc_auth, file_get(Hex)).
-
-file_get(Hex):-
-    bc_hex_atom(Hex, Path),
-    atom_concat(public, Path, Full),
-    check_safe_path(Full),
-    set_time_file(Full, [modified(Time)], []),
-    Ts is floor(Time),
-    size_file(Full, Size),
-    bc_reply_success(_{ modified: Ts, size: Size }).
-
 % Removes the given file.
 
-:- route_del(api/file/Hex,
-    bc_auth, file_remove(Hex)).
+:- route_del(api/file/EntryId/Name,
+    bc_auth, file_remove(EntryId, Name)).
 
-file_remove(Hex):-
-    bc_hex_atom(Hex, Path),
-    atom_concat(public, Path, Full),
+file_remove(EntryId, Name):-
+    bc_user(Actor),
+    can_remove(Actor, EntryId),
+    atomic_list_concat([public, '/', EntryId, '/', Name], Full),
     check_safe_path(Full),
     delete_file(Full),
     bc_reply_success(true).
+
+can_remove(Actor, EntryId):-
+    bc_entry_exists(EntryId),
+    bc_type_access_by_id(Actor, EntryId),
+    bc_ownership_by_id(Actor, EntryId),
+    bc_files_access(Actor).
 
 % Checks that the given path is safe to be used.
 

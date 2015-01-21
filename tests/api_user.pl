@@ -79,7 +79,6 @@ test('Get user', [setup(new_database)]):-
     assertion(GetUser.status = "success"),
     assertion(is_dict(GetUser.data)),
     GetUser.data = Data,
-    assertion(Data.files = true),
     assertion(Data.link = ""),
     assertion(Data.type = "author"),
     assertion(Data.username = "test@example.com"),

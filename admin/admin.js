@@ -22,6 +22,10 @@ require('./components/post');
 
 require('./components/users');
 
+// Entry files component.
+
+require('./components/files');
+
 // User edit component.
 
 require('./components/user');
@@ -29,14 +33,6 @@ require('./components/user');
 // Comments list component.
 
 require('./components/comments');
-
-// Directory listing component.
-
-require('./components/directory');
-
-// File view component.
-
-require('./components/file');
 
 // Global to format dates.
 
@@ -153,27 +149,6 @@ route(/^new\/([^\/]+)/, function(type) {
     authenticated();
 
     model.show('post', { type: type }, type);
-});
-
-route(/^files/, function() {
-
-    authenticated();
-
-    route.go('directory/' + hex.hex('/'));
-});
-
-route(/^directory\/([^\/]+)/, function(directory) {
-
-    authenticated();
-
-    model.show('directory', { directory: directory }, 'files');
-});
-
-route(/^file\/([^\/]+)/, function(file) {
-
-    authenticated();
-
-    model.show('file', { file: file }, 'files');
 });
 
 route(/^comments\/([^\/]+)\/([^\/]+)/, function(type, id) {

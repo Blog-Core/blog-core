@@ -14,12 +14,12 @@
         .content { font-family: monospace; }
         .container { position: relative; }
         .spinner { position: fixed; top: 2em; right: 2em; }
-        .post-item h4 { cursor: pointer; }
+        .post-item > .list-group-item-heading { cursor: pointer; }
         .post-controls { margin-top: 10px; }
         .post-controls .panel { margin-bottom: 10px; }
         .post-controls .panel-body { padding: 10px; }
         .error-message { color: #a94442; margin: 5px 0; }
-        .btn { margin-top: 10px; }
+        .btn-group > .btn { margin-top: 10px; }
         .bc-controls { margin-bottom: 20px; }
     </style>
     <script>
@@ -41,7 +41,8 @@
             environment variable PL_ENV=production prior running the Blog-Core
             process.
         </div>
-        <bc-menu params="active: menu.active, types: menu.types"></bc-menu>
+        <!-- ko component: { name: 'menu', params:
+            { active: menu.active, types: menu.types } } --><!-- /ko -->
         <div id="content">
             <!-- ko if: component() -->
                 <!-- ko component: { name: component, params: params } --><!-- /ko -->

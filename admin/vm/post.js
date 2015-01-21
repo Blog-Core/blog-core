@@ -13,6 +13,8 @@ exports.create = function(user, types, authors, data) {
 
     var post = {
 
+        $id: ko.observable(),
+
         // List of authors. Used by the
         // author list dropdown.
 
@@ -174,7 +176,7 @@ exports.create = function(user, types, authors, data) {
             post.date(d.toISOString().substring(0, 10));
         }
 
-        post.$id = data.$id;
+        post.$id(data.$id);
         post.author(data.author);
         post.title(data.title);
         post.slug(data.slug);
@@ -319,7 +321,7 @@ function submitPost(post, edit) {
     // When post has '$id' property
     // then it's an existing post.
 
-    if (post.$id) {
+    if (post.$id()) {
 
         updatePost(form, post, edit);
 
@@ -335,7 +337,7 @@ function submitPost(post, edit) {
 
 function updatePost(form, post, edit) {
 
-    api.updatePost(post.$id, post.toJS()).then(function(response) {
+    api.updatePost(post.$id(), post.toJS()).then(function(response) {
 
         if (response.status === 'success') {
 

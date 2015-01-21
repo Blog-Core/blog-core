@@ -2,9 +2,7 @@ var message = require('../message');
 var api = require('../api');
 var validate = require('../validate');
 
-// info - the current user info.
-
-exports.create = function(info, roles, data) {
+exports.create = function(roles, data) {
 
     var user = {
 
@@ -17,8 +15,6 @@ exports.create = function(info, roles, data) {
         password_text: ko.observable(false),
         error: ko.observable(''),
         creating: true,
-        files: ko.observable(false),
-        my_type: info.type,
         roles: roles,
 
         save: function(form) {
@@ -120,8 +116,7 @@ exports.create = function(info, roles, data) {
                 username: user.username(),
                 fullname: user.fullname(),
                 type: user.type(),
-                link: user.link(),
-                files: user.files()
+                link: user.link()
             };
 
             if (user.password_edit()) {
@@ -154,7 +149,6 @@ exports.create = function(info, roles, data) {
         user.type(data.type);
         user.link(data.link);
         user.password_edit(false);
-        user.files(data.files);
 
     } else {
 

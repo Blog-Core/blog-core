@@ -16,13 +16,13 @@ function page(params) {
 
         // Edit existing user.
 
-        var tasks = [ api.userInfo(), api.roles(), api.user(params.id) ];
+        var tasks = [ api.roles(), api.user(params.id) ];
 
         Promise.all(tasks).then(function(data) {
 
-            var info = data[0], roles = data[1], userData = data[2];
+            var roles = data[0], userData = data[1];
 
-            model.user(user.create(info, roles, userData));
+            model.user(user.create(roles, userData));
 
         }).catch(message.error);
 
@@ -30,13 +30,15 @@ function page(params) {
 
         // Create a new user.
 
-        var tasks = [ api.userInfo(), api.roles() ];
+        // FIXME remove .all()
+
+        var tasks = [ api.roles() ];
 
         Promise.all(tasks).then(function(data) {
 
-            var info = data[0], roles = data[1];
+            var roles = data[0];
 
-            model.user(user.create(info, roles));
+            model.user(user.create(roles));
 
             var fullname = document.querySelector('#user-fullname');
 

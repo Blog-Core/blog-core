@@ -80,8 +80,7 @@ user_info:-
         username: _{ type: atom, min_length: 1 },
         password: _{ type: atom, min_length: 6 },
         type: _{ type: atom, min_length: 1, max_length: 100 },
-        link: string,
-        files: bool
+        link: string
     },
     optional: [ password ]
 }).

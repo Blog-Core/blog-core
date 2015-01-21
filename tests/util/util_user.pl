@@ -20,7 +20,6 @@ new_user(Override, Response):-
         password: test123,
         fullname: 'Test',
         type: author,
-        files: true,
         link: ""
     },
     put_dict(Override, Dict, Data),
@@ -33,7 +32,6 @@ new_user_no_password(Response):-
         username: 'test@example.com',
         fullname: 'Test',
         type: author,
-        files: true,
         link: ""
     },
     request_post('/api/user', Dict, Response).
@@ -51,7 +49,6 @@ update_user(UserId, Override, Response):-
         username: 'test@example.com',
         fullname: 'Test',
         type: author,
-        files: true,
         link: ""
     },
     atom_concat('/api/user/', UserId, Url),

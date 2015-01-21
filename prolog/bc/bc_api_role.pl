@@ -20,8 +20,9 @@ roles:-
     findall(
         _{  name: Name,
             label: Label,
-            login: Login },
-        bc_role(Name, Label, Login), Roles),
+            login: Login,
+            files: Files },
+        bc_role(Name, Label, Login, Files), Roles),
     bc_reply_success(Roles).
 
 % Checks that the user is an admin.

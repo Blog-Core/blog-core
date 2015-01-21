@@ -52,7 +52,7 @@ check_roles([Role|Roles]):-
     check_roles(Roles).
 
 check_role(Role):-
-    (   bc_role(Role, _, Login)
+    (   bc_role(Role, _, Login, _)
     ->  (   Login = false
         ->  throw(error(role_cannot_login(Role)))
         ;   true)

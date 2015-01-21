@@ -28,7 +28,7 @@
 bc_user_auth(Auth, Info):-
     (   ds_find(user, username=Auth.username, [User]),
         password_hash(Auth.password, User.salt, User.password)
-    ->  (   bc_role(User.type, _, true)
+    ->  (   bc_role(User.type, _, true, _)
         ->  Info = _{ id: User.'$id', type: User.type, key: User.key },
             debug(bc_data, 'authenticated user ~p', [Auth.username])
         ;   throw(error(user_role_no_login)))
@@ -195,7 +195,7 @@ check_user_is_last_admin(UserId):-
 % is a valid role.
 
 check_valid_role(User):-
-    bc_role(User.type, _, _), !.
+    bc_role(User.type, _, _, _), !.
 
 check_valid_role(_):-
     throw(error(user_invalid_role)).

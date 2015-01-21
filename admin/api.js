@@ -188,70 +188,23 @@ exports.removePost = function(id) {
     });
 };
 
-exports.directory = function(directory) {
+// Finds entry files.
 
-    var options = {
+exports.files = function(entryId) {
 
-        url: '/api/directory/' + encodeURIComponent(directory),
-
-        headers: { 'X-Key': apiKey() }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response).data;
-    });
+    return jsendAuth({ url: '/api/files/' + encodeURIComponent(entryId) });
 };
 
-// Creates the subdirectory.
-// Assumes that directory is hex-encoded
-// and subdirectory is not.
+// Removes the given entry file.
 
-exports.createDirectory = function(directory, subdirectory) {
-
-    return jsendAuth({
-
-        method: 'POST',
-
-        url: '/api/directory/' + encodeURIComponent(directory) + '/' +
-            encodeURIComponent(subdirectory)
-    });
-};
-
-// Removes the directory.
-// Assumes that file path is hex-encoded.
-
-exports.removeDirectory = function(directory) {
+exports.removeFile = function(entryId, file) {
 
     return jsendAuth({
 
         method: 'DELETE',
 
-        url: '/api/directory/' + encodeURIComponent(directory)
-    });
-};
-
-// Retrieves file metainfo.
-// Assumes that file path is hex-encoded.
-
-exports.file = function(file) {
-
-    return jsendAuth({
-
-        url: '/api/file/' + encodeURIComponent(file)
-    });
-};
-
-// Removes the given file.
-// Assumes that file path is hex-encoded.
-
-exports.removeFile = function(file) {
-
-    return jsendAuth({
-
-        method: 'DELETE',
-
-        url: '/api/file/' + encodeURIComponent(file)
+        url: '/api/file/' + encodeURIComponent(entryId) +
+            '/' + encodeURIComponent(file)
     });
 };
 

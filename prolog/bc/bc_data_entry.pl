@@ -1,10 +1,10 @@
 :- module(bc_data_entry, [
-    bc_entry_save/2,          % +Entry, -Id
-    bc_entry_update/2,        % +Id, +Entry
-    bc_entry_remove/1,        % +Id
-    bc_entry_list/2,          % +Type, -List
-    bc_entry/2,               % +Id, -Entry
-    bc_entry_info/2           % +Id, -Entry
+    bc_entry_save/3,          % +Actor, +Entry, -Id
+    bc_entry_update/2,        % +Actor, +Entry
+    bc_entry_remove/2,        % +Actor, +Id
+    bc_entry_list/3,          % +Actor, +Type, -List
+    bc_entry/3,               % +Actor, +Id, -Entry
+    bc_entry_info/3           % +Actor, +Id, -Entry
 ]).
 
 /** <module> Handles entry data */
@@ -14,39 +14,40 @@
 :- use_module(library(docstore)).
 :- use_module(library(md/md_parse)).
 
-:- use_module(bc_data_cur_user).
-:- use_module(bc_data_validate).
-:- use_module(bc_data_type).
+:- use_module(bc_access).
+:- use_module(bc_entry).
 
-%! bc_entry_save(+Entry, -Id) is det.
+%! bc_entry_save(+Actor, +Entry, -Id) is det.
 %
 % Saves and formats the new entry.
-% FIXME overwrites author.
 
-bc_entry_save(Entry, Id):-
-    bc_user(User),
-    check_existing_slug(Entry),
-    check_type_access(User, Entry.type),
+bc_entry_save(Actor, Entry, Id):-
+    can_save(Actor, Entry),
     entry_format(Entry, Formatted),
-    put_dict(author, Formatted, User.'$id', Processed),
-    ds_insert(Processed, Id),
+    ds_insert(Formatted, Id),
     debug(bc_data_entry, 'saved entry ~p', [Id]).
 
-%! bc_entry_update(+Id, +Entry) is det.
+can_save(Actor, Entry):-
+    bc_type_access(Actor, Entry.type),
+    slug_unique(Entry.slug).
+
+%! bc_entry_update(+Actor, +Entry) is det.
 %
 % Updates the given entry. Reformats HTML.
 
-bc_entry_update(Id, Entry):-
-    bc_user(User),
-    bc_check_entry_exists(Id),
-    check_existing_slug(Id, Entry),
-    check_editing_own_post(Id),
-    check_editing_ownership(Entry),
-    check_type_access(User, Entry.type),
+bc_entry_update(Actor, Entry):-
+    can_update(Actor, Entry),
     entry_format(Entry, Formatted),
-    put_dict('$id', Formatted, Id, Update),
-    ds_update(Update),
-    debug(bc_data_entry, 'updated entry ~p', [Id]).
+    ds_update(Formatted),
+    debug(bc_data_entry, 'updated entry ~p', [Entry.'$id']).
+
+can_update(Actor, Entry):-
+    bc_entry_exists(Entry.'$id'),
+    bc_type_access(Actor, Entry.type),
+    bc_type_access_by_id(Actor, Entry.'$id'),
+    bc_ownership(Actor, Entry.author),
+    bc_ownership_by_id(Actor, Entry.'$id'),
+    slug_unique(Entry.slug, Entry.'$id').
 
 % Formats entry HTML contents based on
 % the entries content type.
@@ -59,29 +60,56 @@ entry_format(EntryIn, EntryOut):-
     ;   Html = Content),
     put_dict(_{ html: Html }, EntryIn, EntryOut).
 
-%! bc_entry_remove(+Id) is det.
+%! bc_entry_remove(+Actor, +Id) is det.
 %
 % Removes the given entry and its comments.
 
-bc_entry_remove(Id):-
-    bc_user(User),
-    bc_check_entry_exists(Id),
-    check_editing_own_post(Id),
-    ds_get(Id, [type], Entry), !,
-    check_type_access(User, Entry.type),
+bc_entry_remove(Actor, Id):-
+    can_remove(Actor, Id),
     ds_remove(Id),
     ds_remove(comment, post=Id),
+    remove_files(Id),
     debug(bc_data_entry, 'removed entry ~p', [Id]).
 
-%! bc_entry_list(+Type, -List) is det.
+can_remove(Actor, Id):-
+    bc_entry_exists(Id),
+    bc_type_access_by_id(Actor, Id),
+    bc_ownership_by_id(Actor, Id).
+
+% Removes entry files.
+
+remove_files(Id):-
+    atomic_list_concat([public, '/', Id], Directory),
+    (   exists_directory(Directory)
+    ->  remove_directory(Directory)
+    ;   true).
+
+remove_directory(Directory):-
+    directory_files(Directory, Entries),
+    exclude(ignored_file, Entries, Files),
+    maplist(join_directory(Directory), Files, Joined),
+    maplist(remove_directory_entry, Joined),
+    delete_directory(Directory).
+
+ignored_file('.').
+ignored_file('..').
+
+join_directory(Directory, Entry, Joined):-
+    atomic_list_concat([Directory, '/', Entry], Joined).
+
+remove_directory_entry(Entry):-
+    (   exists_directory(Entry)
+    ->  remove_directory(Entry)
+    ;   delete_file(Entry)).
+
+%! bc_entry_list(+Actor, +Type, -List) is det.
 %
 % Retrieves the list of entries of certain
 % type. Does not include contents and HTML.
 % Sorts by date_updated desc.
 
-bc_entry_list(Type, Sorted):-
-    bc_user(User),
-    check_type_access(User, Type),
+bc_entry_list(Actor, Type, Sorted):-
+    can_list(Actor, Type),
     ds_find(entry, type=Type, [slug, type, date_published,
         date_updated, commenting, published,
         title, author], Entries),
@@ -89,36 +117,37 @@ bc_entry_list(Type, Sorted):-
     sort_dict(date_updated, desc, List, Sorted),
     debug(bc_data_entry, 'retrieved entry list', []).
 
-%! bc_entry(+Id, -Entry) is det.
+can_list(Actor, Type):-
+    bc_type_access(Actor, Type).
+
+%! bc_entry(+Actor, +Id, -Entry) is det.
 %
 % Retrieves a single entry by its Id.
 
-bc_entry(Id, WithCount):-
-    bc_check_entry_exists(Id),
+bc_entry(Actor, Id, WithCount):-
+    can_view(Actor, Id),
     ds_get(Id, [slug, type, date_published, date_updated,
         commenting, published, title, author,
         content, description, content_type, tags, language], Entry), !,
-    bc_user(User),
-    check_type_access(User, Entry.type),
     attach_comment_count(Entry, WithCount),
     debug(bc_data_entry, 'retrieved entry ~p', [Id]).
 
-%! bc_entry_info(+Id, -Entry) is det.
+%! bc_entry_info(+Actor, +Id, -Entry) is det.
 %
 % Retrieves a single entry by its Id.
 % Does not include the content field.
 
-% FIXME maybe it can be removed.
-
-bc_entry_info(Id, WithCount):-
-    bc_check_entry_exists(Id),
+bc_entry_info(Actor, Id, WithCount):-
+    can_view(Actor, Id),
     ds_get(Id, [slug, type, date_published, date_updated,
         commenting, published, title, author,
         description, content_type, tags, language], Entry), !,
-    bc_user(User),
-    check_type_access(User, Entry.type),
     attach_comment_count(Entry, WithCount),
     debug(bc_data_entry, 'retrieved entry ~p info', [Id]).
+
+can_view(Actor, Id):-
+    bc_entry_exists(Id),
+    bc_type_access_by_id(Actor, Id).
 
 % Attaches comment count to the entry.
 
@@ -128,39 +157,21 @@ attach_comment_count(EntryIn, EntryOut):-
     length(List, Count),
     put_dict(_{ comments: Count }, EntryIn, EntryOut).
 
-check_editing_ownership(Update):-
-    bc_user(User),
-    (   User.type = admin
-    ->  true
-    ;   (   Update.author = User.'$id'
-        ->  true
-        ;   throw(error(entry_new_ownership)))).
+% Checks that slug is not used before.
 
-check_editing_own_post(PostId):-
-    bc_user(User),
-    (   User.type = admin
-    ->  true
-    ;   ds_get(PostId, [author], Original),
-        (   Original.author = User.'$id'
-        ->  true
-        ;   throw(error(entry_is_not_own)))).
+slug_unique(Slug):-
+    \+ bc_slug_id(Slug, _), !.
 
-check_existing_slug(Entry):-
-    (   ds_find(entry, slug=Entry.slug, [])
-    ->  true
-    ;   throw(error(entry_existing_slug))).
+slug_unique(_):-
+    throw(error(existing_slug)).
 
-check_existing_slug(PostId, Update):-
-    (   ds_find(entry, slug=Update.slug, [Post])
-    ->  (   Post.'$id' = PostId
-        ->  true
-        ;   throw(error(entry_existing_slug)))
-    ;   true).
+% Checks that slug is not used for another post.
 
-check_type_access(User, Type):-
-    bc_type(Type, _, _, Roles),
-    (   User.type = admin
-    ->  true
-    ;   (   memberchk(User.type, Roles)
-        ->  true
-        ;   throw(error(entry_type_access)))).
+slug_unique(Slug, _):-
+    \+ bc_slug_id(Slug, _), !.
+
+slug_unique(Slug, Id):-
+    bc_slug_id(Slug, Id), !.
+
+slug_unique(_, _):-
+    throw(error(existing_slug)).

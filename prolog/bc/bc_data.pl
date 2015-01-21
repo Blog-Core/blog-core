@@ -14,9 +14,9 @@
 
 % Register initial roles.
 
-:- bc_register_role(admin, 'Admin', true).
-:- bc_register_role(author, 'Author', true).
-:- bc_register_role(anon, 'Anonymous', false).
+:- bc_register_role(admin, 'Admin', true, true).
+:- bc_register_role(author, 'Author', true, true).
+:- bc_register_role(anon, 'Anonymous', false, false).
 
 % Register initial types.
 
@@ -61,7 +61,11 @@ bc_init:-
     bc_data_migrate(
         bc_smtp_settings,
         'Adds SMTP settings',
-        bc_smtp_settings).
+        bc_smtp_settings),
+    bc_data_migrate(
+        bc_remove_files,
+        'Removes files key from users',
+        bc_remove_files).
 
 % Inserts the initial config.
 
@@ -83,7 +87,6 @@ bc_initial_user:-
         username: 'admin@example.com',
         password: 'admin',
         type: admin,
-        files: true,
         link: ""
     }).
 
@@ -93,3 +96,6 @@ bc_initial_user:-
 bc_add_language:-
     ds_col_add_key(entry, language, en),
     bc_config_set(default_language, en).
+
+bc_remove_files:-
+    ds_col_remove_key(user, files).

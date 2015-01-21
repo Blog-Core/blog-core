@@ -14,7 +14,7 @@ function menu(params) {
     return model;
 }
 
-ko.components.register('bc-menu', {
+ko.components.register('menu', {
 
     viewModel: { createViewModel: menu },
 

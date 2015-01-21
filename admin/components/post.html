@@ -53,6 +53,7 @@
             <input data-bind="value: tags"
                 type="text" class="form-control" id="post-tags"
                 placeholder="Tags">
+            <p class="help-block">Separate multiple tags with commas.</p>
         </div>
         <div class="checkbox">
             <label><input data-bind="checked: published"
@@ -70,15 +71,16 @@
                 type="text" class="form-control" id="post-update"
                 placeholder="YYYY-MM-DD">
         </div>
-        <div class="checkbox">
-            <label><input data-bind="checked: commenting" type="checkbox"> Commenting</label>
-        </div>
+            <div class="checkbox">
+                <label><input data-bind="checked: commenting" type="checkbox"> Commenting</label>
+            </div>
         <div class="form-group">
             <label for="post-language">Language</label>
             <select data-bind="value: language, options: languages,
                 optionsText: 'name', optionsValue: 'code'"
                 class="form-control" id="post-language"></select>
         </div>
+        <!-- ko component: { name: 'files', params: { id: $id } } --><!-- /ko -->
         <button data-bind="click: save" class="btn btn-default">
             <span class="glyphicon glyphicon-ok"></span> Save/leave
         </button>

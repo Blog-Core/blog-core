@@ -64,19 +64,16 @@ bc_handle_error(error(user_has_posts)):- !,
 bc_handle_error(error(user_is_last_admin)):- !,
     bc_reply_error('Cannot remove the last admin.').
 
-bc_handle_error(error(entry_existing_slug)):- !,
+bc_handle_error(error(existing_slug)):- !,
     bc_reply_error('The entry with the same slug exists already.').
 
 bc_handle_error(error(entry_not_exists)):- !,
     bc_reply_error('The entry does not exist.').
 
-bc_handle_error(error(entry_is_not_own)):- !,
-    bc_reply_error('The operation requires admin privileges.').
+bc_handle_error(error(no_ownership)):- !,
+    bc_reply_error('The operation requires ownership privileges.').
 
-bc_handle_error(error(entry_new_ownership)):- !,
-    bc_reply_error('The operation requires admin privileges.').
-
-bc_handle_error(error(entry_type_access)):- !,
+bc_handle_error(error(no_type_access)):- !,
     bc_reply_error('The operation requires entry type access.').
 
 bc_handle_error(error(unsafe_path(_))):- !,
@@ -87,6 +84,9 @@ bc_handle_error(error(directory_exists)):- !,
 
 bc_handle_error(error(file_exists)):- !,
     bc_reply_error('The file exists.').
+
+bc_handle_error(error(no_files_access)):- !,
+    bc_reply_error('No permission to manage files.').
 
 bc_handle_error(error(comment_invalid_answer)):- !,
     bc_reply_error('The human question answer is wrong.').
