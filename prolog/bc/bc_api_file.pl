@@ -10,7 +10,7 @@
 :- use_module(bc_hex).
 :- use_module(bc_api_io).
 :- use_module(bc_api_auth).
-:- use_module(bc_data_cur_user).
+:- use_module(bc_api_actor).
 :- use_module(bc_entry).
 :- use_module(bc_access).
 
@@ -20,7 +20,7 @@
     bc_auth, files_get(EntryId)).
 
 files_get(EntryId):-
-    bc_user(Actor),
+    bc_actor(Actor),
     can_list(Actor, EntryId),
     atomic_list_concat([public, '/', EntryId], Full),
     check_safe_path(Full),
@@ -67,7 +67,7 @@ entry_records([], _, []).
     bc_auth, upload_file(EntryId)).
 
 upload_file(EntryId):-
-    bc_user(Actor),
+    bc_actor(Actor),
     can_upload(Actor, EntryId),
     catch(attemp_upload(EntryId), Error, true),
     (   var(Error)
@@ -133,7 +133,7 @@ attemp_upload(EntryId):-
     bc_auth, file_remove(EntryId, Name)).
 
 file_remove(EntryId, Name):-
-    bc_user(Actor),
+    bc_actor(Actor),
     can_remove(Actor, EntryId),
     atomic_list_concat([public, '/', EntryId, '/', Name], Full),
     check_safe_path(Full),

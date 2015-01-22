@@ -6,8 +6,8 @@
 
 :- use_module(bc_api_io).
 :- use_module(bc_api_auth).
+:- use_module(bc_api_actor).
 :- use_module(bc_data_role).
-:- use_module(bc_data_cur_user).
 
 % Creation of new users.
 
@@ -15,7 +15,7 @@
     bc_auth, roles).
 
 roles:-
-    bc_user(User),
+    bc_actor(User),
     check_admin(User),
     findall(
         _{  name: Name,

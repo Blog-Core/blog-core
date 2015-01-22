@@ -8,8 +8,8 @@
 :- use_module(bc_view).
 :- use_module(bc_api_io).
 :- use_module(bc_api_auth).
+:- use_module(bc_api_actor).
 :- use_module(bc_data_entry).
-:- use_module(bc_data_cur_user).
 
 % Adds new entry.
 
@@ -18,7 +18,7 @@
 
 entry_save:-
     bc_read_by_schema(entry, Post),
-    bc_user(Actor),
+    bc_actor(Actor),
     bc_entry_save(Actor, Post, Id),
     bc_view_purge_cache,
     bc_reply_success(Id).
@@ -31,7 +31,7 @@ entry_save:-
 entry_update(Id):-
     bc_read_by_schema(entry, Entry),
     put_dict('$id', Entry, Id, Update),
-    bc_user(Actor),
+    bc_actor(Actor),
     bc_entry_update(Actor, Update),
     bc_view_purge_cache,
     bc_reply_success(Id).
@@ -42,7 +42,7 @@ entry_update(Id):-
     bc_auth, entry_remove(Id)).
 
 entry_remove(Id):-
-    bc_user(Actor),
+    bc_actor(Actor),
     bc_entry_remove(Actor, Id),
     bc_view_purge_cache,
     bc_reply_success(Id).
@@ -53,7 +53,7 @@ entry_remove(Id):-
     bc_auth, entry_list(Type)).
 
 entry_list(Type):-
-    bc_user(Actor),
+    bc_actor(Actor),
     bc_entry_list(Actor, Type, List),
     bc_reply_success(List).
 
@@ -63,7 +63,7 @@ entry_list(Type):-
     bc_auth, entry_get(Id)).
 
 entry_get(Id):-
-    bc_user(Actor),
+    bc_actor(Actor),
     bc_entry(Actor, Id, Entry),
     bc_reply_success(Entry).
 
@@ -73,7 +73,7 @@ entry_get(Id):-
     bc_auth, entry_get_info(Id)).
 
 entry_get_info(Id):-
-    bc_user(Actor),
+    bc_actor(Actor),
     bc_entry_info(Actor, Id, Entry),
     bc_reply_success(Entry).
 

@@ -27,7 +27,6 @@ for unit/integration testing.
 :- use_module(prolog/bc/bc_data_user).
 :- use_module(prolog/bc/bc_data_comment).
 :- use_module(prolog/bc/bc_data_entry).
-:- use_module(prolog/bc/bc_data_cur_user).
 
 :- dynamic(default_username/1).
 :- dynamic(no_auth/0).

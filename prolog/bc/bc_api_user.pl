@@ -7,8 +7,8 @@
 
 :- use_module(bc_api_io).
 :- use_module(bc_api_auth).
+:- use_module(bc_api_actor).
 :- use_module(bc_data_user).
-:- use_module(bc_data_cur_user).
 
 % Creation of new users.
 
@@ -17,7 +17,7 @@
 
 user_save:-
     bc_read_by_schema(user, User),
-    bc_user(Actor),
+    bc_actor(Actor),
     bc_user_save(Actor, User, Id),
     bc_reply_success(Id).
 
@@ -29,7 +29,7 @@ user_save:-
 user_update(Id):-
     bc_read_by_schema(user, User),
     put_dict('$id', User, Id, Update),
-    bc_user(Actor),
+    bc_actor(Actor),
     bc_user_update(Actor, Update),
     bc_reply_success(Id).
 
@@ -39,7 +39,7 @@ user_update(Id):-
     bc_auth, user_remove(Id)).
 
 user_remove(Id):-
-    bc_user(Actor),
+    bc_actor(Actor),
     bc_user_remove(Actor, Id),
     bc_reply_success(Id).
 
@@ -49,7 +49,7 @@ user_remove(Id):-
     bc_auth, users_list).
 
 users_list:-
-    bc_user(Actor),
+    bc_actor(Actor),
     bc_user_list(Actor, Users),
     bc_reply_success(Users).
 
@@ -59,7 +59,7 @@ users_list:-
     bc_auth, user_get(Id)).
 
 user_get(Id):-
-    bc_user(Actor),
+    bc_actor(Actor),
     bc_user(Actor, Id, User),
     bc_reply_success(User).
 
@@ -69,7 +69,7 @@ user_get(Id):-
     bc_auth, user_info).
 
 user_info:-
-    bc_user(User),
+    bc_actor(User),
     bc_reply_success(_{
         '$id': User.'$id',
         type: User.type,

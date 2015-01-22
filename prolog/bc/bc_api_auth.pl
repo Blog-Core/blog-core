@@ -11,7 +11,7 @@
 :- use_module(bc_api_io).
 :- use_module(bc_api_error).
 :- use_module(bc_data_user).
-:- use_module(bc_data_cur_user).
+:- use_module(bc_api_actor).
 
 %! bc_auth(:Next) is det.
 %
@@ -23,9 +23,9 @@
 bc_auth(Next):-
     (   auth_user_by_key(User)
     ->  setup_call_cleanup(
-            bc_set_user(User),
+            bc_set_actor(User),
             bc_call_handle_error(Next),
-            bc_unset_user)
+            bc_unset_actor)
     ;   bc_handle_error(error(invalid_api_key))).
 
 % Authenticates the current user

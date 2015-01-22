@@ -24,7 +24,7 @@ test('List of entries, no admin', [setup(new_database)]):-
     set_default_username('author@example.com'),
     list_configs(List),
     assertion(List.status = "error"),
-    assertion(List.message = "The operation requires admin privileges.").
+    assertion(List.message = "The operation requires access privileges.").
 
 test('Update entry', [setup(new_database)]):-
     update_config(title, "New title", Config),
@@ -42,7 +42,7 @@ test('Update entry, no admin', [setup(new_database)]):-
     set_default_username('author@example.com'),
     update_config(title, "New title", Config),
     assertion(Config.status = "error"),
-    assertion(Config.message = "The operation requires admin privileges.").
+    assertion(Config.message = "The operation requires access privileges.").
 
 test('Add entry', [setup(new_database)]):-
     update_config(not_used_before, 123, Config),

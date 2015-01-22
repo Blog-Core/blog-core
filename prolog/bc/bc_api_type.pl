@@ -6,14 +6,14 @@
 
 :- use_module(bc_api_io).
 :- use_module(bc_api_auth).
+:- use_module(bc_api_actor).
 :- use_module(bc_data_type).
-:- use_module(bc_data_cur_user).
 
 :- route_get(api/types,
     bc_auth, types).
 
 types:-
-    bc_user(User),
+    bc_actor(User),
     accessible_types(User, Types),
     bc_reply_success(Types).
 

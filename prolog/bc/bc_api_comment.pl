@@ -7,8 +7,8 @@
 :- use_module(bc_api_io).
 :- use_module(bc_api_auth).
 :- use_module(bc_api_error).
+:- use_module(bc_api_actor).
 :- use_module(bc_data_comment).
-:- use_module(bc_data_cur_user).
 :- use_module(bc_data_comment_question).
 
 % Comments of a single post.
@@ -39,7 +39,7 @@ comment_save(PostId):-
     bc_auth, comment_remove(EntryId, Id)).
 
 comment_remove(EntryId, Id):-
-    bc_user(Actor),
+    bc_actor(Actor),
     bc_comment_remove(Actor, EntryId, Id),
     bc_view_purge_cache,
     bc_reply_success(Id).
