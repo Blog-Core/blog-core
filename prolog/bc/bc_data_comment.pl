@@ -13,7 +13,7 @@
 :- use_module(bc_entry).
 :- use_module(bc_comment).
 :- use_module(bc_access).
-:- use_module(bc_data_type).
+:- use_module(bc_type).
 :- use_module(bc_data_comment_question).
 :- use_module(bc_data_comment_format).
 :- use_module(bc_data_comment_tree).

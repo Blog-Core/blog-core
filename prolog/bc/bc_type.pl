@@ -1,4 +1,4 @@
-:- module(bc_data_type, [
+:- module(bc_type, [
     bc_register_type/5,
     bc_unregister_type/1,
     bc_type/5
@@ -32,7 +32,7 @@ bc_register_type(Name, Label, MenuLabel, Roles, Comments):-
     ->  retractall(type(Name, _, _, _, _))
     ;   true),
     assertz(type(Name, Label, MenuLabel, Roles, Comments)),
-    debug(bc_data_type, 'type ~w registered', [Name]).
+    debug(bc_type, 'type ~w registered', [Name]).
 
 %! bc_unregister_type(+Name) is det.
 %

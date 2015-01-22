@@ -9,7 +9,7 @@
 :- use_module(bc_data_config).
 :- use_module(bc_data_user).
 :- use_module(bc_data_migrate).
-:- use_module(bc_data_type).
+:- use_module(bc_type).
 :- use_module(bc_role).
 
 % Register initial roles.

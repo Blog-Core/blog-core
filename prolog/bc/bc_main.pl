@@ -63,12 +63,11 @@
     :- debug(docstore).
     :- debug(bc_data).
     :- debug(bc_data_migrate).
-    :- debug(bc_data_comment).
     :- debug(bc_router).
     :- debug(bc_view).
     :- debug(bc_bust).
     :- debug(bc_main).
-    :- debug(bc_data_type).
+    :- debug(bc_type).
     :- debug(bc_role).
 :- endif.
 
