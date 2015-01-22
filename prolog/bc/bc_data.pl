@@ -8,7 +8,7 @@
 
 :- use_module(bc_data_config).
 :- use_module(bc_data_user).
-:- use_module(bc_data_migrate).
+:- use_module(bc_migrate).
 :- use_module(bc_type).
 :- use_module(bc_role).
 
@@ -57,23 +57,23 @@ bc_data_close:-
 % Inserts the default admin user.
 
 bc_init:-
-    bc_data_migrate(
+    bc_migrate(
         bc_initial_config,
         'Inserts the initial config',
         bc_initial_config),
-    bc_data_migrate(
+    bc_migrate(
         bc_initial_user,
         'Inserts the initial user',
         bc_initial_user),
-    bc_data_migrate(
+    bc_migrate(
         bc_add_language,
         'Adds language to posts',
         bc_add_language),
-    bc_data_migrate(
+    bc_migrate(
         bc_smtp_settings,
         'Adds SMTP settings',
         bc_smtp_settings),
-    bc_data_migrate(
+    bc_migrate(
         bc_remove_files,
         'Removes files key from users',
         bc_remove_files).

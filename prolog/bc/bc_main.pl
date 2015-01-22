@@ -35,7 +35,7 @@
 :- use_module(bc_admin).
 :- use_module(bc_excerpt).
 :- use_module(bc_data).
-:- use_module(bc_data_migrate).
+:- use_module(bc_migrate).
 
 %! bc_environment(-Env) is det.
 %
@@ -62,7 +62,7 @@
     :- debug(arouter).
     :- debug(docstore).
     :- debug(bc_data).
-    :- debug(bc_data_migrate).
+    :- debug(bc_migrate).
     :- debug(bc_router).
     :- debug(bc_view).
     :- debug(bc_bust).
