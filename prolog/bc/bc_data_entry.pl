@@ -22,14 +22,20 @@
 % Saves and formats the new entry.
 
 bc_entry_save(Actor, Entry, Id):-
-    can_save(Actor, Entry),
+    can_create(Actor, Entry),
     entry_format(Entry, Formatted),
     ds_insert(Formatted, Id),
     debug(bc_data_entry, 'saved entry ~p', [Id]).
 
-can_save(Actor, Entry):-
-    bc_type_access(Actor, create, Entry.type),
-    slug_unique(Entry.slug).
+can_create(Actor, Entry):-
+    slug_unique(Entry.slug),
+    create_access(Actor, Entry).
+
+create_access(Actor, Entry):-
+    bc_create_access_type(Actor, Entry.type), !.
+
+create_access(_, _):-
+    throw(error(no_access)).
 
 %! bc_entry_update(+Actor, +Entry) is det.
 %
@@ -43,11 +49,19 @@ bc_entry_update(Actor, Entry):-
 
 can_update(Actor, Entry):-
     bc_entry_exists(Entry.'$id'),
-    bc_type_access(Actor, update, Entry.type),
-    bc_type_access_by_id(Actor, update, Entry.'$id'),
-    bc_ownership(Actor, Entry.author),
-    bc_ownership_by_id(Actor, Entry.'$id'),
-    slug_unique(Entry.slug, Entry.'$id').
+    slug_unique(Entry.slug, Entry.'$id'),
+    update_access(Actor, Entry).
+
+update_access(Actor, Entry):-
+    Id = Entry.'$id',
+    bc_entry_type(Id, Old),
+    (   Old = Entry.type
+    ->  bc_update_access_id(Actor, Id)
+    ;   bc_create_access_type(Actor, Entry.type),
+        bc_remove_access_id(Actor, Id)), !.
+
+update_access(_, _):-
+    throw(error(no_access)).
 
 % Formats entry HTML contents based on
 % the entries content type.
@@ -73,8 +87,13 @@ bc_entry_remove(Actor, Id):-
 
 can_remove(Actor, Id):-
     bc_entry_exists(Id),
-    bc_type_access_by_id(Actor, remove, Id),
-    bc_ownership_by_id(Actor, Id).
+    remove_access(Actor, Id).
+
+remove_access(Actor, Id):-
+    bc_remove_access_id(Actor, Id), !.
+
+remove_access(_, _):-
+    throw(error(no_access)).
 
 % Removes entry files.
 
@@ -109,16 +128,13 @@ remove_directory_entry(Entry):-
 % Sorts by date_updated desc.
 
 bc_entry_list(Actor, Type, Sorted):-
-    can_list(Actor, Type),
     ds_find(entry, type=Type, [slug, type, date_published,
         date_updated, commenting, published,
         title, author], Entries),
-    maplist(attach_comment_count, Entries, List),
+    include(bc_read_access_entry(Actor), Entries, Filtered),
+    maplist(attach_comment_count, Filtered, List),
     sort_dict(date_updated, desc, List, Sorted),
     debug(bc_data_entry, 'retrieved entry list', []).
-
-can_list(Actor, Type):-
-    bc_type_access(Actor, read, Type).
 
 %! bc_entry(+Actor, +Id, -Entry) is det.
 %
@@ -147,7 +163,13 @@ bc_entry_info(Actor, Id, WithCount):-
 
 can_view(Actor, Id):-
     bc_entry_exists(Id),
-    bc_type_access_by_id(Actor, read, Id).
+    view_access(Actor, Id).
+
+view_access(Actor, Id):-
+    bc_read_access_id(Actor, Id), !.
+
+view_access(_, _):-
+    throw(error(no_access)).
 
 % Attaches comment count to the entry.
 

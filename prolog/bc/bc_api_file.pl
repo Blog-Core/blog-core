@@ -31,7 +31,13 @@ files_get(EntryId):-
 
 can_list(Actor, EntryId):-
     bc_entry_exists(EntryId),
-    bc_type_access_by_id(Actor, read, EntryId).
+    list_access(Actor, EntryId).
+
+list_access(Actor, EntryId):-
+    bc_read_access_id(Actor, EntryId), !.
+
+list_access(_, _):-
+    throw(error(no_access)).
 
 % Finds directory entries and turns
 % them into dicts having `name` and
@@ -69,9 +75,14 @@ upload_file(EntryId):-
 
 can_upload(Actor, EntryId):-
     bc_entry_exists(EntryId),
-    bc_type_access_by_id(Actor, update, EntryId),
-    bc_ownership_by_id(Actor, EntryId),
-    bc_files_access(Actor).
+    bc_files_access(Actor),
+    upload_access(Actor, EntryId).
+
+upload_access(Actor, EntryId):-
+    bc_update_access_id(Actor, EntryId), !.
+
+upload_access(_, _):-
+    throw(error(no_access)).
 
 % Drains the remaining data
 % from the request body.
@@ -130,9 +141,8 @@ file_remove(EntryId, Name):-
 
 can_remove(Actor, EntryId):-
     bc_entry_exists(EntryId),
-    bc_type_access_by_id(Actor, update, EntryId),
-    bc_ownership_by_id(Actor, EntryId),
-    bc_files_access(Actor).
+    bc_files_access(Actor),
+    upload_access(Actor, EntryId).
 
 % Checks that the given path is safe to be used.
 

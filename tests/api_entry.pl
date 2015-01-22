@@ -74,7 +74,7 @@ test('Update entry, not own post', [setup(new_database)]):-
     set_default_username('author@example.com'),
     update_post(Post.data, _{}, Updated),
     assertion(Updated.status = "error"),
-    assertion(Updated.message = "The operation requires ownership privileges.").
+    assertion(Updated.message = "The operation requires access privileges.").
 
 test('Update entry, author to other author', [setup(new_database)]):-
     new_user(_{ username: 'author1@example.com', type: author }, User1),
@@ -85,8 +85,7 @@ test('Update entry, author to other author', [setup(new_database)]):-
     new_post(User1.data, test_post, Post),
     assertion(Post.status = "success"),
     update_post(Post.data, _{ author: User2.data }, Updated),
-    assertion(Updated.status = "error"),
-    assertion(Updated.message = "The operation requires ownership privileges.").
+    assertion(Updated.status = "success").
 
 test('Update entry, admin to other author', [setup(new_database)]):-
     new_user(_{ username: 'author@example.com', type: author }, User),
@@ -189,7 +188,7 @@ test('Remove entry, not own post', [setup(new_database)]):-
     set_default_username('author@example.com'),
     remove_post(Post.data, Removed),
     assertion(Removed.status = "error"),
-    assertion(Removed.message = "The operation requires ownership privileges.").
+    assertion(Removed.message = "The operation requires access privileges.").
 
 test('Remove non-existent entry', [setup(new_database)]):-
     remove_post('xxx-entry-not-exists', Entry),

@@ -213,8 +213,7 @@ test('List of users, no admin right', [setup(new_database)]):-
     assertion(User.status = "success"),
     set_default_username('author@example.com'),
     list_users(List),
-    assertion(List.status = "error"),
-    assertion(List.message = "The operation requires admin privileges.").
+    assertion(List.status = "success").
 
 test('List of users, no authentication', [setup(new_database)]):-
     set_no_auth,

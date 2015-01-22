@@ -85,7 +85,7 @@ check_grants([]).
 
 check_grant(Grant):-
     nonvar(Grant),
-    memberchk(Grant, [create, read, update, remove]), !.
+    memberchk(Grant, [create, read_own, update_own, remove_own, read_all, update_all, remove_all]), !.
 
 check_grant(_):-
     throw(error(invalid_grant)).

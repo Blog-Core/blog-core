@@ -102,7 +102,6 @@ user_hash(UserIn, UserOut):-
 % fields are `username`, `fullname` and `type`.
 
 bc_user_list(Sorted):-
-    bc_check_current_user_is_admin,
     ds_all(user, [username, fullname, type], Users),
     sort_dict(username, asc, Users, Sorted),
     debug(bc_data, 'retrieved the users list', []).

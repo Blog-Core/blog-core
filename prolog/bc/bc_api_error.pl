@@ -76,6 +76,9 @@ bc_handle_error(error(no_ownership)):- !,
 bc_handle_error(error(no_type_access)):- !,
     bc_reply_error('The operation requires entry type access.').
 
+bc_handle_error(error(no_access)):- !,
+    bc_reply_error('The operation requires access privileges.').
+
 bc_handle_error(error(unsafe_path(_))):- !,
     bc_reply_error('The file/directory path is unsafe.').
 
