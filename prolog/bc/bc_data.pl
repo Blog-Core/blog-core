@@ -20,9 +20,20 @@
 
 % Register initial types.
 
-:- bc_register_type(post, 'Post', 'Posts', [admin, author]).
-:- bc_register_type(page, 'Page', 'Pages', [admin, author]).
-:- bc_register_type(block, 'Block', 'Blocks', [admin, author]).
+:- bc_register_type(post, 'Post', 'Posts', [
+    admin(create, read, update, remove),
+    author(create, read, update, remove)
+], true).
+
+:- bc_register_type(page, 'Page', 'Pages', [
+    admin(create, read, update, remove),
+    author(create, read, update, remove)
+], false).
+
+:- bc_register_type(block, 'Block', 'Blocks', [
+    admin(create, read, update, remove),
+    author(create, read, update, remove)
+], false).
 
 %! bc_data_open(+File) is det.
 %

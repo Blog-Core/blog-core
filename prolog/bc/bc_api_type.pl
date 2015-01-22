@@ -9,8 +9,6 @@
 :- use_module(bc_data_type).
 :- use_module(bc_data_cur_user).
 
-% Creation of new users.
-
 :- route_get(api/types,
     bc_auth, types).
 
@@ -26,8 +24,11 @@ accessible_types(User, Types):-
         _{  name: Name,
             label: Label,
             menu_label: MenuLabel,
-            roles: Roles },
+            grants: Grants,
+            comments: Comments },
         (
-            bc_type(Name, Label, MenuLabel, Roles),
-            member(User.type, Roles)
+            bc_type(Name, Label, MenuLabel, Roles, Comments),
+            member(Role, Roles),
+            Role =.. [RoleName|Grants],
+            User.type = RoleName
         ), Types).

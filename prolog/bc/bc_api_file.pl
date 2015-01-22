@@ -31,7 +31,7 @@ files_get(EntryId):-
 
 can_list(Actor, EntryId):-
     bc_entry_exists(EntryId),
-    bc_type_access_by_id(Actor, EntryId).
+    bc_type_access_by_id(Actor, read, EntryId).
 
 % Finds directory entries and turns
 % them into dicts having `name` and
@@ -69,7 +69,7 @@ upload_file(EntryId):-
 
 can_upload(Actor, EntryId):-
     bc_entry_exists(EntryId),
-    bc_type_access_by_id(Actor, EntryId),
+    bc_type_access_by_id(Actor, update, EntryId),
     bc_ownership_by_id(Actor, EntryId),
     bc_files_access(Actor).
 
@@ -130,7 +130,7 @@ file_remove(EntryId, Name):-
 
 can_remove(Actor, EntryId):-
     bc_entry_exists(EntryId),
-    bc_type_access_by_id(Actor, EntryId),
+    bc_type_access_by_id(Actor, update, EntryId),
     bc_ownership_by_id(Actor, EntryId),
     bc_files_access(Actor).
 

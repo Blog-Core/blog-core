@@ -28,7 +28,7 @@ bc_entry_save(Actor, Entry, Id):-
     debug(bc_data_entry, 'saved entry ~p', [Id]).
 
 can_save(Actor, Entry):-
-    bc_type_access(Actor, Entry.type),
+    bc_type_access(Actor, create, Entry.type),
     slug_unique(Entry.slug).
 
 %! bc_entry_update(+Actor, +Entry) is det.
@@ -43,8 +43,8 @@ bc_entry_update(Actor, Entry):-
 
 can_update(Actor, Entry):-
     bc_entry_exists(Entry.'$id'),
-    bc_type_access(Actor, Entry.type),
-    bc_type_access_by_id(Actor, Entry.'$id'),
+    bc_type_access(Actor, update, Entry.type),
+    bc_type_access_by_id(Actor, update, Entry.'$id'),
     bc_ownership(Actor, Entry.author),
     bc_ownership_by_id(Actor, Entry.'$id'),
     slug_unique(Entry.slug, Entry.'$id').
@@ -73,7 +73,7 @@ bc_entry_remove(Actor, Id):-
 
 can_remove(Actor, Id):-
     bc_entry_exists(Id),
-    bc_type_access_by_id(Actor, Id),
+    bc_type_access_by_id(Actor, remove, Id),
     bc_ownership_by_id(Actor, Id).
 
 % Removes entry files.
@@ -118,7 +118,7 @@ bc_entry_list(Actor, Type, Sorted):-
     debug(bc_data_entry, 'retrieved entry list', []).
 
 can_list(Actor, Type):-
-    bc_type_access(Actor, Type).
+    bc_type_access(Actor, read, Type).
 
 %! bc_entry(+Actor, +Id, -Entry) is det.
 %
@@ -147,7 +147,7 @@ bc_entry_info(Actor, Id, WithCount):-
 
 can_view(Actor, Id):-
     bc_entry_exists(Id),
-    bc_type_access_by_id(Actor, Id).
+    bc_type_access_by_id(Actor, read, Id).
 
 % Attaches comment count to the entry.
 
