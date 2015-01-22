@@ -49,7 +49,7 @@ test('Commenting not enabled', [setup(new_database)]):-
     assertion(Post.status = "success"),
     new_comment(Post.data, Comment),
     assertion(Comment.status = "error"),
-    assertion(Comment.message = "Commenting is disabled for the entry.").
+    assertion(Comment.message = "No comments are allowed on the entry.").
 
 test('Reply to comment', [setup(new_database)]):-
     default_user_id(AuthorId),
@@ -83,7 +83,7 @@ test('Reply to comment under other post', [setup(new_database)]):-
     assertion(Comment.status = "success"),
     new_comment(OtherPost.data, _{ reply_to: Comment.data }, Reply),
     assertion(Reply.status = "error"),
-    assertion(Reply.message = "The replied-to comment and the entry do not match.").
+    assertion(Reply.message = "The comment replied to does not exist.").
 
 test('Reply to comment, retrieve the tree', [setup(new_database)]):-
     default_user_id(AuthorId),
@@ -122,7 +122,7 @@ test('Remove comment', [setup(new_database)]):-
     assertion(Post.status = "success"),
     new_comment(Post.data, Comment),
     assertion(Comment.status = "success"),
-    remove_comment(Comment.data, Removal),
+    remove_comment(Post.data, Comment.data, Removal),
     assertion(Removal.status = "success").
 
 test('Remove comment, no authentication', [setup(new_database)]):-
@@ -132,7 +132,7 @@ test('Remove comment, no authentication', [setup(new_database)]):-
     new_comment(Post.data, Comment),
     assertion(Comment.status = "success"),
     set_no_auth,
-    remove_comment(Comment.data, Removal),
+    remove_comment(Post.data, Comment.data, Removal),
     assertion(Removal.status = "error"),
     assertion(Removal.message = "Invalid or missing API key.").
 
@@ -145,9 +145,9 @@ test('Remove comment, on other user post', [setup(new_database)]):-
     new_user(_{ username: 'author@example.com' }, User),
     assertion(User.status = "success"),
     set_default_username('author@example.com'),
-    remove_comment(Comment.data, Removal),
+    remove_comment(Post.data, Comment.data, Removal),
     assertion(Removal.status = "error"),
-    assertion(Removal.message = "The operation requires admin privileges.").
+    assertion(Removal.message = "The operation requires access privileges.").
 
 test('Get random human question', [setup(new_database)]):-
     set_no_auth,

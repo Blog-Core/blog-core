@@ -1,7 +1,7 @@
 :- module(util_comment, [
     new_comment/2,    % +PostId, -Response
     new_comment/3,    % +PostId, +Override, -Response
-    remove_comment/2, % +CommentId, -Response
+    remove_comment/3, % +EntryId, +CommentId, -Response
     list_comments/2,  % +PostId, -Response,
     get_question/1    % -Response
 ]).
@@ -26,8 +26,8 @@ new_comment(PostId, Override, Response):-
     put_dict(Override, Base, Data),
     request_post(Path, Data, Response).
 
-remove_comment(CommentId, Response):-
-    atomic_list_concat(['/api/comment/', CommentId], Path),
+remove_comment(EntryId, CommentId, Response):-
+    atomic_list_concat(['/api/comment/', EntryId, '/', CommentId], Path),
     request_del(Path, Response).
 
 list_comments(PostId, Response):-

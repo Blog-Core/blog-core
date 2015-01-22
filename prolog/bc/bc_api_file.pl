@@ -11,6 +11,7 @@
 :- use_module(bc_api_io).
 :- use_module(bc_api_auth).
 :- use_module(bc_data_cur_user).
+:- use_module(bc_entry).
 :- use_module(bc_access).
 
 % Sends directory listing in public directory.

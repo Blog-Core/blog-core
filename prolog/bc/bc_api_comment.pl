@@ -8,6 +8,7 @@
 :- use_module(bc_api_auth).
 :- use_module(bc_api_error).
 :- use_module(bc_data_comment).
+:- use_module(bc_data_cur_user).
 :- use_module(bc_data_comment_question).
 
 % Comments of a single post.
@@ -34,11 +35,12 @@ comment_save(PostId):-
 
 % Removes the given comment.
 
-:- route_del(api/comment/Id,
-    bc_auth, comment_remove(Id)).
+:- route_del(api/comment/EntryId/Id,
+    bc_auth, comment_remove(EntryId, Id)).
 
-comment_remove(Id):-
-    bc_comment_remove(Id),
+comment_remove(EntryId, Id):-
+    bc_user(Actor),
+    bc_comment_remove(Actor, EntryId, Id),
     bc_view_purge_cache,
     bc_reply_success(Id).
 

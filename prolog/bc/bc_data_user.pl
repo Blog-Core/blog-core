@@ -1,46 +1,67 @@
 :- module(bc_data_user, [
-    bc_user_save/2,         % +User, -Id
-    bc_user_save_initial/1, % +User
-    bc_user_update/2,       % +Id, +User
-    bc_user_remove/1,       % +Id
     bc_user_auth/2,         % +Auth, -Info
-    bc_user_list/1,         % -Users
-    bc_user/2               % +Id, -User
+    bc_user_save/3,         % +Actor, +User, -Id
+    bc_user_save_initial/1, % +User
+    bc_user_update/2,       % +Actor, +User
+    bc_user_remove/2,       % +Actor, +Id
+    bc_user_list/2,         % +Actor, -Users
+    bc_user/3               % +Actor, +Id, -User
 ]).
 
-/** <module> Handles the user and authentication data
-*/
+/** <module> Handles the user and authentication data */
 
-:- use_module(library(dcg/basics)).
 :- use_module(library(sort_dict)).
 :- use_module(library(docstore)).
 :- use_module(library(sha)).
 
+:- use_module(bc_user).
+:- use_module(bc_access).
 :- use_module(bc_data_role).
-:- use_module(bc_data_cur_user).
-:- use_module(bc_data_validate).
 
-%! bc_user_auth(+Auth, -Info) is semidet.
+%! bc_user_auth(+Auth, -Info) is det.
 %
 % Authenticates the given user with
 % username and password.
 
 bc_user_auth(Auth, Info):-
-    (   ds_find(user, username=Auth.username, [User]),
-        password_hash(Auth.password, User.salt, User.password)
-    ->  (   bc_role(User.type, _, true)
-        ->  Info = _{ id: User.'$id', type: User.type, key: User.key },
-            debug(bc_data, 'authenticated user ~p', [Auth.username])
-        ;   throw(error(user_role_no_login)))
-    ;   throw(error(user_invalid_credentials))).
+    user_auth(Auth, User),
+    login_access(User),
+    Info = _{
+        id: User.'$id',
+        type: User.type,
+        key: User.key },
+    Username = Auth.username,
+    debug(bc_data, 'authenticated user ~p', [Username]).
 
-%! bc_user_save(+User, -Id) is det.
+login_access(User):-
+    bc_login_access(User), !.
+
+login_access(_):-
+    throw(error(no_login_access)).
+
+% Attempts to identify and authenticate
+% the user based on supplied credentials.
+
+user_auth(Auth, User):-
+    ds_find(user, username=Auth.username, [User]),
+    password_hash(Auth.password, User.salt, User.password), !.
+
+user_auth(_, _):-
+    throw(error(invalid_credentials)).
+
+%! bc_user_save(+Actor, +User, -Id) is det.
 %
 % Saves the new user.
 
-bc_user_save(User, Id):-
-    bc_check_current_user_is_admin,
+bc_user_save(Actor, User, Id):-
+    users_access(Actor),
     user_save_common(User, Id).
+
+users_access(Actor):-
+    Actor.type = admin, !.
+
+users_access(_):-
+    throw(error(no_access)).
 
 %! bc_user_save_initial(+User, -Id) is det.
 %
@@ -56,32 +77,31 @@ bc_user_save_initial(User):-
 % bc_user_save_initial/2.
 
 user_save_common(User, Id):-
-    check_password_is_set(User),
-    check_username_is_email(User),
-    check_username_is_free(User),
-    check_valid_role(User),
+    bc_valid_username(User.username),
+    bc_unique_username(User.username),
+    bc_valid_role(User.type),
     user_hash(User, Hashed),
     ds_uuid(Key),
     put_dict(key, Hashed, Key, Keyed),
     ds_insert(Keyed, Id),
     debug(bc_data, 'saved user ~p', [Id]).
 
-%! bc_user_update(+Id, +User) is det.
+%! bc_user_update(+Actor, +Id, +User) is det.
 %
 % Updates the given user.
 
-% FIXME user can change own data.
-
-bc_user_update(Id, User):-
-    bc_check_current_user_is_admin,
-    bc_check_user_exists(Id),
-    check_user_demoted_as_last_admin(Id, User),
-    check_username_is_email(User),
-    check_username_is_free(Id, User),
-    check_valid_role(User),
+bc_user_update(Actor, User):-
+    Id = User.'$id',
+    users_access(Actor),
+    bc_user_exists(Id),
+    bc_valid_username(User.username),
+    bc_unique_username(User.username, Id),
+    bc_valid_role(User.type),
+    (   User.type = admin
+    ->  true
+    ;   bc_remaining_admin(Id)),
     user_hash(User, Hashed),
-    put_dict('$id', Hashed, Id, Update),
-    ds_update(Update),
+    ds_update(Hashed),
     debug(bc_data, 'updated user ~p', [Id]).
 
 % (Re)hashes the user password when password
@@ -96,36 +116,36 @@ user_hash(UserIn, UserOut):-
         put_dict(_{ password: Hash, salt: Salt }, UserIn, UserOut)
     ;   UserOut = UserIn).
 
-%! bc_user_list(-Sorted) is det.
+%! bc_user_list(+Actor, -Sorted) is det.
 %
 % Retrieves the list of users. Retrieved
 % fields are `username`, `fullname` and `type`.
 
-bc_user_list(Sorted):-
+bc_user_list(_, Sorted):-
     ds_all(user, [username, fullname, type], Users),
     sort_dict(username, asc, Users, Sorted),
     debug(bc_data, 'retrieved the users list', []).
 
-%! bc_user(+Id, -User) is det.
+%! bc_user(+Actor, +Id, -User) is det.
 %
 % Retrieves the given user. Retrieved
-% fields are `username`, `fullname`, `type`, `link`, `files`.
+% fields are `username`, `fullname`, `type`, `link`.
 
-bc_user(Id, User):-
-    bc_check_current_user_is_admin,
-    bc_check_user_exists(Id),
-    ds_get(Id, [username, fullname, type, link, files], User),
-    debug(bc_data, 'retrieved the user ~p', [User.username]).
+bc_user(Actor, Id, User):-
+    users_access(Actor),
+    bc_user_exists(Id),
+    ds_get(Id, [username, fullname, type, link], User),
+    debug(bc_data, 'retrieved the user ~p', [Id]).
 
-%! bc_user_remove(+Id) is det.
+%! bc_user_remove(+Actor, +Id) is det.
 %
 % Removes the given user.
 
-bc_user_remove(Id):-
-    bc_check_current_user_is_admin,
-    bc_check_user_exists(Id),
-    check_user_has_no_posts(Id),
-    check_user_is_last_admin(Id),
+bc_user_remove(Actor, Id):-
+    users_access(Actor),
+    bc_user_exists(Id),
+    bc_remaining_admin(Id),
+    bc_no_entries(Id),
     ds_remove(Id),
     debug(bc_data, 'removed user ~p', [Id]).
 
@@ -136,65 +156,3 @@ password_hash(Password, Salt, Hash):-
     atom_concat(Salt, Password, Data),
     sha_hash(Data, Raw, [encoding(utf8), algorithm(sha256)]),
     hash_atom(Raw, Hash).
-
-check_username_is_free(User):-
-    (   ds_find(user, username=User.username, [])
-    ->  true
-    ;   throw(error(user_username_exists))).
-
-check_password_is_set(User):-
-    (   get_dict(password, User, _)
-    ->  true
-    ;   throw(error(user_password_is_not_set))).
-
-check_username_is_email(User):-
-    atom_codes(User.username, Codes),
-    (   phrase(is_email, Codes, [])
-    ->  true
-    ;   throw(error(user_username_is_not_email))).
-
-is_email -->
-    string_without(`@`, Start), "@", string_without(`@`, End),
-    {   length(Start, LenStart), LenStart > 0,
-        length(End, LenEnd), LenEnd > 0 }.
-
-check_user_demoted_as_last_admin(UserId, Update):-
-    (   Update.type = admin
-    ->  true
-    ;   (   is_user_last_admin(UserId)
-        ->  throw(error(user_demote_last_admin))
-        ;   true)).
-
-% FIXME fetch empty list of keys.
-
-check_username_is_free(UserId, Update):-
-    (   ds_find(user, username=Update.username, [User])
-    ->  (   User.'$id' = UserId
-        ->  true
-        ;   throw(error(user_username_exists)))
-    ;   true).
-
-% Checks whether the user is the last admin.
-
-is_user_last_admin(UserId):-
-    ds_find(user, type=admin, [type], [Admin]),
-    Admin.'$id' = UserId.
-
-check_user_has_no_posts(UserId):-
-    (   ds_find(entry, author=UserId, [author], [])
-    ->  true
-    ;   throw(error(user_has_posts))).
-
-check_user_is_last_admin(UserId):-
-    (   is_user_last_admin(UserId)
-    ->  throw(error(user_is_last_admin))
-    ;   true).
-
-% Checks that user's role
-% is a valid role.
-
-check_valid_role(User):-
-    bc_role(User.type, _, _), !.
-
-check_valid_role(_):-
-    throw(error(user_invalid_role)).

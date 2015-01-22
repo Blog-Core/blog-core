@@ -32,7 +32,7 @@ test('New user, no authentication', [setup(new_database)]):-
 test('New user, username not email', [setup(new_database)]):-
     new_user(_{ username: test }, User),
     assertion(User.status = "error"),
-    assertion(User.message = "The username is not an email address.").
+    assertion(User.message = "The username is invalid.").
 
 test('New user, username empty', [setup(new_database)]):-
     new_user(_{ username: "" }, User),
@@ -60,8 +60,7 @@ test('New user, username exists', [setup(new_database)]):-
 
 test('New user with password not set', [setup(new_database)]):-
     new_user_no_password(User),
-    assertion(User.status = "error"),
-    assertion(User.message = "The user password is not set.").
+    assertion(User.status = "success").
 
 test('New user, current not admin', [setup(new_database)]):-
     new_user(_{ username: 'noadmin@example.com', type: author }, User),
@@ -69,7 +68,7 @@ test('New user, current not admin', [setup(new_database)]):-
     set_default_username('noadmin@example.com'),
     new_user(_{ username: 'someone@example.com' }, Other),
     assertion(Other.status = "error"),
-    assertion(Other.message = "The operation requires admin privileges.").
+    assertion(Other.message = "The operation requires access privileges.").
 
 test('Get user', [setup(new_database)]):-
     new_user(_{}, User),
@@ -124,13 +123,13 @@ test('Update user username, current not admin', [setup(new_database)]):-
     set_default_username('noadmin@example.com'),
     update_user(User.data, _{ username: 'updated@example.com' }, Update),
     assertion(Update.status = "error"),
-    assertion(Update.message = "The operation requires admin privileges.").
+    assertion(Update.message = "The operation requires access privileges.").
 
 test('Update user, demote the last admin', [setup(new_database)]):-
     default_user_id(UserId),
     update_user(UserId, _{ type: author }, Update),
     assertion(Update.status = "error"),
-    assertion(Update.message = "Cannot demote the last admin.").
+    assertion(Update.message = "Cannot remove the last admin.").
 
 test('Update user, username to existing one', [setup(new_database)]):-
     new_user(_{}, User),
@@ -183,7 +182,7 @@ test('Remove the user, has posts', [setup(new_database)]):-
     set_default_username('admin@example.com'),
     remove_user(User.data, Removal),
     assertion(Removal.status = "error"),
-    assertion(Removal.message = "The user has posts.").
+    assertion(Removal.message = "The user has entries.").
 
 test('Remove non-existing user', [setup(new_database)]):-
     remove_user('xxx-user-not-exists', Removal),
@@ -197,7 +196,7 @@ test('Remove the user, no admin right', [setup(new_database)]):-
     set_default_username('author@example.com'),
     remove_user(RemoveId, Removal),
     assertion(Removal.status = "error"),
-    assertion(Removal.message = "The operation requires admin privileges.").
+    assertion(Removal.message = "The operation requires access privileges.").
 
 test('List of users', [setup(new_database)]):-
     list_users(List),

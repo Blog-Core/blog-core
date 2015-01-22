@@ -1,12 +1,12 @@
 :- module(bc_access, [
-    bc_entry_exists/1,       % +Id
     bc_read_access_id/2,     % +Actor, +Id
     bc_read_access_entry/2,  % +Actor, +Id
     bc_remove_access_id/2,   % +Actor, +Id
     bc_update_access_id/2,   % +Actor, +Id
     bc_create_access_type/2, % +Actor, +Type
     bc_files_access_id/2,    % +Actor, +Id
-    bc_publish_access/3      % +Actor, +NewType, +Id
+    bc_publish_access/3,     % +Actor, +NewType, +Id
+    bc_login_access/1        % +Actor
 ]).
 
 :- use_module(bc_data_type).
@@ -89,7 +89,7 @@ bc_files_access_id(Actor, Id):-
     memberchk(files, Grants).
 
 % Succeeds when the Actor has
-% publish acess to the entry.
+% publish access to the entry.
 
 bc_publish_access(Actor, _, _):-
     Actor.type = admin, !.
@@ -106,6 +106,12 @@ bc_publish_access(Actor, NewType, Id):-
     ;   member(publish_own, OldGrants),
         Actor.'$id' = AuthorId), !.
 
+% Succeeds if the user has
+% login access.
+
+bc_login_access(Actor):-
+    bc_role(Actor.type, _, true).
+
 % Finds actor permissions for
 % the given type. Fails when no
 % permissions are granted for the
@@ -116,9 +122,3 @@ bc_type_actor_grants(Type, Actor, Grants):-
     member(Role, Roles),
     Role =.. [Name|Grants],
     Actor.type = Name, !.
-
-bc_entry_exists(Id):-
-    bc_entry_type(Id, _), !.
-
-bc_entry_exists(_):-
-    throw(error(entry_not_exists)).

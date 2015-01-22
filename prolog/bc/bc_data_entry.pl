@@ -16,6 +16,7 @@
 
 :- use_module(bc_access).
 :- use_module(bc_entry).
+:- use_module(bc_user).
 
 %! bc_entry_save(+Actor, +Entry, -Id) is det.
 %
@@ -28,7 +29,8 @@ bc_entry_save(Actor, Entry, Id):-
     debug(bc_data_entry, 'saved entry ~p', [Id]).
 
 can_create(Actor, Entry):-
-    slug_unique(Entry.slug),
+    bc_slug_unique(Entry.slug),
+    bc_user_exists(Entry.author),
     create_access(Actor, Entry).
 
 create_access(Actor, Entry):-
@@ -48,8 +50,10 @@ bc_entry_update(Actor, Entry):-
     debug(bc_data_entry, 'updated entry ~p', [Entry.'$id']).
 
 can_update(Actor, Entry):-
-    bc_entry_exists(Entry.'$id'),
-    slug_unique(Entry.slug, Entry.'$id'),
+    Id = Entry.'$id',
+    bc_entry_exists(Id),
+    bc_slug_unique(Entry.slug, Id),
+    bc_user_exists(Entry.author),
     update_access(Actor, Entry).
 
 update_access(Actor, Entry):-
@@ -181,22 +185,3 @@ attach_comment_count(EntryIn, EntryOut):-
     ds_find(comment, post=Id, [post], List),
     length(List, Count),
     put_dict(_{ comments: Count }, EntryIn, EntryOut).
-
-% Checks that slug is not used before.
-
-slug_unique(Slug):-
-    \+ bc_slug_id(Slug, _), !.
-
-slug_unique(_):-
-    throw(error(existing_slug)).
-
-% Checks that slug is not used for another post.
-
-slug_unique(Slug, _):-
-    \+ bc_slug_id(Slug, _), !.
-
-slug_unique(Slug, Id):-
-    bc_slug_id(Slug, Id), !.
-
-slug_unique(_, _):-
-    throw(error(existing_slug)).
