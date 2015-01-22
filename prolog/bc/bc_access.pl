@@ -24,7 +24,7 @@ bc_read_access_entry(Actor, _):-
 
 bc_read_access_entry(Actor, Entry):-
     bc_type_actor_grants(Entry.type, Actor, Grants),
-    (   member(read_all, Grants)
+    (   member(read_any, Grants)
     ;   member(read_own, Grants),
         Actor.'$id' = Entry.author), !.
 
@@ -37,7 +37,7 @@ bc_read_access_id(Actor, _):-
 bc_read_access_id(Actor, Id):-
     bc_entry_type(Id, Type),
     bc_type_actor_grants(Type, Actor, Grants),
-    (   member(read_all, Grants)
+    (   member(read_any, Grants)
     ;   member(read_own, Grants),
         bc_entry_author(Id, AuthorId),
         Actor.'$id' = AuthorId), !.
@@ -51,7 +51,7 @@ bc_remove_access_id(Actor, _):-
 bc_remove_access_id(Actor, Id):-
     bc_entry_type(Id, Type),
     bc_type_actor_grants(Type, Actor, Grants),
-    (   member(remove_all, Grants)
+    (   member(remove_any, Grants)
     ;   member(remove_own, Grants),
         bc_entry_author(Id, AuthorId),
         Actor.'$id' = AuthorId), !.
@@ -65,7 +65,7 @@ bc_update_access_id(Actor, _):-
 bc_update_access_id(Actor, Id):-
     bc_entry_type(Id, Type),
     bc_type_actor_grants(Type, Actor, Grants),
-    (   member(update_all, Grants)
+    (   member(update_any, Grants)
     ;   member(update_own, Grants),
         bc_entry_author(Id, AuthorId),
         Actor.'$id' = AuthorId), !.

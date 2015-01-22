@@ -21,18 +21,18 @@
 % Register initial types.
 
 :- bc_register_type(post, 'Post', 'Posts', [
-    admin(create, read_all, update_all, remove_all),
-    author(create, read_all, update_own, remove_own)
+    admin(create, read_any, update_any, remove_any),
+    author(create, read_any, update_own, remove_own)
 ], true).
 
 :- bc_register_type(page, 'Page', 'Pages', [
-    admin(create, read_all, update_all, remove_all),
-    author(create, read_all, update_own, remove_own)
+    admin(create, read_any, update_any, remove_any),
+    author(create, read_any, update_own, remove_own)
 ], false).
 
 :- bc_register_type(block, 'Block', 'Blocks', [
-    admin(create, read_all, update_all, remove_all),
-    author(create, read_all, update_own, remove_own)
+    admin(create, read_any, update_any, remove_any),
+    author(create, read_any, update_own, remove_own)
 ], false).
 
 %! bc_data_open(+File) is det.
