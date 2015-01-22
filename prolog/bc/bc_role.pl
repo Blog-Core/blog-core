@@ -1,4 +1,4 @@
-:- module(bc_data_role, [
+:- module(bc_role, [
     bc_register_role/3,
     bc_unregister_role/1,
     bc_role/3
@@ -28,7 +28,7 @@ bc_register_role(Name, Label, Login):-
     ->  retractall(role(Name, _, _))
     ;   true),
     assertz(role(Name, Label, Login)),
-    debug(bc_data_role, 'type ~w registered', [Name]).
+    debug(bc_role, 'type ~w registered', [Name]).
 
 %! bc_unregister_role(+Name) is det.
 %

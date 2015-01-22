@@ -7,7 +7,8 @@
 :- use_module(bc_api_io).
 :- use_module(bc_api_auth).
 :- use_module(bc_api_actor).
-:- use_module(bc_data_role).
+
+:- use_module(bc_role).
 
 % Creation of new users.
 

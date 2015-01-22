@@ -69,7 +69,7 @@
     :- debug(bc_bust).
     :- debug(bc_main).
     :- debug(bc_data_type).
-    :- debug(bc_data_role).
+    :- debug(bc_role).
 :- endif.
 
 % Sets up simple-template.

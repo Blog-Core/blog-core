@@ -10,7 +10,7 @@
 ]).
 
 :- use_module(bc_data_type).
-:- use_module(bc_data_role).
+:- use_module(bc_role).
 :- use_module(bc_entry).
 
 % Succeeds when the Actor has

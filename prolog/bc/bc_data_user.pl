@@ -16,7 +16,7 @@
 
 :- use_module(bc_user).
 :- use_module(bc_access).
-:- use_module(bc_data_role).
+:- use_module(bc_role).
 
 %! bc_user_auth(+Auth, -Info) is det.
 %

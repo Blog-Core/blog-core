@@ -11,7 +11,7 @@
 :- use_module(library(dcg/basics)).
 :- use_module(library(docstore)).
 
-:- use_module(bc_data_role).
+:- use_module(bc_role).
 
 % Checks that the user's username
 % is an email address.

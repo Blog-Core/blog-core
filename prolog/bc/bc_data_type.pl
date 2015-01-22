@@ -6,7 +6,8 @@
 
 :- use_module(library(debug)).
 :- use_module(library(error)).
-:- use_module(bc_data_role).
+
+:- use_module(bc_role).
 
 :- dynamic(type/5).
 
