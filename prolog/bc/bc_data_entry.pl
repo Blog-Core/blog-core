@@ -58,7 +58,10 @@ update_access(Actor, Entry):-
     (   Old = Entry.type
     ->  bc_update_access_id(Actor, Id)
     ;   bc_create_access_type(Actor, Entry.type),
-        bc_remove_access_id(Actor, Id)), !.
+        bc_remove_access_id(Actor, Id)),
+    (   Entry.published = true
+    ->  true
+    ;   bc_publish_access(Actor, Entry.type, Id)), !.
 
 update_access(_, _):-
     throw(error(no_access)).

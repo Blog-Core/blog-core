@@ -72,7 +72,7 @@ check_role(Role):-
     check_grants(Grants).
 
 check_role_exists(Name):-
-    bc_role(Name, _, _, _), !.
+    bc_role(Name, _, _), !.
 
 check_role_exists(_):-
     throw(error(role_not_exists)).
@@ -85,7 +85,8 @@ check_grants([]).
 
 check_grant(Grant):-
     nonvar(Grant),
-    memberchk(Grant, [create, read_own, update_own, remove_own, read_any, update_any, remove_any]), !.
+    memberchk(Grant, [create, read_own, update_own, remove_own,
+        read_any, update_any, remove_any, publish_own, publish_any, files]), !.
 
 check_grant(_):-
     throw(error(invalid_grant)).

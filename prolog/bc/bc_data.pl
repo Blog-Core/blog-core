@@ -14,25 +14,25 @@
 
 % Register initial roles.
 
-:- bc_register_role(admin, 'Admin', true, true).
-:- bc_register_role(author, 'Author', true, true).
-:- bc_register_role(anon, 'Anonymous', false, false).
+:- bc_register_role(admin, 'Admin', true).
+:- bc_register_role(author, 'Author', true).
+:- bc_register_role(anon, 'Anonymous', false).
 
 % Register initial types.
 
 :- bc_register_type(post, 'Post', 'Posts', [
-    admin(create, read_any, update_any, remove_any),
-    author(create, read_any, update_own, remove_own)
+    admin(create, read_any, update_any, remove_any, files),
+    author(create, read_any, update_own, remove_own, files)
 ], true).
 
 :- bc_register_type(page, 'Page', 'Pages', [
-    admin(create, read_any, update_any, remove_any),
-    author(create, read_any, update_own, remove_own)
+    admin(create, read_any, update_any, remove_any, files),
+    author(create, read_any, update_own, remove_own, files)
 ], false).
 
 :- bc_register_type(block, 'Block', 'Blocks', [
-    admin(create, read_any, update_any, remove_any),
-    author(create, read_any, update_own, remove_own)
+    admin(create, read_any, update_any, remove_any, files),
+    author(create, read_any, update_own, remove_own, files)
 ], false).
 
 %! bc_data_open(+File) is det.

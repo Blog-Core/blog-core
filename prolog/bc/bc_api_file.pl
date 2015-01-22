@@ -75,10 +75,10 @@ upload_file(EntryId):-
 
 can_upload(Actor, EntryId):-
     bc_entry_exists(EntryId),
-    bc_files_access(Actor),
     upload_access(Actor, EntryId).
 
 upload_access(Actor, EntryId):-
+    bc_files_access_id(Actor, EntryId),
     bc_update_access_id(Actor, EntryId), !.
 
 upload_access(_, _):-
@@ -141,7 +141,6 @@ file_remove(EntryId, Name):-
 
 can_remove(Actor, EntryId):-
     bc_entry_exists(EntryId),
-    bc_files_access(Actor),
     upload_access(Actor, EntryId).
 
 % Checks that the given path is safe to be used.

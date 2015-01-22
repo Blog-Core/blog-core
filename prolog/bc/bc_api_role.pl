@@ -20,9 +20,8 @@ roles:-
     findall(
         _{  name: Name,
             label: Label,
-            login: Login,
-            files: Files },
-        bc_role(Name, Label, Login, Files), Roles),
+            login: Login },
+        bc_role(Name, Label, Login), Roles),
     bc_reply_success(Roles).
 
 % Checks that the user is an admin.
@@ -31,4 +30,4 @@ check_admin(User):-
     User.type = admin, !.
 
 check_admin(_):-
-    throw(error(user_current_is_not_admin)).
+    throw(error(no_access)).
