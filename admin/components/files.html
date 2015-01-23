@@ -5,38 +5,46 @@
     </div>
 <!-- /ko -->
 <!-- ko if: entry_id() -->
-    <!-- ko if: files().length === 0 -->
-        <div class="alert alert-info" role="alert">
-            This entry has no files.
+    <!-- ko if: slug_changed() -->
+        <div class="alert alert-warning" role="alert">
+            You have changed the entry slug. File management is
+            re-enabled after saving the entry.
         </div>
     <!-- /ko -->
-    <div data-bind="foreach: files" class="list-group">
-        <li class="list-group-item post-item">
-            <div data-bind="click: expand" class="list-group-item-heading">
-                <span class="glyphicon glyphicon-file"></span> <!-- ko text: name --><!-- /ko -->
+    <!-- ko if: !slug_changed() -->
+        <!-- ko if: files().length === 0 -->
+            <div class="alert alert-info" role="alert">
+                This entry has no files.
             </div>
-            <!-- ko if: expanded() -->
-                URL: <!-- ko text: url --><!-- /ko -->
-                <div class="post-controls">
-                    <a data-bind="click: $parent.remove"
-                        class="btn btn-default btn-sm" href="#">
-                        <span class="glyphicon glyphicon-edit"></span> Remove</a>
-                    <a data-bind="attr: { href: url }" target="_blank"
-                        class="btn btn-default btn-sm" href="#"> View (in new tab)</a>
+        <!-- /ko -->
+        <div data-bind="foreach: files" class="list-group">
+            <li class="list-group-item post-item">
+                <div data-bind="click: expand" class="list-group-item-heading">
+                    <span class="glyphicon glyphicon-file"></span> <!-- ko text: name --><!-- /ko -->
                 </div>
-            <!-- /ko -->
-        </li>
-    </div>
-    <div class="row bc-controls">
-        <div class="col-sm-6">
-            <div id="entry-file-wrap">
-                <input type="file" id="entry-file" class="form-control" placeholder="Your file">
+                <!-- ko if: expanded() -->
+                    URL: <!-- ko text: url --><!-- /ko -->
+                    <div class="post-controls">
+                        <a data-bind="click: $parent.remove"
+                            class="btn btn-default btn-sm" href="#">
+                            <span class="glyphicon glyphicon-edit"></span> Remove</a>
+                        <a data-bind="attr: { href: url }" target="_blank"
+                            class="btn btn-default btn-sm" href="#"> View (in new tab)</a>
+                    </div>
+                <!-- /ko -->
+            </li>
+        </div>
+        <div class="row bc-controls">
+            <div class="col-sm-6">
+                <div id="entry-file-wrap">
+                    <input type="file" id="entry-file" class="form-control" placeholder="Your file">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <a data-bind="click: upload" class="btn btn-default" href="#">
+                    <span class="glyphicon glyphicon-upload"></span> Upload
+                </a>
             </div>
         </div>
-        <div class="col-sm-6">
-            <a data-bind="click: upload" class="btn btn-default" href="#">
-                <span class="glyphicon glyphicon-upload"></span> Upload
-            </a>
-        </div>
-    </div>
+    <!-- /ko -->
 <!-- /ko -->

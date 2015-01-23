@@ -13,9 +13,13 @@ function page(params) {
 
         entry_id: params.id,
 
+        entry_slug: params.slug,
+
         files: ko.observableArray([]),
 
-        progress: ko.observable(0)
+        progress: ko.observable(0),
+
+        slug_changed: params.slug_changed
     };
 
     // Submits the upload form and
@@ -72,7 +76,7 @@ function page(params) {
             message.info('File "' + model.file.name +
                 '" has been uploaded.');
 
-            model.files.push(files_item.create(model.entry_id(), { name: model.file.name }));
+            model.files.push(files_item.create(model.entry_slug, { name: model.file.name }));
 
             // This resets the file input.
 
@@ -130,7 +134,7 @@ function page(params) {
 
             model.files(files.map(function(file) {
 
-                return files_item.create(model.entry_id(), file);
+                return files_item.create(model.entry_slug, file);
 
             }));
 

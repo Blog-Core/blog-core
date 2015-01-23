@@ -23,7 +23,8 @@
 files_get(EntryId):-
     bc_actor(Actor),
     can_list(Actor, EntryId),
-    atomic_list_concat([public, '/', EntryId], Full),
+    bc_entry_slug(EntryId, Slug),
+    atomic_list_concat([public, '/', Slug], Full),
     check_safe_path(Full),
     (   exists_directory(Full)
     ->  directory_only_files(Full, Files),
@@ -90,7 +91,8 @@ drain_request:-
 attemp_upload(EntryId):-
     http_current_request(Request),
     memberchk(x_file_name(Target), Request),
-    atomic_list_concat([public, '/', EntryId], Directory),
+    bc_entry_slug(EntryId, Slug),
+    atomic_list_concat([public, '/', Slug], Directory),
     check_safe_path(Directory),
     (   exists_directory(Directory)
     ->  true
@@ -120,7 +122,8 @@ attemp_upload(EntryId):-
 file_remove(EntryId, Name):-
     bc_actor(Actor),
     can_remove(Actor, EntryId),
-    atomic_list_concat([public, '/', EntryId, '/', Name], Full),
+    bc_entry_slug(EntryId, Slug),
+    atomic_list_concat([public, '/', Slug, '/', Name], Full),
     check_safe_path(Full),
     delete_file(Full),
     bc_reply_success(true).

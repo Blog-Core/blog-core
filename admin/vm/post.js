@@ -119,6 +119,10 @@ exports.create = function(user, types, authors, data) {
 
         languages: languages,
 
+        // Indicator for files component.
+
+        slug_changed: ko.observable(false),
+
         // Returns the plain data object
         // to send to the backend.
 
@@ -222,6 +226,15 @@ exports.create = function(user, types, authors, data) {
 
             post.date(new Date().toISOString().substring(0, 10));
         }
+    });
+
+    // Indicated that slug has been changed
+    // and file management does not work before
+    // saving.
+
+    post.slug.subscribe(function(value) {
+
+        post.slug_changed(true);
     });
 
     return post;
@@ -343,7 +356,11 @@ function updatePost(form, post, edit) {
 
             message.info('The post "' + post.title() + '" has been updated.');
 
-            if (!edit) {
+            if (edit) {
+
+                post.slug_changed(false);
+
+            } else {
 
                 route.go('entries/' + post.type());
             }

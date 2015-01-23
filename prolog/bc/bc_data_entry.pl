@@ -30,6 +30,7 @@ bc_entry_save(Actor, Entry, Id):-
     debug(bc_data_entry, 'saved entry ~p', [Id]).
 
 can_create(Actor, Entry):-
+    bc_valid_slug(Entry.slug),
     bc_slug_unique(Entry.slug),
     bc_user_exists(Entry.author),
     create_access(Actor, Entry).
@@ -45,14 +46,18 @@ create_access(_, _):-
 % Updates the given entry. Reformats HTML.
 
 bc_entry_update(Actor, Entry):-
+    Id = Entry.'$id',
     can_update(Actor, Entry),
+    bc_entry_slug(Id, OldSlug),
     entry_format(Entry, Formatted),
     ds_update(Formatted),
-    debug(bc_data_entry, 'updated entry ~p', [Entry.'$id']).
+    rename_directory(OldSlug, Entry.slug),
+    debug(bc_data_entry, 'updated entry ~p', [Id]).
 
 can_update(Actor, Entry):-
     Id = Entry.'$id',
     bc_entry_exists(Id),
+    bc_valid_slug(Entry.slug),
     bc_slug_unique(Entry.slug, Id),
     bc_user_exists(Entry.author),
     update_access(Actor, Entry).
@@ -71,6 +76,18 @@ update_access(Actor, Entry):-
 update_access(_, _):-
     throw(error(no_access)).
 
+% Renames entry files directory
+% when the entry slug changes.
+
+rename_directory(Slug, Slug):- !.
+
+rename_directory(Old, New):-
+    atomic_list_concat([public, '/', Old], From),
+    atomic_list_concat([public, '/', New], To),
+    (   exists_directory(From)
+    ->  rename_file(From, To)
+    ;   true).
+
 % Formats entry HTML contents based on
 % the entries content type.
 
@@ -88,9 +105,10 @@ entry_format(EntryIn, EntryOut):-
 
 bc_entry_remove(Actor, Id):-
     can_remove(Actor, Id),
+    bc_entry_slug(Id, Slug),
     ds_remove(Id),
     ds_remove(comment, post=Id),
-    remove_files(Id),
+    remove_files(Slug),
     debug(bc_data_entry, 'removed entry ~p', [Id]).
 
 can_remove(Actor, Id):-
@@ -105,8 +123,8 @@ remove_access(_, _):-
 
 % Removes entry files.
 
-remove_files(Id):-
-    atomic_list_concat([public, '/', Id], Directory),
+remove_files(Slug):-
+    atomic_list_concat([public, '/', Slug], Directory),
     (   exists_directory(Directory)
     ->  remove_directory(Directory)
     ;   true).

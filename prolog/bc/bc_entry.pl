@@ -4,6 +4,8 @@
     bc_entry_type/2,       % +Id, -Type
     bc_entry_published/2,  % +Id, -Published
     bc_entry_commenting/2, % +Id, -Commenting
+    bc_entry_slug/2,       % +Id, -Slug
+    bc_valid_slug/1,       % +Slug
     bc_slug_id/2,          % +Slug, -Id
     bc_slug_unique/1,      % +Slug
     bc_slug_unique/2       % +Slug, +Id
@@ -28,6 +30,10 @@ bc_entry_published(Id, Published):-
 bc_entry_commenting(Id, Commenting):-
     ds_get(Id, [commenting], Entry),
     Entry.commenting = Commenting.
+
+bc_entry_slug(Id, Slug):-
+    ds_get(Id, [slug], Entry),
+    Entry.slug = Slug.
 
 % Finds entry id by slug.
 
@@ -63,3 +69,26 @@ bc_entry_exists(Id):-
 
 bc_entry_exists(_):-
     throw(error(entry_not_exists)).
+
+% Checks that the given slug
+% is valid. Must only contain
+% lowercase ascii, hyphen and underscore.
+
+bc_valid_slug(Slug):-
+    atom_length(Slug, Len),
+    Len > 0,
+    atom_codes(Slug, Codes),
+    maplist(allowed_slug_code, Codes), !.
+
+bc_valid_slug(_):-
+    throw(error(invalid_slug)).
+
+allowed_slug_code(0'-).
+
+allowed_slug_code(0'_).
+
+allowed_slug_code(Code):-
+    Code >= 0'a, Code =< 0'z.
+
+allowed_slug_code(Code):-
+    Code >= 0'0, Code =< 0'9.

@@ -3,13 +3,13 @@
     <form data-bind="submit: submit" autocomplete="off" id="post">
         <div class="form-group">
             <label for="post-title">Title</label>
-            <input data-bind="value: title"
+            <input data-bind="textInput: title"
                 type="text" class="form-control" id="post-title"
                 placeholder="Title">
         </div>
         <div class="form-group">
             <label for="post-slug">Slug</label>
-            <input data-bind="value: slug"
+            <input data-bind="textInput: slug"
                 type="text" class="form-control" id="post-slug"
                 placeholder="Slug">
             <p class="help-block">Slug should not be modified after publishing as it will break links.</p>
@@ -17,14 +17,14 @@
         <div class="form-group">
             <label for="post-description">Description</label>
             <textarea
-                data-bind="value: description"
+                data-bind="textInput: description"
                 class="form-control" rows="3" id="post-description" placeholder="Description"></textarea>
             <p class="help-block">Description is used by search engines to show the page snippet.</p>
         </div>
         <div class="form-group">
             <label for="post-content">Content</label>
             <textarea
-                data-bind="value: content"
+                data-bind="textInput: content"
                 class="form-control content" rows="20" id="post-content"
                 placeholder="Content"></textarea>
         </div>
@@ -43,14 +43,14 @@
         </div>
         <div class="form-group">
             <label for="post-author">Author</label>
-            <select data-bind="value: author, options: authors,
+            <select data-bind="textInput: author, options: authors,
                 optionsText: 'fullname', optionsValue: '$id',
                 attr: { disabled: authors.length === 1 }"
                 class="form-control" id="post-author"></select>
         </div>
         <div class="form-group">
             <label for="post-tags">Tags</label>
-            <input data-bind="value: tags"
+            <input data-bind="textInput: tags"
                 type="text" class="form-control" id="post-tags"
                 placeholder="Tags">
             <p class="help-block">Separate multiple tags with commas.</p>
@@ -61,13 +61,13 @@
         </div>
         <div class="form-group">
             <label for="post-date">Publish date</label>
-            <input data-bind="value: date"
+            <input data-bind="textInput: date"
                 type="text" class="form-control" id="post-date"
                 placeholder="YYYY-MM-DD">
         </div>
         <div class="form-group">
             <label for="post-update">Update date</label>
-            <input data-bind="value: update"
+            <input data-bind="textInput: update"
                 type="text" class="form-control" id="post-update"
                 placeholder="YYYY-MM-DD">
         </div>
@@ -80,7 +80,8 @@
                 optionsText: 'name', optionsValue: 'code'"
                 class="form-control" id="post-language"></select>
         </div>
-        <!-- ko component: { name: 'files', params: { id: $id } } --><!-- /ko -->
+        <!-- ko component: { name: 'files',
+            params: { id: $id, slug: slug, slug_changed: slug_changed } } --><!-- /ko -->
         <button data-bind="click: save" class="btn btn-default">
             <span class="glyphicon glyphicon-ok"></span> Save/leave
         </button>

@@ -6,7 +6,7 @@ var expandable = require('../vm/expandable');
 // Creates file view model for
 // the files list view.
 
-exports.create = function(entryId, data) {
+exports.create = function(slug, data) {
 
     var file = {};
 
@@ -16,7 +16,10 @@ exports.create = function(entryId, data) {
 
     expandable.mixin(file);
 
-    file.url = '/' + entryId + '/' + file.name;
+    file.url = ko.pureComputed(function() {
+
+        return '/' + slug() + '/' + file.name;
+    });
 
     return file;
 };
