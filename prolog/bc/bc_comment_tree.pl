@@ -1,4 +1,4 @@
-:- module(bc_data_comment_tree, [
+:- module(bc_comment_tree, [
     bc_build_comment_tree/2 % +Comments, -Tree
 ]).
 

@@ -1,4 +1,4 @@
-:- module(bc_data_comment_question, [
+:- module(bc_comment_question, [
     bc_random_question/2, % -QuestionId, -Question
     bc_answer_ok/2        % +QuestionId, +Answer
 ]).

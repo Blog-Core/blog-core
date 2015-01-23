@@ -9,7 +9,7 @@
 :- use_module(bc_api_error).
 :- use_module(bc_api_actor).
 :- use_module(bc_data_comment).
-:- use_module(bc_data_comment_question).
+:- use_module(bc_comment_question).
 
 % Comments of a single post.
 % For admin interface.

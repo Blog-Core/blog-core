@@ -1,4 +1,4 @@
-:- module(bc_data_comment_format, [
+:- module(bc_comment_format, [
     bc_format_comment/2 % -QuestionId, -Question
 ]).
 

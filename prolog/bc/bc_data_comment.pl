@@ -14,9 +14,9 @@
 :- use_module(bc_comment).
 :- use_module(bc_access).
 :- use_module(bc_type).
-:- use_module(bc_data_comment_question).
-:- use_module(bc_data_comment_format).
-:- use_module(bc_data_comment_tree).
+:- use_module(bc_comment_question).
+:- use_module(bc_comment_format).
+:- use_module(bc_comment_tree).
 
 %! bc_comment_tree(+EntryId, -Tree) is det.
 %
