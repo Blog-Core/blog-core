@@ -13,6 +13,7 @@
 :- use_module(bc_api_actor).
 :- use_module(bc_entry).
 :- use_module(bc_access).
+:- use_module(bc_files).
 
 % Sends directory listing in public directory.
 
@@ -25,8 +26,8 @@ files_get(EntryId):-
     atomic_list_concat([public, '/', EntryId], Full),
     check_safe_path(Full),
     (   exists_directory(Full)
-    ->  directory_files(Full, Entries),
-        entry_records(Entries, Full, List)
+    ->  directory_only_files(Full, Files),
+        maplist(file_record, Files, List)
     ;   List = []),
     bc_reply_success(List).
 
@@ -40,26 +41,10 @@ list_access(Actor, EntryId):-
 list_access(_, _):-
     throw(error(no_access)).
 
-% Finds directory entries and turns
-% them into dicts having `name` and
-% `directory` keys.
-% FIXME only files
+% Turns file into a dict
+% containing its metainfo.
 
-entry_records(['.'|Entries], Dir, Records):- !,
-    entry_records(Entries, Dir, Records).
-
-entry_records(['..'|Entries], Dir, Records):- !,
-    entry_records(Entries, Dir, Records).
-
-entry_records([Entry|Entries], Dir, [Record|Records]):-
-    atomic_list_concat([Dir, '/', Entry], File),
-    (   exists_directory(File)
-    ->  Directory = true
-    ;   Directory = false),
-    Record = _{ name: Entry, directory: Directory },
-    entry_records(Entries, Dir, Records).
-
-entry_records([], _, []).
+file_record(File, _{ name: File }).
 
 % Receives the uploaded file.
 
