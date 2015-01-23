@@ -16,6 +16,7 @@
 
 :- use_module(bc_access).
 :- use_module(bc_entry).
+:- use_module(bc_files).
 :- use_module(bc_user).
 
 %! bc_entry_save(+Actor, +Entry, -Id) is det.
@@ -109,24 +110,6 @@ remove_files(Id):-
     (   exists_directory(Directory)
     ->  remove_directory(Directory)
     ;   true).
-
-remove_directory(Directory):-
-    directory_files(Directory, Entries),
-    exclude(ignored_file, Entries, Files),
-    maplist(join_directory(Directory), Files, Joined),
-    maplist(remove_directory_entry, Joined),
-    delete_directory(Directory).
-
-ignored_file('.').
-ignored_file('..').
-
-join_directory(Directory, Entry, Joined):-
-    atomic_list_concat([Directory, '/', Entry], Joined).
-
-remove_directory_entry(Entry):-
-    (   exists_directory(Entry)
-    ->  remove_directory(Entry)
-    ;   delete_file(Entry)).
 
 %! bc_entry_list(+Actor, +Type, -List) is det.
 %
