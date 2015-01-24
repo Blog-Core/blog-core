@@ -121,7 +121,8 @@ user_hash(UserIn, UserOut):-
 % Retrieves the list of users. Retrieved
 % fields are `username`, `fullname` and `type`.
 
-bc_user_list(_, Sorted):-
+bc_user_list(Actor, Sorted):-
+    users_access(Actor),
     ds_all(user, [username, fullname, type], Users),
     sort_dict(username, asc, Users, Sorted),
     debug(bc_data, 'retrieved the users list', []).

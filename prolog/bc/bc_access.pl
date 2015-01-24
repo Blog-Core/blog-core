@@ -5,7 +5,7 @@
     bc_update_access_id/2,   % +Actor, +Id
     bc_create_access_type/2, % +Actor, +Type
     bc_files_access_id/2,    % +Actor, +Id
-    bc_publish_access/3,     % +Actor, +NewType, +Id
+    bc_publish_access_id/2,  % +Actor, +Id
     bc_login_access/1        % +Actor
 ]).
 
@@ -91,19 +91,15 @@ bc_files_access_id(Actor, Id):-
 % Succeeds when the Actor has
 % publish access to the entry.
 
-bc_publish_access(Actor, _, _):-
+bc_publish_access_id(Actor, _):-
     Actor.type = admin, !.
 
-bc_publish_access(Actor, NewType, Id):-
-    bc_entry_type(Id, OldType),
-    bc_type_actor_grants(NewType, Actor, NewGrants),
-    bc_type_actor_grants(OldType, Actor, OldGrants),
+bc_publish_access_id(Actor, Id):-
+    bc_entry_type(Id, Type),
+    bc_type_actor_grants(Type, Actor, Grants),
     bc_entry_author(Id, AuthorId),
-    (   member(publish_any, NewGrants)
-    ;   member(publish_own, NewGrants),
-        Actor.'$id' = AuthorId),
-    (   member(publish_any, OldGrants)
-    ;   member(publish_own, OldGrants),
+    (   member(publish_any, Grants)
+    ;   member(publish_own, Grants),
         Actor.'$id' = AuthorId), !.
 
 % Succeeds if the user has

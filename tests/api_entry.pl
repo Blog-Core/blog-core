@@ -85,7 +85,8 @@ test('Update entry, author to other author', [setup(new_database)]):-
     new_post(User1.data, test_post, Post),
     assertion(Post.status = "success"),
     update_post(Post.data, _{ author: User2.data }, Updated),
-    assertion(Updated.status = "success").
+    assertion(Updated.status = "error"),
+    assertion(Updated.message = "The operation requires access privileges.").
 
 test('Update entry, admin to other author', [setup(new_database)]):-
     new_user(_{ username: 'author@example.com', type: author }, User),

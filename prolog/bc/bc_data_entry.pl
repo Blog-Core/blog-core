@@ -64,16 +64,41 @@ can_update(Actor, Entry):-
 
 update_access(Actor, Entry):-
     Id = Entry.'$id',
-    bc_entry_type(Id, Old),
-    (   Old = Entry.type
-    ->  bc_update_access_id(Actor, Id)
-    ;   bc_create_access_type(Actor, Entry.type),
-        bc_remove_access_id(Actor, Id)),
-    (   Entry.published = true
+    update_type_access(Actor, Entry),
+    update_author_access(Actor, Entry),
+    bc_update_access_id(Actor, Id),
+    bc_entry_published(Id, Published),
+    (   Entry.published \= Published
     ->  true
-    ;   bc_publish_access(Actor, Entry.type, Id)), !.
+    ;   bc_publish_access_id(Actor, Id)), !.
 
 update_access(_, _):-
+    throw(error(no_access)).
+
+% Checks if the entry
+% type can be updated.
+
+update_type_access(Actor, _):-
+    Actor.type = admin, !.
+
+update_type_access(_, Entry):-
+    Id = Entry.'$id',
+    bc_entry_type(Id, Entry.type), !.
+
+update_type_access(_, _):-
+    throw(error(no_access)).
+
+% Checks if the entry
+% author can be updated.
+
+update_author_access(Actor, _):-
+    Actor.type = admin, !.
+
+update_author_access(_, Entry):-
+    Id = Entry.'$id',
+    bc_entry_author(Id, Entry.author), !.
+
+update_author_access(_, _):-
     throw(error(no_access)).
 
 % Renames entry files directory
