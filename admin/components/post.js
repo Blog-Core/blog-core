@@ -2,6 +2,7 @@ var fs = require('fs');
 var api = require('../api');
 var post = require('../vm/post');
 var message = require('../message');
+var resolveObject = require('../resolve_object');
 
 // Component for the post edit page.
 
@@ -18,32 +19,37 @@ function page(params) {
 
         // Edit existing post.
 
-        api.userInfo().then(function(info) {
+        api.userInfo().then(function(userInfo) {
 
-            if (info.type !== 'admin') {
+            var requests = {
+
+                post: api.post(params.id),
+
+                types: api.types()
+
+            };
+
+            if (userInfo.type === 'admin') {
+
+                requests.users = api.users();
+
+            } else {
 
                 // User that is not an admin
                 // cannot create posts owned by others.
 
-                var users = [{
+                requests.users = [{
 
-                    $id: info.$id,
+                    $id: userInfo.$id,
 
-                    fullname: info.fullname
+                    fullname: userInfo.fullname
+
                 }];
-
-                tasks = [ Promise.resolve(users), api.post(params.id), api.types() ];
-
-            } else {
-
-                tasks = [ api.users(), api.post(params.id), api.types() ];
             }
 
-            return Promise.all(tasks).then(function(data) {
+            return resolveObject(requests).then(function(data) {
 
-                var users = data[0], postData = data[1], types = data[2];
-
-                model.post(post.create(info, types, users, postData));
+                model.post(post.create(userInfo, params.type, data.types, data.users, data.post));
 
                 // Autoset initial textarea height.
 
@@ -59,34 +65,35 @@ function page(params) {
 
         // Create a new post.
 
-        api.userInfo().then(function(info) {
+        api.userInfo().then(function(userInfo) {
 
-            if (info.type !== 'admin') {
+            var requests = {
+
+                types: api.types()
+
+            };
+
+            if (userInfo.type === 'admin') {
+
+                requests.users = api.users();
+
+            } else {
 
                 // User that is not an admin
                 // cannot create posts owned by others.
 
-                var users = [{
+                requests.users = [{
 
-                    $id: info.$id,
+                    $id: userInfo.$id,
 
-                    fullname: info.fullname
+                    fullname: userInfo.fullname
+
                 }];
-
-                tasks = [ Promise.resolve(users), api.types() ];
-
-            } else {
-
-                tasks = [ api.users(), api.types() ];
             }
 
-            return Promise.all(tasks).then(function(data) {
+            return resolveObject(requests).then(function(data) {
 
-                var users = data[0], types = data[1];
-
-                model.post(post.create(info, types, users));
-
-                model.post().type(params.type);
+                model.post(post.create(userInfo, params.type, data.types, data.users));
 
                 var title = document.querySelector('#post-title');
 

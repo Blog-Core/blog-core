@@ -45,29 +45,26 @@ function page() {
 
         api.login(username, password).then(function(res) {
 
-            if (res.status === 'success') {
+            if (model.remember()) {
 
-                if (model.remember()) {
+                localStorage.setItem('api-key', res.key);
 
-                    localStorage.setItem('api-key', res.data.key);
-
-                    sessionStorage.removeItem('api-key');
-
-                } else {
-
-                    sessionStorage.setItem('api-key', res.data.key);
-
-                    localStorage.removeItem('api-key');
-                }
-
-                route.go('landing');
+                sessionStorage.removeItem('api-key');
 
             } else {
 
-                validate.formError(form, res.message);
+                sessionStorage.setItem('api-key', res.key);
+
+                localStorage.removeItem('api-key');
             }
 
-        }).catch(message.error);
+            route.go('landing');
+
+        }).catch(function(err) {
+
+            validate.formError(form, err);
+
+        });
     };
 
     return model;

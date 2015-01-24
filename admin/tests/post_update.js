@@ -61,7 +61,7 @@ casper.test.begin('Update post', function suite(test) {
 
     casper.then(function() {
 
-        test.assertSelectorHasText('#messages .message:last-child', 'The post "Hello World" has been updated.');
+        test.assertSelectorHasText('#messages .message:last-child', 'The entry "Hello World" has been updated.');
 
         test.assertSelectorHasText('h2', 'Posts');
     });

@@ -6,12 +6,9 @@ var expandable = require('./expandable');
 // Creates posts view model for
 // the users list view.
 
-exports.create = function(data) {
+exports.create = function(data, typeInfo, userInfo) {
 
-    var post = {
-
-        editable: false
-    };
+    var post = {};
 
     // Make it expandable.
 
@@ -21,25 +18,66 @@ exports.create = function(data) {
 
     assign(post, data);
 
+    post.removable = false;
+
+    // Find if the entry can be removed.
+
+    if (userInfo.type === 'admin') {
+
+        post.removable = true;
+
+    }
+
+    if (typeInfo.grants.indexOf('remove_any') >= 0) {
+
+        post.removable = true;
+
+    }
+
+    if (typeInfo.grants.indexOf('remove_own') >= 0) {
+
+        if (userInfo.$id === post.author) {
+
+            post.removable = true;
+        }
+    }
+
+    post.editable = false;
+
+    if (userInfo.type === 'admin') {
+
+        post.editable = true;
+    }
+
+    if (typeInfo.grants.indexOf('update_any') >= 0) {
+
+        post.editable = true;
+    }
+
+    if (typeInfo.grants.indexOf('update_own') >= 0) {
+
+        if (userInfo.$id === post.author) {
+
+            post.editable = true;
+        }
+    }
+
+    post.editLink = '#entry/' + typeInfo.name + '/' + post.$id;
+
+    post.commentsLink = '#comments/' + typeInfo.name + '/' + post.$id;
+
     // Removes the post.
     // Asks confirmation.
 
     post.remove = function() {
 
-        if (confirm('Remove the post?')) {
+        if (confirm('Remove the post "' + post.title + '"?')) {
 
-            api.removePost(post.$id).then(function(response) {
+            api.removePost(post.$id).then(function() {
 
-                if (response.status === 'success') {
+                message.info('The post "' + post.title + '" has been removed.');
 
-                    message.info('The post "' + post.title + '" has been removed.');
-
-                    route.refresh();
-
-                } else {
-
-                    message.error(response.message);
-                }
+                route.refresh();
 
             }).catch(message.error);
         }

@@ -28,18 +28,11 @@ exports.create = function(data) {
 
         if (confirm('Remove the user?')) {
 
-            api.removeUser(user.$id).then(function(response) {
+            api.removeUser(user.$id).then(function() {
 
-                if (response.status === 'success') {
+                message.info('User "' + user.username + '" has been removed.');
 
-                    message.info('User "' + user.username + '" has been removed.');
-
-                    route.refresh();
-
-                } else {
-
-                    message.error(response.message);
-                }
+                route.refresh();
 
             }).catch(message.error);
         }

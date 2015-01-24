@@ -22,7 +22,7 @@ casper.test.begin('New post saved and continuing editing', function suite(test) 
 
     casper.then(function() {
 
-        test.assertSelectorHasText('#messages .message:last-child', 'Post "Hello World" has been saved.');
+        test.assertSelectorHasText('#messages .message:last-child', 'The entry "Hello World" has been saved.');
 
         test.assertSelectorHasText('h2', 'Hello World');
     });

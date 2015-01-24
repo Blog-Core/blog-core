@@ -31,21 +31,23 @@
         <div class="form-group">
             <label for="post-type">Type</label>
             <select data-bind="value: type, options: types,
-                optionsText: 'label', optionsValue: 'name'"
+                optionsText: 'label', optionsValue: 'name',
+                attr: { disabled: !can_change_type }"
                 class="form-control" id="post-type"></select>
         </div>
         <div class="form-group">
             <label for="post-content-type">Content type</label>
-            <select data-bind="value: content_type" class="form-control" id="post-content-type">
+            <select data-bind="value: content_type"
+                class="form-control" id="post-content-type">
                 <option value="markdown">Markdown</option>
                 <option value="raw">Raw</option>
             </select>
         </div>
         <div class="form-group">
             <label for="post-author">Author</label>
-            <select data-bind="textInput: author, options: authors,
+            <select data-bind="value: author, options: authors,
                 optionsText: 'fullname', optionsValue: '$id',
-                attr: { disabled: authors.length === 1 }"
+                attr: { disabled: !can_change_author }"
                 class="form-control" id="post-author"></select>
         </div>
         <div class="form-group">
@@ -56,7 +58,8 @@
             <p class="help-block">Separate multiple tags with commas.</p>
         </div>
         <div class="checkbox">
-            <label><input data-bind="checked: published"
+            <label><input data-bind="checked: published,
+                attr: { disabled: !can_publish }"
                 type="checkbox" id="post-published"> Published</label>
         </div>
         <div class="form-group">
@@ -72,7 +75,8 @@
                 placeholder="YYYY-MM-DD">
         </div>
             <div class="checkbox">
-                <label><input data-bind="checked: commenting" type="checkbox"> Commenting</label>
+                <label><input data-bind="checked: commenting"
+                    type="checkbox"> Commenting</label>
             </div>
         <div class="form-group">
             <label for="post-language">Language</label>
@@ -80,16 +84,23 @@
                 optionsText: 'name', optionsValue: 'code'"
                 class="form-control" id="post-language"></select>
         </div>
-        <!-- ko component: { name: 'files',
-            params: { id: $id, slug: slug, slug_changed: slug_changed } } --><!-- /ko -->
+        <!-- ko if: can_manage_files -->
+            <!-- ko component: { name: 'files',
+                params: { id: $id, slug: slug, slug_changed: slug_changed } } --><!-- /ko -->
+        <!-- /ko -->
+        <!-- ko if: !can_manage_files -->
+            <div class="alert alert-warning" role="alert">
+                To upload files you need file management permissions.
+            </div>
+        <!-- /ko -->
         <button data-bind="click: save" class="btn btn-default">
             <span class="glyphicon glyphicon-ok"></span> Save/leave
         </button>
         <button type="submit" class="btn btn-default">
             <span class="glyphicon glyphicon-ok"></span> Save/continue
         </button>
-        <a data-bind="attr: { href: '#' + type() + 's' }" class="btn btn-default" href="#">
-            <span class="glyphicon glyphicon-arrow-left"></span> Posts
+        <a data-bind="attr: { href: '#entries/' + type() }" class="btn btn-default" href="#">
+            <span class="glyphicon glyphicon-arrow-left"></span> Entries
         </a>
     </form>
 <!-- /ko -->

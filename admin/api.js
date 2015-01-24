@@ -1,8 +1,6 @@
 var xhr = require('./xhr');
 
-// FIXME make all API calls use it.
-
-function jsendAuth(options) {
+function jsend_auth(options) {
 
     options.headers = options.headers || {};
 
@@ -10,6 +8,8 @@ function jsendAuth(options) {
 
     return jsend(options);
 }
+
+// XHR with jsend response.
 
 function jsend(options) {
 
@@ -28,102 +28,55 @@ function jsend(options) {
     });
 }
 
+// Login with credentials.
+
 exports.login = function(username, password) {
 
-    var options = {
+    return jsend({
 
         method: 'POST',
 
         url: '/api/auth',
 
-        data: JSON.stringify({
+        data: JSON.stringify({ username: username, password: password }),
 
-            username: username,
-            password: password
-        }),
-
-        headers: {
-
-            'Content-Type': 'application/json'
-        }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response);
+        headers: { 'Content-Type': 'application/json' }
     });
 };
+
+// List of entries.
 
 exports.posts = function(type) {
 
-    var options = {
-
-        url: '/api/entries/' + type,
-
-        headers: {
-
-            'X-Key': apiKey()
-        }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response).data;
-    });
+    return jsend_auth({ url: '/api/entries/' + encodeURIComponent(type) });
 };
+
+// The given entry.
 
 exports.post = function(id) {
 
-    var options = {
-
-        url: '/api/entry/' + encodeURIComponent(id),
-
-        headers: { 'X-Key': apiKey() }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response).data;
-    });
+    return jsend_auth({ url: '/api/entry/' + encodeURIComponent(id) });
 };
+
+// The entry info.
 
 exports.entryInfo = function(id) {
 
-    var options = {
-
-        url: '/api/entry/' + encodeURIComponent(id) + '/info',
-
-        headers: { 'X-Key': apiKey() }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response).data;
-    });
+    return jsend_auth({ url: '/api/entry/' + encodeURIComponent(id) + '/info' });
 };
 
-// Retrieves the given post comments.
+// Retrieves the given entry comments.
 
 exports.comments = function(id) {
 
-    var options = {
-
-        url: '/api/post/' + encodeURIComponent(id) + '/comments',
-
-        headers: { 'X-Key': apiKey() }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response).data;
-    });
+    return jsend_auth({ url: '/api/post/' + encodeURIComponent(id) + '/comments' });
 };
 
 // Removes the given comment.
 
 exports.removeComment = function(id) {
 
-    return jsendAuth({
+    return jsend_auth({
 
         method: 'DELETE',
 
@@ -131,28 +84,27 @@ exports.removeComment = function(id) {
     });
 };
 
+// Updates the given post.
+
 exports.updatePost = function(id, data) {
 
-    var options = {
+    return jsend_auth({
 
         method: 'PUT',
 
-        url: '/api/entry/' + id,
+        url: '/api/entry/' + encodeURIComponent(id),
 
         data: JSON.stringify(data),
 
-        headers: { 'X-Key': apiKey(), 'Content-Type': 'application/json' }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response);
+        headers: { 'Content-Type': 'application/json' }
     });
 };
 
+// Saves the given post.
+
 exports.savePost = function(data) {
 
-    var options = {
+    return jsend_auth({
 
         method: 'POST',
 
@@ -160,12 +112,7 @@ exports.savePost = function(data) {
 
         data: JSON.stringify(data),
 
-        headers: { 'X-Key': apiKey(), 'Content-Type': 'application/json' }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response);
+        headers: { 'Content-Type': 'application/json' }
     });
 };
 
@@ -173,18 +120,11 @@ exports.savePost = function(data) {
 
 exports.removePost = function(id) {
 
-    var options = {
+    return jsend_auth({
 
         method: 'DELETE',
 
-        url: '/api/entry/' + encodeURIComponent(id),
-
-        headers: { 'X-Key': apiKey() }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response);
+        url: '/api/entry/' + encodeURIComponent(id)
     });
 };
 
@@ -192,14 +132,14 @@ exports.removePost = function(id) {
 
 exports.files = function(entryId) {
 
-    return jsendAuth({ url: '/api/files/' + encodeURIComponent(entryId) });
+    return jsend_auth({ url: '/api/files/' + encodeURIComponent(entryId) });
 };
 
 // Removes the given entry file.
 
 exports.removeFile = function(entryId, file) {
 
-    return jsendAuth({
+    return jsend_auth({
 
         method: 'DELETE',
 
@@ -212,51 +152,28 @@ exports.removeFile = function(entryId, file) {
 
 exports.users = function() {
 
-    var options = {
-
-        url: '/api/users',
-
-        headers: { 'X-Key': apiKey() }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response).data;
-    });
+    return jsend_auth({ url: '/api/users' });
 };
 
 // Retrieves the given user.
 
 exports.user = function(id) {
 
-    var options = {
-
-        url: '/api/user/' + encodeURIComponent(id),
-
-        headers: { 'X-Key': apiKey() }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response).data;
-    });
+    return jsend_auth({ url: '/api/user/' + encodeURIComponent(id) });
 };
 
 // Retrieves the current user info.
 
 exports.userInfo = function() {
 
-    return jsendAuth({
-
-        url: '/api/user/info'
-    });
+    return jsend_auth({ url: '/api/user/info' });
 };
 
 // Updates the given user.
 
 exports.updateUser = function(id, data) {
 
-    var options = {
+    return jsend_auth({
 
         method: 'PUT',
 
@@ -264,12 +181,7 @@ exports.updateUser = function(id, data) {
 
         url: '/api/user/' + encodeURIComponent(id),
 
-        headers: { 'X-Key': apiKey(), 'Content-Type': 'application/json' }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response);
+        headers: { 'Content-Type': 'application/json' }
     });
 };
 
@@ -277,7 +189,7 @@ exports.updateUser = function(id, data) {
 
 exports.saveUser = function(data) {
 
-    var options = {
+    return jsend_auth({
 
         method: 'POST',
 
@@ -285,12 +197,7 @@ exports.saveUser = function(data) {
 
         url: '/api/user',
 
-        headers: { 'X-Key': apiKey(), 'Content-Type': 'application/json' }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response);
+        headers: { 'Content-Type': 'application/json' }
     });
 };
 
@@ -298,18 +205,11 @@ exports.saveUser = function(data) {
 
 exports.removeUser = function(id) {
 
-    var options = {
+    return jsend_auth({
 
         method: 'DELETE',
 
-        url: '/api/user/' + encodeURIComponent(id),
-
-        headers: { 'X-Key': apiKey() }
-    };
-
-    return xhr(options).then(function(response) {
-
-        return JSON.parse(response);
+        url: '/api/user/' + encodeURIComponent(id)
     });
 };
 
@@ -317,20 +217,21 @@ exports.removeUser = function(id) {
 
 exports.types = function() {
 
-    return jsendAuth({
+    return jsend_auth({ url: '/api/types' });
+};
 
-        url: '/api/types',
-    });
+// Finds entry type info.
+
+exports.typeInfo = function(type) {
+
+    return jsend_auth({ url: '/api/type/' + encodeURIComponent(type) });
 };
 
 // Finds user roles.
 
 exports.roles = function() {
 
-    return jsendAuth({
-
-        url: '/api/roles',
-    });
+    return jsend_auth({ url: '/api/roles' });
 };
 
 // Checks whether the API key has been set.

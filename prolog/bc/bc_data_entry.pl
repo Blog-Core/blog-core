@@ -68,7 +68,7 @@ update_access(Actor, Entry):-
     update_author_access(Actor, Entry),
     bc_update_access_id(Actor, Id),
     bc_entry_published(Id, Published),
-    (   Entry.published \= Published
+    (   Entry.published = Published
     ->  true
     ;   bc_publish_access_id(Actor, Id)), !.
 

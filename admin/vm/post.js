@@ -9,7 +9,7 @@ var languages = require('../languages');
 // argument must contain the list of all
 // users.
 
-exports.create = function(user, types, authors, data) {
+exports.create = function(userInfo, type, types, authors, data) {
 
     var post = {
 
@@ -47,7 +47,7 @@ exports.create = function(user, types, authors, data) {
         // available types are post,
         // page and block.
 
-        type: ko.observable(),
+        type: ko.observable(type),
 
         // Type of the post content.
         // Will be processed by the
@@ -123,6 +123,14 @@ exports.create = function(user, types, authors, data) {
 
         slug_changed: ko.observable(false),
 
+        // Only admin can change the type.
+
+        can_change_type: userInfo.type === 'admin',
+
+        // Only admin can change the author.
+
+        can_change_author: userInfo.type === 'admin',
+
         // Returns the plain data object
         // to send to the backend.
 
@@ -163,7 +171,20 @@ exports.create = function(user, types, authors, data) {
         }
     };
 
-    post.type(types[0].name);
+    var typeInfo;
+
+    types.forEach(function(info) {
+
+        if (info.name === type) {
+
+            typeInfo = info;
+        }
+    });
+
+    if (!typeInfo) {
+
+        throw new Error('Invalid type ' + type);
+    }
 
     // Sets the view model values by the
     // actual data object.
@@ -206,11 +227,61 @@ exports.create = function(user, types, authors, data) {
 
         // Select user as post author.
 
-        post.author(user.$id);
+        post.author(userInfo.$id);
 
         // Default publish date.
 
         post.date(new Date().toISOString().substring(0, 10));
+    }
+
+    // Set publishing permission flag.
+
+    post.can_publish = false;
+
+    if (userInfo.type === 'admin') {
+
+        post.can_publish = true;
+    }
+
+    if (typeInfo.grants.indexOf('publish_any') >= 0) {
+
+        post.can_publish = true;
+    }
+
+    if (typeInfo.grants.indexOf('publish_own') >= 0) {
+
+        if (post.author() === userInfo.$id) {
+
+            post.can_publish = true;
+        }
+    }
+
+    // Sets file management flag.
+
+    post.can_manage_files = false;
+
+    if (userInfo.type === 'admin') {
+
+        post.can_manage_files = true;
+    }
+
+    if (typeInfo.grants.indexOf('update_any') >= 0) {
+
+        if (typeInfo.grants.indexOf('files') >= 0) {
+
+            post.can_manage_files = true;
+        }
+    }
+
+    if (typeInfo.grants.indexOf('update_own') >= 0) {
+
+        if (post.author() === userInfo.$id) {
+
+            if (typeInfo.grants.indexOf('files') >= 0) {
+
+                post.can_manage_files = true;
+            }
+        }
     }
 
     // Default update date is the current date.
@@ -350,60 +421,54 @@ function submitPost(post, edit) {
 
 function updatePost(form, post, edit) {
 
-    api.updatePost(post.$id(), post.toJS()).then(function(response) {
+    api.updatePost(post.$id(), post.toJS()).then(function() {
 
-        if (response.status === 'success') {
+        message.info('The entry "' + post.title() + '" has been updated.');
 
-            message.info('The post "' + post.title() + '" has been updated.');
+        if (edit) {
 
-            if (edit) {
-
-                post.slug_changed(false);
-
-            } else {
-
-                route.go('entries/' + post.type());
-            }
+            post.slug_changed(false);
 
         } else {
 
-            validate.formError(form, response.message);
-
-            window.scroll(0, 0);
+            route.go('entries/' + post.type());
         }
 
-    }, message.error);
+    }).catch(function(err) {
+
+        validate.formError(form, err);
+
+        window.scroll(0, 0);
+
+    });
 }
 
 // Saves the new post.
 
 function savePost(form, post, edit) {
 
-    api.savePost(post.toJS()).then(function(response) {
+    api.savePost(post.toJS()).then(function(res) {
 
-        if (response.status === 'success') {
+        message.info('The entry "' + post.title() + '" has been saved.');
 
-            message.info('Post "' + post.title() + '" has been saved.');
+        // Redirect to post page when we
+        // want to keep editing the post.
+        // Otherwise go back to listing page.
 
-            // Redirect to post page when we
-            // want to keep editing the post.
-            // Otherwise go back to listing page.
+        if (edit) {
 
-            if (edit) {
-
-                route.go('entry/' + post.type() + '/' + response.data);
-
-            } else {
-
-                route.go('entries/' + post.type());
-            }
+            route.go('entry/' + post.type() + '/' + res);
 
         } else {
 
-            validate.formError(form, response.message);
-
-            window.scroll(0, 0);
+            route.go('entries/' + post.type());
         }
 
-    }, message.error);
+    }).catch(function(err) {
+
+        validate.formError(form, err);
+
+        window.scroll(0, 0);
+
+    });
 }

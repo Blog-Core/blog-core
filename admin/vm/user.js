@@ -73,37 +73,31 @@ exports.create = function(roles, data) {
 
             if (user.$id) {
 
-                api.updateUser(user.$id, user.toJS()).then(function(response) {
+                api.updateUser(user.$id, user.toJS()).then(function() {
 
-                    if (response.status === 'success') {
+                    message.info('User "' + user.username() + '" has been updated.');
 
-                        message.info('User "' + user.username() + '" has been updated.');
+                    route.go('users');
 
-                        route.go('users');
+                }).catch(function(err) {
 
-                    } else {
+                    validate.formError(form, err);
 
-                        validate.formError(form, response.message);
-                    }
-
-                }).catch(message.error);
+                });
 
             } else {
 
-                api.saveUser(user.toJS()).then(function(response) {
+                api.saveUser(user.toJS()).then(function() {
 
-                    if (response.status === 'success') {
+                    message.info('User "' + user.username() + '" has been added.');
 
-                        message.info('User "' + user.username() + '" has been added.');
+                    route.go('users');
 
-                        route.go('users');
+                }).catch(function(err) {
 
-                    } else {
+                    validate.formError(form, err);
 
-                        validate.formError(form, response.message);
-                    }
-
-                }).catch(message.error);
+                });
             }
 
             return false;

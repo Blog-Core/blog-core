@@ -141,7 +141,7 @@ route(/^entry\/([^\/]+)\/([^\/]+)/, function(type, id) {
 
     authenticated();
 
-    model.show('post', { id: id }, type);
+    model.show('post', { type: type, id: id }, type);
 });
 
 route(/^new\/([^\/]+)/, function(type) {

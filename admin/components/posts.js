@@ -1,7 +1,8 @@
 var fs = require('fs');
 var api = require('../api');
 var message = require('../message');
-var posts_item = require('../vm/posts_item');
+var postsItem = require('../vm/posts_item');
+var resolveObject = require('../resolve_object');
 
 // Component for displaying a post list.
 
@@ -17,7 +18,13 @@ function page(params) {
 
         count: ko.observable(5),
 
-        step: ko.observable(5)
+        step: ko.observable(5),
+
+        comments: ko.observable(false),
+
+        create: ko.observable(false),
+
+        title: ko.observable()
     };
 
     // Shows whether there are more
@@ -60,24 +67,50 @@ function page(params) {
         return all.slice(0, model.count());
     });
 
-    var tasks = [ api.userInfo(), api.posts(type) ];
+    // Finds data from API and updates
+    // the view.
 
-    Promise.all(tasks).then(function(data) {
+    var requests = {
 
-        var info = data[0], posts = data[1];
+        typeInfo: api.typeInfo(type),
 
-        posts.sort(function(post1, post2) {
+        userInfo: api.userInfo(),
+
+        posts: api.posts(type)
+
+    };
+
+    resolveObject(requests).then(function(data) {
+
+        model.title(data.typeInfo.menu_label);
+
+        model.comments(data.typeInfo.comments);
+
+        var create = false;
+
+        // Finds if the user can create entries.
+
+        if (data.userInfo.type === 'admin') {
+
+            create = true;
+        }
+
+        if (data.typeInfo.grants.indexOf('create') >= 0) {
+
+            create = true;
+        }
+
+        model.create(create);
+
+        data.posts.sort(function(post1, post2) {
 
             return post2.date_updated - post1.date_updated;
+
         });
 
-        model.all(posts.map(function(data) {
+        model.all(data.posts.map(function(postData) {
 
-            var post = posts_item.create(data);
-
-            post.editable = info.type === 'admin' || info.$id === post.author;
-
-            return post;
+            return postsItem.create(postData, data.typeInfo, data.userInfo);
 
         }));
 
