@@ -30,8 +30,6 @@ function page(params) {
 
         // Create a new user.
 
-        // FIXME remove .all()
-
         var tasks = [ api.roles() ];
 
         Promise.all(tasks).then(function(data) {

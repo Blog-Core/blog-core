@@ -7,12 +7,19 @@
             Date: <span data-bind="text: formatDate(date)"></span>
             <div data-bind="visible: expanded" class="post-controls">
                 <div class="panel panel-default">
-                    <div data-bind="text: message" class="panel-body"></div>
+                    <div data-bind="text: content" class="panel-body"></div>
                 </div>
-                <a data-bind="click: remove" class="btn btn-default btn-sm" href="#">
-                    <span class="glyphicon glyphicon-remove"></span> Remove
-                </a>
+                <!-- ko if: removable -->
+                    <a data-bind="click: remove" class="btn btn-default btn-sm" href="#">
+                        <span class="glyphicon glyphicon-remove"></span> Remove
+                    </a>
+                <!-- /ko -->
             </div>
         </div>
     </li>
 </ul>
+<!-- ko if: comments().length === 0 -->
+    <div class="alert alert-info" role="alert">
+        This entry has no comments.
+    </div>
+<!-- /ko -->

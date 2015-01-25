@@ -74,13 +74,14 @@ exports.comments = function(id) {
 
 // Removes the given comment.
 
-exports.removeComment = function(id) {
+exports.removeComment = function(entryId, id) {
 
     return jsend_auth({
 
         method: 'DELETE',
 
-        url: '/api/comment/' + encodeURIComponent(id)
+        url: '/api/comment/' + encodeURIComponent(entryId) +
+            '/' + encodeURIComponent(id)
     });
 };
 

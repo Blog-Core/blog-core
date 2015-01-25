@@ -1,6 +1,7 @@
 var fs = require('fs');
 var api = require('../api');
 var message = require('../message');
+var resolveObject = require('../resolve_object');
 var comments_item = require('../vm/comments_item');
 
 // Creates view model for the comments list.
@@ -14,17 +15,24 @@ function page(params) {
         comments: ko.observable([])
     };
 
-    var tasks = [ api.entryInfo(params.id), api.comments(params.id) ];
+    var requests = {
 
-    Promise.all(tasks).then(function(data) {
+        entryInfo: api.entryInfo(params.id),
 
-        var info = data[0], comments = data[1];
+        userInfo: api.userInfo(params.id),
 
-        model.title(info.title);
+        typeInfo: api.typeInfo(params.type),
 
-        model.comments(comments.map(function(data) {
+        comments: api.comments(params.id)
+    };
 
-            return comments_item.create(data);
+    resolveObject(requests).then(function(data) {
+
+        model.title(data.entryInfo.title);
+
+        model.comments(data.comments.map(function(comments) {
+
+            return comments_item.create(comments, data.userInfo, data.entryInfo, data.typeInfo);
 
         }));
 

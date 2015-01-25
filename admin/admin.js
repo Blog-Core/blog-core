@@ -155,7 +155,7 @@ route(/^comments\/([^\/]+)\/([^\/]+)/, function(type, id) {
 
     authenticated();
 
-    model.show('comments', { id: id }, type);
+    model.show('comments', { type: type, id: id }, type);
 });
 
 route(/^users/, function() {
