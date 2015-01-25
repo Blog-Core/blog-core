@@ -24,7 +24,9 @@ function page(params) {
 
         create: ko.observable(false),
 
-        title: ko.observable()
+        title: ko.observable(),
+
+        loaded: ko.observable(false)
     };
 
     // Shows whether there are more
@@ -113,6 +115,8 @@ function page(params) {
             return postsItem.create(postData, data.typeInfo, data.userInfo);
 
         }));
+
+        model.loaded(true);
 
     }).catch(message.error);
 
