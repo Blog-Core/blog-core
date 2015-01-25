@@ -12,11 +12,13 @@ function page(params) {
         user: ko.observable()
     };
 
+    var tasks;
+
     if (params.id) {
 
         // Edit existing user.
 
-        var tasks = [ api.roles(), api.user(params.id) ];
+        tasks = [ api.roles(), api.user(params.id) ];
 
         Promise.all(tasks).then(function(data) {
 
@@ -30,7 +32,7 @@ function page(params) {
 
         // Create a new user.
 
-        var tasks = [ api.roles() ];
+        tasks = [ api.roles() ];
 
         Promise.all(tasks).then(function(data) {
 

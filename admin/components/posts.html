@@ -30,7 +30,11 @@
         </div>
     </li>
 </ul>
-
+<!-- ko if: posts().length === 0 -->
+    <div class="alert alert-info" role="alert">
+        This entry type has no entries with access.
+    </div>
+<!-- /ko -->
 <div class="bc-controls">
     <a data-bind="click: showMore, css: { disabled: !hasMore() }" class="btn btn-default" href="#">
         <span class="glyphicon glyphicon-list-alt"></span> Show more
