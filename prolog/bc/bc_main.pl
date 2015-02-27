@@ -21,6 +21,7 @@
 
 :- use_module(library(dcg/basics)).
 :- use_module(library(http/thread_httpd)).
+:- use_module(library(prolog_stack)).
 :- use_module(library(debug)).
 :- use_module(library(docstore)).
 :- use_module(library(arouter)).
@@ -70,6 +71,24 @@
     :- debug(bc_type).
     :- debug(bc_role).
 :- endif.
+
+% Installs exception reporter.
+
+:- multifile
+    user:prolog_exception_hook/4.
+:- dynamic
+    user:prolog_exception_hook/4.
+
+% Writes exceptions with stacktrace into stderr.
+% Fail/0 call at the end allows the exception to be
+% processed by other hooks too.
+
+:- asserta((user:prolog_exception_hook(Exception, Exception, Frame, _):-
+    (   Exception = error(Term)
+    ;   Exception = error(Term, _)),
+    get_prolog_backtrace(Frame, 20, Trace),
+    format(user_error, 'Error: ~p', [Term]), nl(user_error),
+    print_prolog_backtrace(user_error, Trace), nl(user_error), fail)).
 
 % Sets up simple-template.
 
