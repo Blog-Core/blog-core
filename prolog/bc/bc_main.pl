@@ -74,10 +74,8 @@
 
 % Installs exception reporter.
 
-:- multifile
-    user:prolog_exception_hook/4.
-:- dynamic
-    user:prolog_exception_hook/4.
+:- multifile(user:prolog_exception_hook/4).
+:- dynamic(user:prolog_exception_hook/4).
 
 % Writes exceptions with stacktrace into stderr.
 % Fail/0 call at the end allows the exception to be
