@@ -21,6 +21,7 @@
         .error-message { color: #a94442; margin: 5px 0; }
         .btn-group > .btn { margin-top: 10px; }
         .bc-controls { margin-bottom: 20px; }
+        .hide { display: none; }
     </style>
     <script>
         var bcEnvironment = '{{= environment }}';
@@ -42,13 +43,16 @@
             environment variable PL_ENV=production prior running the Blog-Core
             process.
         </div>
-        <!-- ko component: { name: 'menu', params:
-            { active: menu.active, types: menu.types } } --><!-- /ko -->
-        <div id="content">
-            <!-- ko if: component() -->
-                <!-- ko component: { name: component, params: params } --><!-- /ko -->
+        <div data-bind="css: { hide: !active() }" class="btn-group hide" id="menu">
+            <!-- ko foreach: types -->
+                <a data-bind="css: { active: $parent.active() === name },
+                    attr: { href: '#entries/' + name }, text: menu_label"
+                    class="btn btn-default" href="#"></a>
             <!-- /ko -->
+            <a data-bind="css: { active: active() === 'users' }" class="btn btn-default" href="#users">Users</a>
+            <a class="btn btn-default" href="#logout">Logout</a>
         </div>
+        <div id="content"></div>
     </div>
     <script src="/t-{{= cache_token }}/admin/js/shim/promise-1.0.0.min.js"></script>
     <script src="/t-{{= cache_token }}/admin/js/libs/knockout-3.2.0.min.js"></script>

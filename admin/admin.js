@@ -1,38 +1,15 @@
-var hex = require('./hex');
 var api = require('./api');
 var message = require('./message');
+var login = require('./pages/login');
+var posts = require('./pages/posts');
+var post = require('./pages/post');
+var users = require('./pages/users');
+var user = require('./pages/user');
+var comments = require('./pages/comments');
 
-// Menu component.
+// FIXME remove
 
-require('./components/menu');
-
-// Login component.
-
-require('./components/login');
-
-// Posts list component.
-
-require('./components/posts');
-
-// Posts edit component.
-
-require('./components/post');
-
-// Users list component.
-
-require('./components/users');
-
-// Entry files component.
-
-require('./components/files');
-
-// User edit component.
-
-require('./components/user');
-
-// Comments list component.
-
-require('./components/comments');
+require('./pages/files');
 
 // Global to format dates.
 
@@ -62,54 +39,36 @@ ko.subscribable.fn.trimmed = function() {
     });
 };
 
-// The main model.
+// The page menu.
 
-var model = {
+var menu = {
 
-    component: ko.observable(),
+    active: ko.observable(),
 
-    // FIXME changing this before component
-    // might have side effects.
+    types: ko.observable(),
 
-    params: ko.observable({}),
+    load: function() {
 
-    menu: {
+        if (menu.types()) {
 
-        active: ko.observable(),
+            // Menu updated.
 
-        types: ko.observable()
+            return Promise.resolve(menu.types());
+        }
+
+        return api.types().then(function(types) {
+
+            menu.types(types);
+
+            return types;
+        });
     }
 };
 
-// Shows given component with params.
+// Binds menu.
 
-model.show = function(name, params, menu) {
-
-    model.menu.active(menu);
-    model.params(params);
-    model.component(name);
-};
-
-ko.applyBindings(model);
-
-// Returns a Promise.
-
-function loadMenu() {
-
-    if (model.menu.types()) {
-
-        // Menu updated.
-
-        return Promise.resolve(model.menu.types());
-    }
-
-    return api.types().then(function(types) {
-
-        model.menu.types(types);
-
-        return types;
-    });
-}
+ko.applyBindings(menu,
+    document.getElementById('menu'));
 
 // Redirects user if he/she is not
 // authenticated.
@@ -134,56 +93,70 @@ route(/^entries\/([^\/]+)/, function(type) {
 
     authenticated();
 
-    model.show('posts', { type: type }, type);
+    menu.active(type);
+
+    posts.create(type).catch(message.error);
 });
 
 route(/^entry\/([^\/]+)\/([^\/]+)/, function(type, id) {
 
     authenticated();
 
-    model.show('post', { type: type, id: id }, type);
+    post.create(type, id).catch(message.error);
 });
 
 route(/^new\/([^\/]+)/, function(type) {
 
     authenticated();
 
-    model.show('post', { type: type }, type);
+    menu.active(type);
+
+    post.create(type).catch(message.error);
 });
 
 route(/^comments\/([^\/]+)\/([^\/]+)/, function(type, id) {
 
     authenticated();
 
-    model.show('comments', { type: type, id: id }, type);
+    menu.active(type);
+
+    comments.create(type, id).catch(message.error);
 });
 
 route(/^users/, function() {
 
     authenticated();
 
-    model.show('users', {}, 'users');
+    menu.active('users');
+
+    users.create().catch(message.error);
 });
 
 route(/^user\/new/, function() {
 
     authenticated();
 
-    model.show('user', {}, 'users');
+    menu.active('users');
+
+    user.create().catch(message.error);
 });
 
 route(/^user\/([^\/]+)/, function(id) {
 
     authenticated();
 
-    model.show('user', { id: id }, 'users');
+    menu.active('users');
+
+    user.create(id).catch(message.error);
 });
 
 route(/^login/, function() {
 
     authenticated();
 
-    model.show('login', {});
+    menu.active(null);
+
+    login.create().catch(message.error);
 });
 
 route(/^logout/, function() {
@@ -200,9 +173,9 @@ route(/^logout/, function() {
 
 route(/^landing/, function() {
 
-    model.show(null, {}, 'landing');
+    menu.active(null);
 
-    loadMenu().then(function(types) {
+    menu.load().then(function(types) {
 
         if (types.length > 0) {
 
