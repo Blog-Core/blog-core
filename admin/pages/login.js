@@ -1,11 +1,13 @@
 var fs = require('fs');
 var api = require('../api');
-var message = require('../message');
+var view = require('../view');
 var validate = require('../validate');
 
-// Creates view model for the login page.
+var template = fs.readFileSync(__dirname + '/login.html', { encoding: 'utf8' });
 
-function page() {
+// The login page.
+
+exports.create = function() {
 
     var model = {
 
@@ -67,12 +69,7 @@ function page() {
         });
     };
 
-    return model;
-}
+    view.show(template, model);
 
-ko.components.register('login', {
-
-    viewModel: { createViewModel: page },
-
-    template: fs.readFileSync(__dirname + '/login.html', { encoding: 'utf8' })
-});
+    return Promise.resolve();
+};

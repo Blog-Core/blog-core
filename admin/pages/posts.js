@@ -1,14 +1,14 @@
 var fs = require('fs');
 var api = require('../api');
-var message = require('../message');
+var view = require('../view');
 var postsItem = require('../vm/posts_item');
 var resolveObject = require('../resolve_object');
 
-// Component for displaying a post list.
+var template = fs.readFileSync(__dirname + '/posts.html', { encoding: 'utf8' });
 
-function page(params) {
+// Page for displaying a post list.
 
-    var type = params.type;
+exports.create = function(type) {
 
     var model = {
 
@@ -82,7 +82,7 @@ function page(params) {
 
     };
 
-    resolveObject(requests).then(function(data) {
+    return resolveObject(requests).then(function(data) {
 
         model.title(data.typeInfo.menu_label);
 
@@ -116,16 +116,7 @@ function page(params) {
 
         }));
 
-        model.loaded(true);
+        view.show(template, model);
 
-    }).catch(message.error);
-
-    return model;
-}
-
-ko.components.register('posts', {
-
-    viewModel: { createViewModel: page },
-
-    template: fs.readFileSync(__dirname + '/posts.html', { encoding: 'utf8' })
-});
+    });
+};

@@ -1,12 +1,14 @@
 var fs = require('fs');
 var api = require('../api');
-var message = require('../message');
+var view = require('../view');
 var resolveObject = require('../resolve_object');
 var comments_item = require('../vm/comments_item');
 
-// Creates view model for the comments list.
+var template = fs.readFileSync(__dirname + '/comments.html', { encoding: 'utf8' });
 
-function page(params) {
+// Page for the comments list.
+
+exports.create = function(id) {
 
     var model = {
 
@@ -26,7 +28,7 @@ function page(params) {
         comments: api.comments(params.id)
     };
 
-    resolveObject(requests).then(function(data) {
+    return resolveObject(requests).then(function(data) {
 
         model.title(data.entryInfo.title);
 
@@ -36,14 +38,6 @@ function page(params) {
 
         }));
 
-    }).catch(message.error);
-
-    return model;
-}
-
-ko.components.register('comments', {
-
-    viewModel: { createViewModel: page },
-
-    template: fs.readFileSync(__dirname + '/comments.html', { encoding: 'utf8' })
-});
+        view.show(template, model);
+    });
+};

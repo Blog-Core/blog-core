@@ -81,7 +81,7 @@ function authenticated() {
         // check if custom menu entries need
         // reloading.
 
-        loadMenu();
+        menu.load();
 
     } else {
 

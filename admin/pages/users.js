@@ -1,26 +1,26 @@
 var fs = require('fs');
 var api = require('../api');
-var message = require('../message');
+var view = require('../view');
 var users_item = require('../vm/users_item');
 
-// Component for displaying the users list.
+var template = fs.readFileSync(__dirname + '/users.html', { encoding: 'utf8' });
 
-function page() {
+// Page for displaying the users list.
+
+exports.create = function() {
 
     var model = {
 
         users: ko.observableArray([]),
 
-        permission: ko.observable(false),
-
-        loaded: ko.observable(false)
+        permission: ko.observable(false)
     };
 
-    api.userInfo().then(function(info) {
+    return api.userInfo().then(function(info) {
 
         if (info.type !== 'admin') {
 
-            model.loaded(true);
+            view.show(template, model);
 
         } else {
 
@@ -38,18 +38,8 @@ function page() {
 
                 model.permission(true);
 
-                model.loaded(true);
+                view.show(template, model);
             });
         }
-
-    }).catch(message.error);
-
-    return model;
-}
-
-ko.components.register('users', {
-
-    viewModel: { createViewModel: page },
-
-    template: fs.readFileSync(__dirname + '/users.html', { encoding: 'utf8' })
-});
+    });
+};
