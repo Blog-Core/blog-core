@@ -19,7 +19,7 @@ export SHELLOPTS:=errexit:pipefail
 
 all: $(BUNDLE) $(EXTERNAL)
 
-$(BUNDLE): $(BUNDLE_DEPS)
+$(BUNDLE): $(BUNDLE_DEPS) Makefile
 	rm -f $(MAP)
 	$(BROWSERIFY) --debug -t brfs -t uglifyify $< | $(EXORCIST) $(MAP) > $@
 
