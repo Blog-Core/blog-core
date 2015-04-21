@@ -54,10 +54,13 @@
         </div>
         <div id="content"></div>
     </div>
-    <script src="/t-{{= cache_token }}/admin/js/shim/promise-1.0.0.min.js"></script>
-    <script src="/t-{{= cache_token }}/admin/js/libs/knockout-3.2.0.min.js"></script>
-    <script src="/t-{{= cache_token }}/admin/js/libs/speakingurl-0.11.0.min.js"></script>
-    <script src="/t-{{= cache_token }}/admin/js/libs/router.js"></script>
+    <script src="/t-{{= cache_token }}/admin/js/libs/es6-promise.js"></script>
+    <script>ES6Promise.polyfill();</script>
+    <script src="/t-{{= cache_token }}/admin/js/libs/fetch.js"></script>
+    <script src="/t-{{= cache_token }}/admin/js/libs/knockout.js"></script>
+    <script src="/t-{{= cache_token }}/admin/js/libs/router-standalone.js"></script>
+    <script src="/t-{{= cache_token }}/admin/js/libs/kontainer-standalone.js"></script>
+    <script src="/t-{{= cache_token }}/admin/js/libs/speakingurl.js"></script>
     <script src="/t-{{= cache_token }}/admin/js/admin.bundle.js"></script>
 </body>
 </html>
