@@ -11,9 +11,9 @@ exports.create = function() {
 
     var model = {
 
-        username: ko.observable('').trimmed(),
+        username: ko.observable(''),
 
-        password: ko.observable('').trimmed(),
+        password: ko.observable(''),
 
         remember: ko.observable(false)
     };
