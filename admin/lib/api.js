@@ -124,6 +124,33 @@ function fetchUpdate(url, data) {
     }).then(handleResponse);
 }
 
+function fetchUploadFile(url, file) {
+
+    spinnerShow();
+
+    return fetch(url, {
+
+        method: 'POST',
+
+        headers: {
+
+            'Accept': 'application/json',
+            'Content-Type': 'application/octet-stream',
+            'X-Key': apiKey(),
+            'X-File-Name': file.name
+        },
+
+        body: file
+
+    }).catch(function(err) {
+
+        spinnerHide();
+
+        throw err;
+
+    }).then(handleResponse);
+}
+
 function handleResponse(response) {
 
     spinnerHide();
@@ -140,6 +167,13 @@ function handleResponse(response) {
         }
     });
 }
+
+// Uploads entry file.
+
+exports.upload = function(id, file) {
+
+    return fetchUploadFile('/api/upload/' + encodeURIComponent(id), file);
+};
 
 // Login with credentials.
 

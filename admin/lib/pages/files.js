@@ -34,49 +34,11 @@ function page(params) {
             return;
         }
 
-        model.file = file;
+        api.upload(model.entry_id(), file).then(function(response) {
 
-        var xhr = new XMLHttpRequest();
+            message.info('File "' + file.name + '" has been uploaded.');
 
-        xhr.upload.addEventListener('progress', model.progress, false);
-
-        xhr.addEventListener('load', model.complete, false);
-        xhr.addEventListener('error', model.failed, false);
-        xhr.addEventListener('abort', model.aborted, false);
-
-        xhr.open('POST', '/api/upload/' + encodeURIComponent(model.entry_id()));
-
-        xhr.setRequestHeader('X-Key', api.apiKey());
-        xhr.setRequestHeader('X-File-Name', file.name);
-        xhr.setRequestHeader('Content-Type', 'application/octet-stream');
-
-        xhr.send(file);
-    };
-
-    // Reports the upload progress.
-    // FIXME only works on Firefox?
-
-    model.progress = function(e) {
-
-        if (e.lengthComputable) {
-
-            model.progress(Math.round(e.loaded * 100 / e.total));
-        }
-    };
-
-    // Executed then the upload process
-    // is complete.
-
-    model.complete = function(e) {
-
-        var res = JSON.parse(e.target.responseText);
-
-        if (res.status === 'success') {
-
-            message.info('File "' + model.file.name +
-                '" has been uploaded.');
-
-            model.files.push(files_item.create(model.entry_slug, { name: model.file.name }));
+            model.files.push(files_item.create(model.entry_slug, { name: file.name }));
 
             // This resets the file input.
 
@@ -85,25 +47,7 @@ function page(params) {
             wrap.innerHTML = '';
             wrap.innerHTML = '<input type="file" id="entry-file" class="form-control" placeholder="Your file">';
 
-        } else {
-
-            // FIXME show error in form.
-
-            message.error(res.message);
-        }
-    };
-
-    model.upload.failed = function() {
-
-        // FIXME needs error checking.
-    };
-
-    // Executed when the upload process
-    // was aborted.
-
-    model.aborted = function() {
-
-        // FIXME incomplete
+        }).catch(message.error);
     };
 
     // Removes the file.
