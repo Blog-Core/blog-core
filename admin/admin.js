@@ -18,27 +18,6 @@ window.formatDate = function(ts) {
     return new Date(1000 * ts).toISOString().substring(0, 10);
 };
 
-// Helper to trim whitespace from values.
-
-ko.subscribable.fn.trimmed = function() {
-
-    return ko.computed({
-
-        read: function() {
-
-            return this().trim();
-        },
-
-        write: function(value) {
-
-            this(value.trim());
-            this.valueHasMutated();
-        },
-
-        owner: this
-    });
-};
-
 // The page menu.
 
 var menu = {

@@ -6,11 +6,11 @@ exports.create = function(roles, data) {
 
     var user = {
 
-        username: ko.observable('').trimmed(),
-        fullname: ko.observable('').trimmed(),
+        username: ko.observable(''),
+        fullname: ko.observable(''),
         type: ko.observable('author'),
-        link: ko.observable('').trimmed(),
-        password: ko.observable('').trimmed(),
+        link: ko.observable(''),
+        password: ko.observable(''),
         password_edit: ko.observable(true),
         password_text: ko.observable(false),
         error: ko.observable(''),
