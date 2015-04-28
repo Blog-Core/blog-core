@@ -7,10 +7,6 @@ var users = require('./lib/pages/users');
 var user = require('./lib/pages/user');
 var comments = require('./lib/pages/comments');
 
-// FIXME remove
-
-require('./lib/pages/files');
-
 // Global to format dates.
 
 window.formatDate = function(ts) {

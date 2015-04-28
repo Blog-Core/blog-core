@@ -18,7 +18,7 @@ exports.create = function(slug, data) {
 
     file.url = ko.pureComputed(function() {
 
-        return '/' + slug() + '/' + file.name;
+        return '/' + slug + '/' + file.name;
     });
 
     return file;

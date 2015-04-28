@@ -85,8 +85,56 @@
                 class="form-control" id="post-language"></select>
         </div>
         <!-- ko if: can_manage_files -->
-            <!-- ko component: { name: 'files',
-                params: { id: $id, slug: slug, slug_changed: slug_changed } } --><!-- /ko -->
+            <h3>Entry files</h3>
+            <!-- ko if: !$id() -->
+                <div class="alert alert-warning" role="alert">
+                    To upload files you need to save the entry first.
+                </div>
+            <!-- /ko -->
+            <!-- ko if: $id() -->
+                <!-- ko if: slug_changed() -->
+                    <div class="alert alert-warning" role="alert">
+                        You have changed the entry slug. File management is
+                        re-enabled after saving the entry.
+                    </div>
+                <!-- /ko -->
+                <!-- ko if: !slug_changed() -->
+                    <!-- ko if: files().length === 0 -->
+                        <div class="alert alert-info" role="alert">
+                            This entry has no files.
+                        </div>
+                    <!-- /ko -->
+                    <div data-bind="foreach: files" class="list-group">
+                        <li class="list-group-item post-item">
+                            <div data-bind="click: expand" class="list-group-item-heading">
+                                <span class="glyphicon glyphicon-file"></span> <!-- ko text: name --><!-- /ko -->
+                            </div>
+                            <!-- ko if: expanded() -->
+                                URL: <!-- ko text: url --><!-- /ko -->
+                                <div class="post-controls">
+                                    <a data-bind="click: $parent.removeFile"
+                                        class="btn btn-default btn-sm" href="#">
+                                        <span class="glyphicon glyphicon-edit"></span> Remove</a>
+                                    <a data-bind="attr: { href: url }" target="_blank"
+                                        class="btn btn-default btn-sm" href="#"> View (in new tab)</a>
+                                </div>
+                            <!-- /ko -->
+                        </li>
+                    </div>
+                    <div class="row bc-controls">
+                        <div class="col-sm-6">
+                            <div id="entry-file-wrap">
+                                <input type="file" id="entry-file" class="form-control" placeholder="Your file">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <a data-bind="click: uploadFile" class="btn btn-default" href="#">
+                                <span class="glyphicon glyphicon-upload"></span> Upload
+                            </a>
+                        </div>
+                    </div>
+                <!-- /ko -->
+            <!-- /ko -->
         <!-- /ko -->
         <!-- ko if: !can_manage_files -->
             <div class="alert alert-warning" role="alert">

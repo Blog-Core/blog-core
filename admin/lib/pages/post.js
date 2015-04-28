@@ -19,7 +19,7 @@ exports.create = function(type, id) {
 
         // data.post will be undefined when id is not set.
 
-        model.post(post.create(data.userInfo, type, data.types, data.users, data.post));
+        model.post(post.create(data.userInfo, type, data.types, data.users, data.files, data.post));
 
         view.show(template, model);
 
@@ -69,6 +69,14 @@ function postData(id) {
         if (id) {
 
             requests.post = api.post(id);
+
+            // The entry files.
+
+            requests.files = api.files(id);
+
+        } else {
+
+            requests.files = Promise.resolve([]);
         }
 
         return resolveObject(requests);

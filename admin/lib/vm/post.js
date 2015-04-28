@@ -2,6 +2,7 @@ var api = require('../api');
 var message = require('../message');
 var validate = require('../validate');
 var languages = require('../languages');
+var files_item = require('./files_item');
 
 // Creates post view model for already
 // existing post or a new post. For new
@@ -9,7 +10,7 @@ var languages = require('../languages');
 // argument must contain the list of all
 // users.
 
-exports.create = function(userInfo, type, types, authors, data) {
+exports.create = function(userInfo, type, types, authors, files, data) {
 
     var post = {
 
@@ -76,7 +77,6 @@ exports.create = function(userInfo, type, types, authors, data) {
 
         comments: ko.observable(0),
 
-
         // Selected user. Only admins
         // can select author other than
         // themself.
@@ -130,6 +130,10 @@ exports.create = function(userInfo, type, types, authors, data) {
         // Only admin can change the author.
 
         can_change_author: userInfo.type === 'admin',
+
+        // Array of entry files.
+
+        files: ko.observableArray(files),
 
         // Returns the plain data object
         // to send to the backend.
@@ -214,6 +218,19 @@ exports.create = function(userInfo, type, types, authors, data) {
         post.tags(data.tags.join(', '));
         post.comments(data.comments);
         post.language(data.language);
+
+        // Set up the existing files list.
+
+        files.sort(function(left, right) {
+
+            return left.name === right.name ? 0 : (left.name < right.name ? -1 : 1);
+        });
+
+        post.files(files.map(function(file) {
+
+            return files_item.create(data.slug, file);
+
+        }));
 
     } else {
 
@@ -307,6 +324,51 @@ exports.create = function(userInfo, type, types, authors, data) {
 
         post.slug_changed(true);
     });
+
+    // Submits the file upload form and
+    // performs the file upload process.
+
+    post.uploadFile = function() {
+
+        var file = document.getElementById('entry-file').files[0];
+
+        if (!file || !post.$id()) {
+
+            return;
+        }
+
+        api.upload(post.$id(), file).then(function(response) {
+
+            message.info('File "' + file.name + '" has been uploaded.');
+
+            post.files.push(files_item.create(post.slug(), { name: file.name }));
+
+            // This resets the file input.
+
+            var wrap = document.getElementById('entry-file-wrap');
+
+            wrap.innerHTML = '';
+            wrap.innerHTML = '<input type="file" id="entry-file" class="form-control" placeholder="Your file">';
+
+        }).catch(message.error);
+    };
+
+    // Removes the file.
+    // Asks confirmation.
+
+    post.removeFile = function(file) {
+
+        if (confirm('Remove the file "' + file.name + '"?')) {
+
+            api.removeFile(post.$id(), file.name).then(function() {
+
+                message.info('File "' + file.name + '" has been removed.');
+
+                post.files.remove(file);
+
+            }).catch(message.error);
+        }
+    };
 
     return post;
 };
