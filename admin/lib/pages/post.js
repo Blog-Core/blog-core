@@ -68,7 +68,7 @@ function postData(id) {
 
         if (id) {
 
-            post: api.post(id)
+            requests.post = api.post(id);
         }
 
         return resolveObject(requests);

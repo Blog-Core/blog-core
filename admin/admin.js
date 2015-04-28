@@ -1,15 +1,15 @@
-var api = require('./api');
-var message = require('./message');
-var login = require('./pages/login');
-var posts = require('./pages/posts');
-var post = require('./pages/post');
-var users = require('./pages/users');
-var user = require('./pages/user');
-var comments = require('./pages/comments');
+var api = require('./lib/api');
+var message = require('./lib/message');
+var login = require('./lib/pages/login');
+var posts = require('./lib/pages/posts');
+var post = require('./lib/pages/post');
+var users = require('./lib/pages/users');
+var user = require('./lib/pages/user');
+var comments = require('./lib/pages/comments');
 
 // FIXME remove
 
-require('./pages/files');
+require('./lib/pages/files');
 
 // Global to format dates.
 

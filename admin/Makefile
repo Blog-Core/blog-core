@@ -5,7 +5,7 @@ EXORCIST = node_modules/.bin/exorcist
 
 BUNDLE = ../prolog/bc/public/js/admin.bundle.js
 MAP = $(BUNDLE).map
-BUNDLE_DEPS = admin.js *.js vm/*.js pages/*.js pages/*.html
+BUNDLE_DEPS = admin.js lib/*.js lib/vm/*.js lib/pages/*.js lib/pages/*.html
 
 EXTERNAL_DIR = ../prolog/bc/public/js/libs
 
