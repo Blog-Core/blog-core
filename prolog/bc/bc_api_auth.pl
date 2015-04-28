@@ -1,5 +1,6 @@
 :- module(bc_api_auth, [
-    bc_auth/1 % :Next
+    bc_auth/1,            % :Next
+    bc_auth_user_by_key/1 % -User
 ]).
 
 :- use_module(library(http/http_wrapper)).
@@ -21,7 +22,7 @@
 :- meta_predicate(bc_auth(0)).
 
 bc_auth(Next):-
-    (   auth_user_by_key(User)
+    (   bc_auth_user_by_key(User)
     ->  setup_call_cleanup(
             bc_set_actor(User),
             bc_call_handle_error(Next),
@@ -32,7 +33,7 @@ bc_auth(Next):-
 % by the API key given in the "X-Key"
 % HTTP header.
 
-auth_user_by_key(User):-
+bc_auth_user_by_key(User):-
     http_current_request(Request),
     memberchk(x_key(Key), Request),
     ds_find(user, key=Key, [User]).

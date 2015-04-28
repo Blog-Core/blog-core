@@ -10,6 +10,7 @@
 :- use_module(bc_hex).
 :- use_module(bc_api_io).
 :- use_module(bc_api_auth).
+:- use_module(bc_api_error).
 :- use_module(bc_api_actor).
 :- use_module(bc_entry).
 :- use_module(bc_access).
@@ -50,15 +51,23 @@ file_record(File, _{ name: File }).
 % Receives the uploaded file.
 
 :- route_post(api/upload/EntryId,
-    bc_auth, upload_file(EntryId)).
+    bc_call_handle_error, upload_file(EntryId)).
 
 upload_file(EntryId):-
-    bc_actor(Actor),
-    can_upload(Actor, EntryId),
-    catch(attemp_upload(EntryId), Error, true),
+    catch(upload_file_checked(EntryId), Error, true),
     (   var(Error)
-    ;   (   drain_request,
-            throw(Error))), !.
+    ->  true
+    ;   drain_request,
+        throw(Error)).
+
+upload_file_checked(EntryId):-
+    (   bc_auth_user_by_key(Actor)
+    ->  upload_file_checked(Actor, EntryId)
+    ;   throw(error(invalid_api_key))).
+
+upload_file_checked(Actor, EntryId):-
+    can_upload(Actor, EntryId),
+    attemp_upload(EntryId).
 
 can_upload(Actor, EntryId):-
     bc_entry_exists(EntryId),
