@@ -2,6 +2,7 @@ var api = require('../api');
 var message = require('../message');
 var validate = require('../validate');
 var languages = require('../languages');
+var form_error = require('../form_error');
 var files_item = require('./files_item');
 
 // Creates post view model for already
@@ -134,6 +135,18 @@ exports.create = function(userInfo, type, types, authors, files, data) {
         // Array of entry files.
 
         files: ko.observableArray(files),
+
+        // Input errors for the errors
+        // binding.
+
+        errors: {
+
+            title: ko.observableArray([]),
+            slug: ko.observableArray([]),
+            content: ko.observableArray([]),
+            date: ko.observableArray([]),
+            update: ko.observableArray([])
+        },
 
         // Returns the plain data object
         // to send to the backend.
@@ -400,26 +413,26 @@ function validatePost(post) {
 
     if (post.title() === '') {
 
-        validate.error('post-title', 'Title is not entered.');
+        post.errors.title.push('Title is not entered.');
     }
 
     var slug = post.slug();
 
     if (slug === '') {
 
-        validate.error('post-slug', 'Slug is not entered.');
+        post.errors.slug.push('Slug is not entered.');
 
     } else {
 
         if (!slug.match(/^[a-z0-9\-_]+$/)) {
 
-            validate.error('post-slug', 'Use lowercase letters, numbers, hyphen and underscore.');
+            post.errors.slug.push('Use lowercase letters, numbers, hyphen and underscore.');
         }
     }
 
     if (post.content() === '') {
 
-        validate.error('post-content', 'Content is not entered.');
+        post.errors.content.push('Content is not entered.');
     }
 
     var date = post.date();
@@ -428,23 +441,23 @@ function validatePost(post) {
 
         if (post.published()) {
 
-            validate.error('post-date', 'Publish date is not entered.');
+            post.errors.date.push('Publish date is not entered.');
         }
 
     } else if (!date.match(/^\d{4}\-\d{2}\-\d{2}$/)) {
 
-        validate.error('post-date', 'Date must be in the YYYY-MM-DD format.');
+        post.errors.date.push('Date must be in the YYYY-MM-DD format.');
     }
 
     var update = post.update();
 
     if (update === '') {
 
-        validate.error('post-update', 'Update date is not entered.');
+        post.errors.update.push('Update date is not entered.');
 
     } else if (!update.match(/^\d{4}\-\d{2}\-\d{2}$/)) {
 
-        validate.error('post-update', 'Update date must be in the YYYY-MM-DD format.');
+        post.errors.update.push('Update date must be in the YYYY-MM-DD format.');
     }
 }
 
@@ -455,11 +468,21 @@ function submitPost(post, edit) {
 
     var form = document.getElementById('post');
 
-    validate.clear(form);
+    // Clear errors.
+
+    Object.keys(post.errors).forEach(function(key) {
+
+        post.errors[key]([]);
+    });
 
     validatePost(post);
 
-    if (validate.hasError(form)) {
+    var input = form.querySelector(
+        '.has-error input, .has-error textarea, .has-error checkbox');
+
+    if (input) {
+
+        input.focus();
 
         return false;
     }
