@@ -2,6 +2,7 @@ JSHINT = node_modules/.bin/jshint
 BROWSERIFY = node_modules/.bin/browserify
 CASPERJS = node_modules/.bin/casperjs
 EXORCIST = node_modules/.bin/exorcist
+PHANTOMJS = node_modules/.bin/phantomjs
 
 BUNDLE = ../prolog/bc/public/js/admin.bundle.js
 MAP = $(BUNDLE).map
@@ -51,6 +52,6 @@ install-tools:
 	npm install
 
 test:
-	$(CASPERJS) test tests
+	PHANTOMJS_EXECUTABLE=$(PHANTOMJS) $(CASPERJS) test tests
 
 .PHONY: all check clean install-tools

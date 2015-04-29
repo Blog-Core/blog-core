@@ -11,6 +11,7 @@
     "jshint": "~2.5.5",
     "knockout": "^3.3.0",
     "kontainer": "^1.1.0",
+    "phantomjs": "^1.9.16",
     "speakingurl": "^1.1.5",
     "uglifyify": "^3.0.1",
     "whatwg-fetch": "^0.7.0"
