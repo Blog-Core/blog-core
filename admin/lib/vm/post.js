@@ -1,7 +1,6 @@
 var api = require('../api');
 var message = require('../message');
 var languages = require('../languages');
-var form_error = require('../form_error');
 var files_item = require('./files_item');
 
 // Creates post view model for already

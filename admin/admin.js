@@ -7,6 +7,10 @@ var users = require('./lib/pages/users');
 var user = require('./lib/pages/user');
 var comments = require('./lib/pages/comments');
 
+// Errors binding.
+
+require('./lib/form_error');
+
 // Global to format dates.
 
 window.formatDate = function(ts) {

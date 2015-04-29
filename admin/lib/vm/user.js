@@ -1,6 +1,5 @@
-var message = require('../message');
 var api = require('../api');
-var validate = require('../validate');
+var message = require('../message');
 
 exports.create = function(roles, data) {
 
@@ -17,9 +16,23 @@ exports.create = function(roles, data) {
         creating: true,
         roles: roles,
 
+        errors: {
+
+            username: ko.observableArray([]),
+            fullname: ko.observableArray([]),
+            password: ko.observableArray([]),
+            link: ko.observableArray([]),
+            type: ko.observableArray([])
+        },
+
         save: function(form) {
 
-            validate.clear(form);
+            // Clear errors.
+
+            Object.keys(user.errors).forEach(function(key) {
+
+                user.errors[key]([]);
+            });
 
             if (user.password_edit()) {
 
@@ -27,11 +40,11 @@ exports.create = function(roles, data) {
 
                 if (password === '') {
 
-                    validate.error('user-password', 'Password is not set.');
+                    user.errors.password.push('Password is not set.');
 
                 } else if (password.length < 6) {
 
-                    validate.error('user-password', 'Password length must be at least 6.');
+                    user.errors.password.push('Password length must be at least 6.');
                 }
             }
 
@@ -39,13 +52,13 @@ exports.create = function(roles, data) {
 
             if (username === '') {
 
-                validate.error('user-username', 'Username is not set.');
+                user.errors.username.push('Username is not set.');
 
             } else {
 
                 if (!username.match(/^[^@]+@[^@]+$/)) {
 
-                    validate.error('user-username', 'Username must be an email address.');
+                    user.errors.username.push('Username must be an email address.');
                 }
             }
 
@@ -53,7 +66,7 @@ exports.create = function(roles, data) {
 
             if (fullname === '') {
 
-                validate.error('user-fullname', 'Full name is not set.');
+                user.errors.fullname.push('Full name is not set.');
             }
 
             var link = user.link();
@@ -62,11 +75,17 @@ exports.create = function(roles, data) {
 
                 if (!link.match(/https?:\/\//)) {
 
-                    validate.error('user-link', 'Link must start with http:// or https:// prefix.');
+                    user.errors.link.push('Link must start with http:// or https:// prefix.');
                 }
             }
 
-            if (validate.hasError(form)) {
+            var input = form.querySelector(
+                '.has-error input, .has-error textarea,' +
+                ' .has-error checkbox, .has-error select');
+
+            if (input) {
+
+                input.focus();
 
                 return false;
             }
@@ -81,8 +100,14 @@ exports.create = function(roles, data) {
 
                 }).catch(function(err) {
 
-                    validate.formError(form, err);
+                    if (err.toString().match(/Cannot remove the last admin/)) {
 
+                        user.errors.type.push('Cannot remove the last admin.');
+                        
+                    } else {
+
+                        message.error(err);
+                    }
                 });
 
             } else {
@@ -95,7 +120,7 @@ exports.create = function(roles, data) {
 
                 }).catch(function(err) {
 
-                    validate.formError(form, err);
+                    message.error(err);
 
                 });
             }

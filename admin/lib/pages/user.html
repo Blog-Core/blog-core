@@ -2,25 +2,25 @@
     <h2 data-bind="text: fullname"></h2>
 
     <form data-bind="submit: save" autocomplete="off">
-        <div class="form-group">
+        <div data-bind="errors: errors.fullname" class="form-group">
             <label for="user-fullname">Full name</label>
             <input data-bind="value: fullname"
                 type="text" class="form-control" id="user-fullname"
                 placeholder="Full name">
         </div>
-        <div class="form-group">
+        <div data-bind="errors: errors.username" class="form-group">
             <label for="user-username">Username</label>
             <input data-bind="value: username"
                 type="text" class="form-control" id="user-username"
                 placeholder="Username">
         </div>
-        <div class="form-group">
+        <div data-bind="errors: errors.type" class="form-group">
             <label for="user-type">Type</label>
             <select data-bind="value: type, options: roles,
                 optionsText: 'label', optionsValue: 'name'"
                 class="form-control" id="user-type"></select>
         </div>
-        <div class="form-group">
+        <div data-bind="errors: errors.link" class="form-group">
             <label for="user-link">Link</label>
             <input data-bind="value: link"
                 type="text" class="form-control" id="user-link"
@@ -30,7 +30,7 @@
             <label><input data-bind="checked: password_edit, disable: creating" type="checkbox">
                 Edit password</label>
         </div>
-        <div data-bind="visible: password_edit" class="form-group">
+        <div data-bind="visible: password_edit, errors: errors.password" class="form-group">
             <label for="user-password">New password</label>
             <input data-bind="value: password"
                 type="password" class="form-control" id="user-password"
