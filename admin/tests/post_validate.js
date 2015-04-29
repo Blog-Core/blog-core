@@ -21,15 +21,15 @@ casper.test.begin('New post', function suite(test) {
 
     casper.then(function() {
 
-        test.assertSelectorHasText('#post-title ~ .error-message', 'Title is not entered.');
+        test.assertSelectorHasText('#post-title ~ .ko-input-error', 'Title is not entered.');
 
-        test.assertSelectorHasText('#post-slug ~ .error-message', 'Slug is not entered.');
+        test.assertSelectorHasText('#post-slug ~ .ko-input-error', 'Slug is not entered.');
 
-        test.assertSelectorHasText('#post-content ~ .error-message', 'Content is not entered.');
+        test.assertSelectorHasText('#post-content ~ .ko-input-error', 'Content is not entered.');
 
-        test.assertSelectorHasText('#post-date ~ .error-message', 'Date must be in the YYYY-MM-DD format.');
+        test.assertSelectorHasText('#post-date ~ .ko-input-error', 'Date must be in the YYYY-MM-DD format.');
 
-        test.assertSelectorHasText('#post-update ~ .error-message', 'Update date must be in the YYYY-MM-DD format.');
+        test.assertSelectorHasText('#post-update ~ .ko-input-error', 'Update date must be in the YYYY-MM-DD format.');
     });
 
     casper.run(function() {
