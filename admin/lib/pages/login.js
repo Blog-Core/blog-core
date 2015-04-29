@@ -1,7 +1,8 @@
 var fs = require('fs');
 var api = require('../api');
 var view = require('../view');
-var validate = require('../validate');
+var message = require('../message');
+var form_error = require('../form_error');
 
 var template = fs.readFileSync(__dirname + '/login.html', { encoding: 'utf8' });
 
@@ -15,12 +16,23 @@ exports.create = function() {
 
         password: ko.observable(''),
 
-        remember: ko.observable(false)
+        remember: ko.observable(false),
+
+        errors: {
+
+            username: ko.observableArray([]),
+            password: ko.observableArray([])
+        }
     };
 
     model.login = function(form) {
 
-        validate.clear(form);
+        // Clear errors.
+
+        Object.keys(model.errors).forEach(function(key) {
+
+            model.errors[key]([]);
+        });
 
         var username = model.username();
 
@@ -28,19 +40,24 @@ exports.create = function() {
 
         if (username === '') {
 
-            validate.error('username', 'Username is not entered.');
+            model.errors.username.push('Username is not entered.');
 
         } else if (!username.match(/^[^@]+@[^@]+$/)) {
 
-            validate.error('username', 'Username must be an email.');
+            model.errors.username.push('Username must be an email.');
         }
 
         if (password === '') {
 
-            validate.error('password', 'Password is not entered.');
+            model.errors.password.push('Password is not entered.');
         }
 
-        if (validate.hasError(form)) {
+        var input = form.querySelector(
+            '.has-error input, .has-error textarea, .has-error checkbox');
+
+        if (input) {
+
+            input.focus();
 
             return false;
         }
@@ -64,8 +81,15 @@ exports.create = function() {
 
         }).catch(function(err) {
 
-            validate.formError(form, err);
+            if (err.toString().match(/Invalid auth credentials/)) {
 
+                model.errors.username.push('Invalid auth credentials.');
+                model.errors.password.push('Invalid auth credentials.');
+
+            } else {
+
+                message.error(err);
+            }
         });
     };
 

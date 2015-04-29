@@ -1,6 +1,5 @@
 var api = require('../api');
 var message = require('../message');
-var validate = require('../validate');
 var languages = require('../languages');
 var form_error = require('../form_error');
 var files_item = require('./files_item');
@@ -519,13 +518,7 @@ function updatePost(form, post, edit) {
             route.go('entries/' + post.type());
         }
 
-    }).catch(function(err) {
-
-        validate.formError(form, err);
-
-        window.scroll(0, 0);
-
-    });
+    }).catch(message.error);
 }
 
 // Saves the new post.
@@ -549,11 +542,5 @@ function savePost(form, post, edit) {
             route.go('entries/' + post.type());
         }
 
-    }).catch(function(err) {
-
-        validate.formError(form, err);
-
-        window.scroll(0, 0);
-
-    });
+    }).catch(message.error);
 }

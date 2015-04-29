@@ -1,13 +1,13 @@
 <h2>Login</h2>
 
 <form data-bind="submit: login">
-    <div class="form-group">
+    <div data-bind="errors: errors.username" class="form-group">
         <label class="control-label" for="username">Username</label>
         <input data-bind="textInput: username"
             type="text" name="username" title="Username"
             placeholder="Username" class="form-control" id="username">
     </div>
-    <div class="form-group">
+    <div data-bind="errors: errors.password" class="form-group">
         <label class="control-label" for="password">Password</label>
         <input data-bind="textInput: password"
             type="password" name="password" title="Password"
