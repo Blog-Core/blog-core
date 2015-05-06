@@ -81,6 +81,8 @@ route(/^entry\/([^\/]+)\/([^\/]+)/, function(type, id) {
 
     authenticated();
 
+    menu.active(type);
+
     post.create(type, id).catch(message.error);
 });
 
