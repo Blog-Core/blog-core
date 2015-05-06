@@ -98,7 +98,7 @@ exports.create = function(userInfo, type, types, authors, files, data) {
 
         submit: function() {
 
-            submitPost(post, true);
+            submitPost(post, 'edit');
         },
 
         // Similar to submit but leaves
@@ -106,7 +106,15 @@ exports.create = function(userInfo, type, types, authors, files, data) {
 
         save: function() {
 
-            submitPost(post, false);
+            submitPost(post, 'leave');
+        },
+
+        // Similar to submit but opens preview
+        // in another window.
+
+        saveAndPreview: function() {
+
+            submitPost(post, 'preview');
         },
 
         // The post language code. See
@@ -200,6 +208,11 @@ exports.create = function(userInfo, type, types, authors, files, data) {
 
         throw new Error('Invalid type ' + type);
     }
+
+    // Use the preview URL pattern from
+    // type info.
+
+    post.preview = typeInfo.preview;
 
     // Sets the view model values by the
     // actual data object.
@@ -462,7 +475,7 @@ function validatePost(post) {
 // Handles save and
 // save-with-continue actions.
 
-function submitPost(post, edit) {
+function submitPost(post, action) {
 
     var form = document.getElementById('post');
 
@@ -490,11 +503,11 @@ function submitPost(post, edit) {
 
     if (post.$id()) {
 
-        updatePost(form, post, edit);
+        updatePost(form, post, action);
 
     } else {
 
-        savePost(form, post, edit);
+        savePost(form, post, action);
     }
 }
 
@@ -502,15 +515,20 @@ function submitPost(post, edit) {
 // post. Assumes that the post
 // is validated.
 
-function updatePost(form, post, edit) {
+function updatePost(form, post, action) {
 
     api.updatePost(post.$id(), post.toJS()).then(function() {
 
         message.info('The entry "' + post.title() + '" has been updated.');
 
-        if (edit) {
+        if (action === 'edit' || action === 'preview') {
 
             post.slug_changed(false);
+
+            if (action === 'preview') {
+
+                openPreview(post);
+            }
 
         } else {
 
@@ -522,7 +540,7 @@ function updatePost(form, post, edit) {
 
 // Saves the new post.
 
-function savePost(form, post, edit) {
+function savePost(form, post, action) {
 
     api.savePost(post.toJS()).then(function(res) {
 
@@ -532,9 +550,14 @@ function savePost(form, post, edit) {
         // want to keep editing the post.
         // Otherwise go back to listing page.
 
-        if (edit) {
+        if (action === 'edit' || action === 'preview') {
 
             route.go('entry/' + post.type() + '/' + res);
+
+            if (action === 'preview') {
+
+                openPreview(post);
+            }
 
         } else {
 
@@ -542,4 +565,21 @@ function savePost(form, post, edit) {
         }
 
     }).catch(message.error);
+}
+
+// Opens the preview window/tab for the post.
+
+function openPreview(post) {
+
+    var url = post.preview.replace(/<slug>/g, post.slug());
+
+    var opened = window.open(url, 'entry-' + post.slug());
+
+    if (opened) {
+
+        // Could have been blocked by a
+        // popup blocker.
+
+        opened.focus();
+    }
 }

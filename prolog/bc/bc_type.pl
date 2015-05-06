@@ -1,7 +1,10 @@
 :- module(bc_type, [
     bc_register_type/5,
     bc_unregister_type/1,
-    bc_type/5
+    bc_register_preview/2,
+    bc_unregister_preview/1,
+    bc_type/5,
+    bc_type_preview/2
 ]).
 
 :- use_module(library(debug)).
@@ -10,6 +13,7 @@
 :- use_module(bc_role).
 
 :- dynamic(type/5).
+:- dynamic(preview/2).
 
 %! bc_type(Name, Label, MenuLabel, Roles, Comments) is nondet.
 %
@@ -17,6 +21,13 @@
 
 bc_type(Name, Label, MenuLabel, Roles, Comments):-
     type(Name, Label, MenuLabel, Roles, Comments).
+
+%! bc_type_preview(Name, Preview) is nondet.
+%
+% Matches/generates all registered type previews.
+
+bc_type_preview(Name, Preview):-
+    preview(Name, Preview).
 
 %! bc_register_type(+Name, +Label, +MenuLabel, +Roles, +Comments) is det.
 %
@@ -42,6 +53,28 @@ bc_register_type(Name, Label, MenuLabel, Roles, Comments):-
 bc_unregister_type(Name):-
     must_be(atom, Name),
     retractall(type(Name, _, _, _, _)).
+
+%! bc_register_preview(+Name, +Preview) is det.
+%
+% Registers a new type preview. Overwrites existing preview.
+
+bc_register_preview(Name, Preview):-
+    must_be(atom, Name),
+    must_be(atom, Preview),
+    (   preview(Name, _)
+    ->  retractall(preview(Name, _))
+    ;   true),
+    assertz(preview(Name, Preview)),
+    debug(bc_type, 'type ~w preview URL ~w registered', [Name, Preview]).
+
+%! bc_unregister_preview(+Name) is det.
+%
+% Removes the given type preview. Does nothing
+% when the preview does not exist.
+
+bc_unregister_preview(Name):-
+    must_be(atom, Name),
+    retractall(preview(Name, _)).
 
 % Checks that type gets valid
 % access roles.

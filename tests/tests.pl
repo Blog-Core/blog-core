@@ -4,6 +4,7 @@
 
 :- use_module(prolog/bc/bc_main).
 :- use_module(prolog/bc/bc_data).
+:- use_module(prolog/bc/bc_type).
 
 :- bc_main('test.docstore', [port(18008), workers(8)]).
 
@@ -15,6 +16,10 @@
     tests/files,
     tests/view
 ], [ if(not_loaded) ]).
+
+% Registers preview for posts.
+
+:- bc_register_preview(post, '/post/<slug>').
 
 % Resets database state. Used
 % for admin tests.

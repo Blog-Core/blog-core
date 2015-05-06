@@ -33,12 +33,14 @@ accessible_types(User, Types):-
             label: Label,
             menu_label: MenuLabel,
             grants: Grants,
-            comments: Comments },
+            comments: Comments,
+            preview: Preview },
         (
             bc_type(Name, Label, MenuLabel, Roles, Comments),
             member(Role, Roles),
             Role =.. [RoleName|Grants],
-            User.type = RoleName
+            User.type = RoleName,
+            type_preview(Name, Preview)
         ), Types).
 
 accessible_type(User, Name, Data):-
@@ -47,11 +49,21 @@ accessible_type(User, Name, Data):-
         label: Label,
         menu_label: MenuLabel,
         grants: Grants,
-        comments: Comments },
+        comments: Comments,
+        preview: Preview },
     bc_type(Name, Label, MenuLabel, Roles, Comments),
     member(Role, Roles),
     Role =.. [RoleName|Grants],
-    User.type = RoleName.
+    User.type = RoleName,
+    type_preview(Name, Preview).
 
 accessible_type(_, _, _):-
     throw(error(no_access)).
+
+% Gives the type preview or null
+% when the preview does not exist.
+
+type_preview(Name, Preview):-
+    bc_type_preview(Name, Preview), !.
+
+type_preview(_, null).
