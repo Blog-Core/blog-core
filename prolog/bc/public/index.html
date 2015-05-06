@@ -9,10 +9,9 @@
     <style>
         body { margin-top: 1em; margin-bottom: 1em; }
         .nav { margin-bottom: 1em; }
-        .messages { position: fixed !important; top: 2em; left: 0; right: 0; z-index: 10000; opacity: 0.95; }
+        .messages { position: fixed; top: 2em; left: 2em; right: 2em; z-index: 10000; opacity: 0.85; }
         .text-right { text-align: right; }
         .content { font-family: monospace; }
-        .container { position: relative; }
         .spinner { position: fixed; top: 2em; right: 2em; }
         .post-item > .list-group-item-heading { cursor: pointer; }
         .post-controls { margin-top: 10px; }
@@ -30,7 +29,7 @@
     <link rel="icon" type="image/png" href="/t-{{= cache_token }}/admin/img/bc.png">
 </head>
 <body>
-    <div id="messages" class="container messages"></div>
+    <div id="messages" class="messages"></div>
     <div class="container">
         <div class="spinner" id="spinner" style="display: none">
             <img src="/t-{{= cache_token }}/admin/img/spinner.gif">
