@@ -98,17 +98,7 @@ exports.create = function(roles, data) {
 
                     route.go('users');
 
-                }).catch(function(err) {
-
-                    if (err.toString().match(/Cannot remove the last admin/)) {
-
-                        user.errors.type.push('Cannot remove the last admin.');
-                        
-                    } else {
-
-                        message.error(err);
-                    }
-                });
+                }).catch(handleSaveError.bind(null, user));
 
             } else {
 
@@ -118,11 +108,7 @@ exports.create = function(roles, data) {
 
                     route.go('users');
 
-                }).catch(function(err) {
-
-                    message.error(err);
-
-                });
+                }).catch(handleSaveError.bind(null, user));
             }
 
             return false;
@@ -176,3 +162,21 @@ exports.create = function(roles, data) {
 
     return user;
 };
+
+function handleSaveError(user, err) {
+
+    var string = err.toString();
+
+    if (string.match(/Cannot remove the last admin/)) {
+
+        user.errors.type.push('Cannot remove the last admin.');
+
+    } else if (string.match(/username exists/)) {
+
+        user.errors.username.push('The username exists.');
+
+    } else {
+
+        message.error(err);
+    }
+}
