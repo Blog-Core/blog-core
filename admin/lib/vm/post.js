@@ -535,7 +535,7 @@ function updatePost(form, post, action) {
             route.go('entries/' + post.type());
         }
 
-    }).catch(message.error);
+    }).catch(saveError.bind(null, post));
 }
 
 // Saves the new post.
@@ -564,7 +564,21 @@ function savePost(form, post, action) {
             route.go('entries/' + post.type());
         }
 
-    }).catch(message.error);
+    }).catch(saveError.bind(null, post));
+}
+
+function saveError(post, err) {
+
+    if (err.toString().match(/entry with the same slug exists/)) {
+
+        post.errors.slug.push('Entry with the same slug exists.');
+
+        document.querySelector('.has-error input').focus();
+
+    } else {
+
+        message.error(err);
+    }
 }
 
 // Opens the preview window/tab for the post.
