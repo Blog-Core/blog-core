@@ -1,6 +1,7 @@
 {
   "name": "blog-core-admin",
   "version": "0.0.1",
+  "private": true,
   "devDependencies": {
     "brfs": "~1.2.0",
     "browserify": "4.x",
