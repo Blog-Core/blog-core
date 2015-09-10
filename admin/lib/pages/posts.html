@@ -8,7 +8,7 @@
             <!-- ko if: $parent.comments() -->
                 comments: <span data-bind="text: comments"></span>
             <!-- /ko -->
-            <div data-bind="visible: expanded" class="post-controls">
+            <div data-bind="visible: expanded" class="post-controls bc-margin-bottom-sm">
                 <!-- ko if: editable -->
                     <a data-bind="attr: { href: editLink }" class="btn btn-default btn-sm" href="#">
                         <span class="glyphicon glyphicon-edit"></span> Edit
@@ -27,6 +27,11 @@
                     </a>
                 <!-- /ko -->
             </div>
+            <!-- ko if: !published -->
+                <div>
+                    <span class="label label-danger">Not published</span>
+                </div>
+            <!-- /ko -->
         </div>
     </li>
 </ul>
