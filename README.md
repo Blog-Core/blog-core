@@ -2,6 +2,8 @@
 
 A CMS/blog framework for [Swi-Prolog](http://swi-prolog.org/).
 
+[![Build Status](https://travis-ci.org/rla/blog-core.svg)](https://travis-ci.org/rla/blog-core)
+
 ## Features
 
  * Multiple users and roles.
