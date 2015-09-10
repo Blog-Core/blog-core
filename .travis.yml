@@ -1,0 +1,7 @@
+before_script:
+  - sudo apt-add-repository ppa:swi-prolog/devel -y
+  - sudo apt-get update -q
+  - sudo apt-get install swi-prolog-nox
+  - swipl -g 'Os=[interactive(false)],pack_install(arouter,Os),pack_install(docstore,Os),pack_install(smtp,Os),pack_install(simple_template,Os),pack_install(sort_dict,Os),pack_install(dict_schema,Os),pack_install(markdown,Os),halt' -t 'halt(1)'
+
+script: make test
