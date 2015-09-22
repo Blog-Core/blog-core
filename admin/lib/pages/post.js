@@ -2,6 +2,7 @@ var fs = require('fs');
 var api = require('../api');
 var post = require('../vm/post');
 var view = require('../view');
+var preview = require('../preview');
 var resolveObject = require('../resolve_object');
 
 var template = fs.readFileSync(__dirname + '/post.html', { encoding: 'utf8' });
@@ -33,6 +34,15 @@ exports.create = function(type, id) {
         model.files(!model.files());
     };
 
+    // Shows preview when possible.
+
+    model.preview = function(callback) {
+
+        var url = model.post().preview.replace(/<slug>/g, model.post().slug());
+
+        preview.show(url, callback);
+    };
+
     return postData(id).then(function(data) {
 
         // data.post will be undefined when id is not set.
@@ -44,11 +54,24 @@ exports.create = function(type, id) {
 
         function saveHandler(e) {
 
-            if (e.keyCode == 83 && (navigator.platform.match('Mac') ? e.metaKey : e.ctrlKey)) {
+            if (e.keyCode === 83 && (navigator.platform.match('Mac') ? e.metaKey : e.ctrlKey)) {
 
                 e.preventDefault();
 
                 model.post().submit();
+            }
+
+            if (e.keyCode === 73 && (navigator.platform.match('Mac') ? e.metaKey : e.ctrlKey)) {
+
+                e.preventDefault();
+
+                model.post().submitUpdate().then(function() {
+
+                    model.preview(function() {
+
+                        editor.focus();
+                    });
+                });
             }
         }
 
@@ -60,6 +83,8 @@ exports.create = function(type, id) {
         model.dispose = function() {
 
             document.removeEventListener('keydown', saveHandler, false);
+
+            preview.dispose();
         };
 
         view.show(template, model);

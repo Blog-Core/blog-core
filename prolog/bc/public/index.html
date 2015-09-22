@@ -25,6 +25,9 @@
         .bc-margin-bottom-sm { margin-bottom: 10px; }
         #editor-wrap { position: relative; }
         #editor { position: relative; }
+        #preview { display: none; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background-color: #fff; }
+        #preview > iframe { width: 100%; border: 0; }
+        #preview-controls { display: none; position: fixed; top: 2em; left: 2em; }
     </style>
     <script>
         var bcEnvironment = '{{= environment }}';
@@ -34,7 +37,7 @@
 </head>
 <body>
     <div id="messages" class="messages"></div>
-    <div class="container">
+    <div class="container" id="main">
         <div class="spinner" id="spinner" style="display: none">
             <img src="/t-{{= cache_token }}/admin/img/spinner.gif">
         </div>
@@ -56,6 +59,11 @@
             <a class="btn btn-default" href="#logout">Logout</a>
         </div>
         <div id="content"></div>
+    </div>
+    <div id="preview"></div>
+    <div id="preview-controls">
+        <a href="#" class="btn btn-primary btn-lg" data-control="close">
+            <span class="glyphicon glyphicon-remove"></span></a>
     </div>
     <script src="/t-{{= cache_token }}/admin/js/libs/es6-promise.js"></script>
     <script>ES6Promise.polyfill();</script>

@@ -109,14 +109,6 @@ exports.create = function(userInfo, type, types, authors, files, data) {
             submitPost(post, 'leave');
         },
 
-        // Similar to submit but opens preview
-        // in another window.
-
-        saveAndPreview: function() {
-
-            submitPost(post, 'preview');
-        },
-
         // The post language code. See
         // languages.js for the list of codes.
 
@@ -394,6 +386,13 @@ exports.create = function(userInfo, type, types, authors, files, data) {
         }
     };
 
+    // FIXME refactor
+
+    post.submitUpdate = function() {
+
+        return submitPost(post, 'edit');
+    };
+
     return post;
 };
 
@@ -504,7 +503,7 @@ function submitPost(post, action) {
 
         input.focus();
 
-        return false;
+        return Promise.resolve(false);
     }
 
     // When post has '$id' property
@@ -512,11 +511,11 @@ function submitPost(post, action) {
 
     if (post.$id()) {
 
-        updatePost(form, post, action);
+        return updatePost(form, post, action);
 
     } else {
 
-        savePost(form, post, action);
+        return savePost(form, post, action);
     }
 }
 
@@ -526,18 +525,13 @@ function submitPost(post, action) {
 
 function updatePost(form, post, action) {
 
-    api.updatePost(post.$id(), post.toJS()).then(function() {
+    return api.updatePost(post.$id(), post.toJS()).then(function() {
 
         message.info('The entry "' + post.title() + '" has been updated.');
 
-        if (action === 'edit' || action === 'preview') {
+        if (action === 'edit') {
 
             post.slug_changed(false);
-
-            if (action === 'preview') {
-
-                openPreview(post);
-            }
 
         } else {
 
@@ -551,7 +545,7 @@ function updatePost(form, post, action) {
 
 function savePost(form, post, action) {
 
-    api.savePost(post.toJS()).then(function(res) {
+    return api.savePost(post.toJS()).then(function(res) {
 
         message.info('The entry "' + post.title() + '" has been saved.');
 
@@ -559,14 +553,9 @@ function savePost(form, post, action) {
         // want to keep editing the post.
         // Otherwise go back to listing page.
 
-        if (action === 'edit' || action === 'preview') {
+        if (action === 'edit') {
 
             route.go('entry/' + post.type() + '/' + res);
-
-            if (action === 'preview') {
-
-                openPreview(post);
-            }
 
         } else {
 
@@ -592,21 +581,6 @@ function saveError(post, err) {
 
         message.error(err);
     }
-}
 
-// Opens the preview window/tab for the post.
-
-function openPreview(post) {
-
-    var url = post.preview.replace(/<slug>/g, post.slug());
-
-    var opened = window.open(url, 'entry-' + post.slug());
-
-    if (opened) {
-
-        // Could have been blocked by a
-        // popup blocker.
-
-        opened.focus();
-    }
+    throw err;
 }
