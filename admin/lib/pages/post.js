@@ -93,7 +93,7 @@ exports.create = function(type, id) {
 
         var editor = ace.edit('editor');
 
-        editor.container.style.lineHeight = 1.5
+        editor.container.style.lineHeight = 1.5;
 
         editor.setOptions({
 
