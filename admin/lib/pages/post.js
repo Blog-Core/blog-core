@@ -39,6 +39,29 @@ exports.create = function(type, id) {
 
         model.post(post.create(data.userInfo, type, data.types, data.users, data.files, data.post));
 
+        // Save handler.
+        // http://stackoverflow.com/questions/4446987/overriding-controls-save-functionality-in-browser
+
+        function saveHandler(e) {
+
+            if (e.keyCode == 83 && (navigator.platform.match('Mac') ? e.metaKey : e.ctrlKey)) {
+
+                e.preventDefault();
+
+                model.post().submit();
+            }
+        }
+
+        document.addEventListener('keydown', saveHandler, false);
+
+        // Remove save handler when
+        // view changes.
+
+        model.dispose = function() {
+
+            document.removeEventListener('keydown', saveHandler, false);
+        };
+
         view.show(template, model);
 
         // Setup Ace
