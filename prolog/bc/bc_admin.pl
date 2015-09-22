@@ -20,6 +20,8 @@
 
 :- route_get(admin/js/libs/File, send_file(js/libs/File)).
 
+:- route_get(admin/js/libs/ace/File, send_file(js/libs/ace/File)).
+
 :- route_get(admin, send_admin).
 
 % Renders the main admin HTML page.

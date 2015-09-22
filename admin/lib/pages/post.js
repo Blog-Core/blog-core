@@ -12,7 +12,25 @@ exports.create = function(type, id) {
 
     var model = {
 
-        post: ko.observable()
+        post: ko.observable(),
+
+        info: ko.observable(false),
+
+        files: ko.observable(false)
+    };
+
+    // Shows/hides the info section.
+
+    model.toggleInfo = function() {
+
+        model.info(!model.info());
+    };
+
+    // Shows/hides the files section.
+
+    model.toggleFiles = function() {
+
+        model.files(!model.files());
     };
 
     return postData(id).then(function(data) {
@@ -23,16 +41,56 @@ exports.create = function(type, id) {
 
         view.show(template, model);
 
+        // Setup Ace
+
+        var editor = ace.edit('editor');
+
+        editor.setOptions({
+
+            maxLines: Infinity,
+
+            showLineNumbers: false,
+
+            wrap: true,
+
+            showPrintMargin: false,
+
+            showFoldWidgets: false,
+
+            showGutter: false,
+
+            displayIndentGuides: false,
+
+            fontSize: 14,
+
+            fontFamily: 'monospace',
+
+            useSoftTabs: true,
+
+            tabSize: 2
+        });
+
+        // Theme
+
+        editor.setTheme('ace/theme/github');
+
+        // Mode
+
+        editor.getSession().setMode('ace/mode/markdown');
+
         if (id) {
 
-            // Existing post.
-            // Autoset initial textarea height.
+            editor.setValue(data.post.content);
 
-            var editor = document.getElementById('post-content');
+            // Go to last line
 
-            editor.style.height = (editor.scrollHeight + 10) + 'px';
+            editor.focus();
+
+            editor.gotoLine(1);
 
         } else {
+
+            model.info(true);
 
             // Set focus to title.
 
@@ -45,6 +103,14 @@ exports.create = function(type, id) {
                 title.setSelectionRange(0, title.value.length);
             }
         }
+
+        // Associate into the post.
+
+        model.post().editor = editor;
+
+        // Associate current model as well.
+
+        model.post().parent = model;
     });
 };
 

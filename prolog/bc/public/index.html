@@ -23,6 +23,8 @@
         .hide { display: none; }
         .bc-margin-top-sm { margin-top: 10px; }
         .bc-margin-bottom-sm { margin-bottom: 10px; }
+        #editor-wrap { position: relative; }
+        #editor { position: relative; }
     </style>
     <script>
         var bcEnvironment = '{{= environment }}';
@@ -63,5 +65,6 @@
     <script src="/t-{{= cache_token }}/admin/js/libs/kontainer-standalone.js"></script>
     <script src="/t-{{= cache_token }}/admin/js/libs/speakingurl.js"></script>
     <script src="/t-{{= cache_token }}/admin/js/admin.bundle.js"></script>
+    <script src="/t-{{= cache_token }}/admin/js/libs/ace/ace.js"></script>
 </body>
 </html>

@@ -181,7 +181,7 @@ exports.create = function(userInfo, type, types, authors, files, data) {
                 title: post.title(),
                 slug: post.slug(),
                 description: post.description(),
-                content: post.content(),
+                content: post.editor.getValue(),
                 type: post.type(),
                 date_published: date_published,
                 date_updated: date_updated,
@@ -493,6 +493,15 @@ function submitPost(post, action) {
 
     if (input) {
 
+        // Open the info section when
+        // it contains errors.
+
+        if (form.querySelector('.bc-info .has-error input,' +
+            ' .bc-info .has-error textarea, .bc-info .has-error checkbox')) {
+
+            post.parent.info(true);
+        }
+
         input.focus();
 
         return false;
@@ -572,6 +581,10 @@ function saveError(post, err) {
     if (err.toString().match(/entry with the same slug exists/)) {
 
         post.errors.slug.push('Entry with the same slug exists.');
+
+        // Open info section.
+
+        post.parent.info(true);
 
         document.querySelector('.has-error input').focus();
 
