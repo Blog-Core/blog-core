@@ -8,7 +8,7 @@ var template = fs.readFileSync(__dirname + '/comments.html', { encoding: 'utf8' 
 
 // Page for the comments list.
 
-exports.create = function(id) {
+exports.create = function(type, id) {
 
     var model = {
 
@@ -19,13 +19,13 @@ exports.create = function(id) {
 
     var requests = {
 
-        entryInfo: api.entryInfo(params.id),
+        entryInfo: api.entryInfo(id),
 
-        userInfo: api.userInfo(params.id),
+        userInfo: api.userInfo(id),
 
-        typeInfo: api.typeInfo(params.type),
+        typeInfo: api.typeInfo(type),
 
-        comments: api.comments(params.id)
+        comments: api.comments(id)
     };
 
     return resolveObject(requests).then(function(data) {
