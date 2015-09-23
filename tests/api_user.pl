@@ -143,14 +143,12 @@ test('Update non-existing user', [setup(new_database)]):-
     assertion(Update.status = "error"),
     assertion(Update.message = "The user does not exist.").
 
-% FIXME ds_get choicepoint issue
-
 test('Update user password', [setup(new_database)]):-
     default_user_id(UserId),
-    ds_get(UserId, [password], Before),
+    ds_col_get(user, UserId, [password], Before),
     update_user(UserId, _{ type: admin, password: abc_not_used_before }, Update1),
     assertion(Update1.status = "success"),
-    ds_get(UserId, [password], After),
+    ds_col_get(user, UserId, [password], After),
     assertion(Before.password \= After.password), !.
 
 test('Remove the user', [setup(new_database)]):-

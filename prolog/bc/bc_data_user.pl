@@ -135,7 +135,7 @@ bc_user_list(Actor, Sorted):-
 bc_user(Actor, Id, User):-
     users_access(Actor),
     bc_user_exists(Id),
-    ds_get(Id, [username, fullname, type, link], User),
+    ds_col_get(user, Id, [username, fullname, type, link], User),
     debug(bc_data, 'retrieved the user ~p', [Id]).
 
 %! bc_user_remove(+Actor, +Id) is det.
@@ -147,7 +147,7 @@ bc_user_remove(Actor, Id):-
     bc_user_exists(Id),
     bc_remaining_admin(Id),
     bc_no_entries(Id),
-    ds_remove(Id),
+    ds_col_remove(user, Id),
     debug(bc_data, 'removed user ~p', [Id]).
 
 % Produces hex-formatted hash from

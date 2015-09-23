@@ -83,7 +83,7 @@ bc_no_entries(_):-
 % Checks that the user exists.
 
 bc_user_exists(Id):-
-    ds_get(Id, [type], _), !.
+    ds_col_get(user, Id, [type], _), !.
 
 bc_user_exists(_):-
     throw(error(user_not_exists)).
@@ -92,4 +92,4 @@ bc_user_exists(_):-
 
 bc_username_id(Username, Id):-
     ds_find(user, username=Username, [username], [User]),
-    Id = User.'$id'.
+    ds_id(User, Id).

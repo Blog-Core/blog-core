@@ -46,7 +46,7 @@ create_access(_, _):-
 % Updates the given entry. Reformats HTML.
 
 bc_entry_update(Actor, Entry):-
-    Id = Entry.'$id',
+    ds_id(Entry, Id),
     can_update(Actor, Entry),
     bc_entry_slug(Id, OldSlug),
     entry_format(Entry, Formatted),
@@ -55,7 +55,7 @@ bc_entry_update(Actor, Entry):-
     debug(bc_data_entry, 'updated entry ~p', [Id]).
 
 can_update(Actor, Entry):-
-    Id = Entry.'$id',
+    ds_id(Entry, Id),
     bc_entry_exists(Id),
     bc_valid_slug(Entry.slug),
     bc_slug_unique(Entry.slug, Id),
@@ -63,7 +63,7 @@ can_update(Actor, Entry):-
     update_access(Actor, Entry).
 
 update_access(Actor, Entry):-
-    Id = Entry.'$id',
+    ds_id(Entry, Id),
     update_type_access(Actor, Entry),
     update_author_access(Actor, Entry),
     bc_update_access_id(Actor, Id),
@@ -82,7 +82,7 @@ update_type_access(Actor, _):-
     Actor.type = admin, !.
 
 update_type_access(_, Entry):-
-    Id = Entry.'$id',
+    ds_id(Entry, Id),
     bc_entry_type(Id, Entry.type), !.
 
 update_type_access(_, _):-
@@ -95,7 +95,7 @@ update_author_access(Actor, _):-
     Actor.type = admin, !.
 
 update_author_access(_, Entry):-
-    Id = Entry.'$id',
+    ds_id(Entry, Id),
     bc_entry_author(Id, Entry.author), !.
 
 update_author_access(_, _):-
@@ -131,8 +131,8 @@ entry_format(EntryIn, EntryOut):-
 bc_entry_remove(Actor, Id):-
     can_remove(Actor, Id),
     bc_entry_slug(Id, Slug),
-    ds_remove(Id),
-    ds_remove(comment, post=Id),
+    ds_col_remove(entry, Id),
+    ds_col_remove_cond(comment, post=Id),
     remove_files(Slug),
     debug(bc_data_entry, 'removed entry ~p', [Id]).
 
@@ -175,7 +175,7 @@ bc_entry_list(Actor, Type, Sorted):-
 
 bc_entry(Actor, Id, WithCount):-
     can_view(Actor, Id),
-    ds_get(Id, [slug, type, date_published, date_updated,
+    ds_col_get(entry, Id, [slug, type, date_published, date_updated,
         commenting, published, title, author,
         content, description, content_type, tags, language], Entry), !,
     attach_comment_count(Entry, WithCount),
@@ -188,7 +188,7 @@ bc_entry(Actor, Id, WithCount):-
 
 bc_entry_info(Actor, Id, WithCount):-
     can_view(Actor, Id),
-    ds_get(Id, [slug, type, date_published, date_updated,
+    ds_col_get(entry, Id, [slug, type, date_published, date_updated,
         commenting, published, title, author,
         description, content_type, tags, language], Entry), !,
     attach_comment_count(Entry, WithCount),
@@ -207,7 +207,7 @@ view_access(_, _):-
 % Attaches comment count to the entry.
 
 attach_comment_count(EntryIn, EntryOut):-
-    Id = EntryIn.'$id',
+    ds_id(EntryIn, Id),
     ds_find(comment, post=Id, [post], List),
     length(List, Count),
     put_dict(_{ comments: Count }, EntryIn, EntryOut).
