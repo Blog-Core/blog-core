@@ -1,11 +1,12 @@
 <!-- ko with: post -->
     <h2 data-bind="text: title"></h2>
-    <div class="btn-group" role="group" aria-label="...">
-        <button data-bind="click: save" type="button"
-            class="btn btn-default" title="Save and leave">
+    <div class="btn-group bc-margin-bottom">
+        <button data-bind="click: $root.leave" type="button"
+            class="btn btn-default" title="Leave the editor">
             <span class="glyphicon glyphicon-chevron-left"></span>
         </button>
-        <button data-bind="click: submit" type="button"
+        <button data-bind="click: submit, css: { 'bc-red': $root.modified() },
+            disable: !$root.modified()" type="button"
             class="btn btn-default" title="Save and continue">
             <span class="glyphicon glyphicon-floppy-disk"></span>
         </button>
@@ -17,12 +18,18 @@
             type="button" class="btn btn-default">
             <span class="glyphicon glyphicon-paperclip"></span>
         </button>
-        <!-- ko if: preview -->
+        <!-- ko if: $root.hasPreview() -->
             <button data-bind="click: $root.preview" class="btn btn-default">
                 <span class="glyphicon glyphicon-eye-open"></span>
             </button>
         <!-- /ko -->
     </div>
+    <!-- ko if: $root.previewNotice() -->
+        <div class="alert alert-warning" role="alert">
+            Previews are not available for new entries.
+            Save the entry at least once before.
+        </div>
+    <!-- /ko -->
     <hr>
     <form data-bind="submit: submit" autocomplete="off" id="post">
         <!-- ko if: $root.info() -->

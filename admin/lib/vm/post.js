@@ -173,7 +173,7 @@ exports.create = function(userInfo, type, types, authors, files, data) {
                 title: post.title(),
                 slug: post.slug(),
                 description: post.description(),
-                content: post.editor.getValue(),
+                content: post.editor.content(),
                 type: post.type(),
                 date_published: date_published,
                 date_updated: date_updated,
@@ -393,6 +393,28 @@ exports.create = function(userInfo, type, types, authors, files, data) {
         return submitPost(post, 'edit');
     };
 
+    // Sets change callback.
+
+    post.change = function(callback) {
+
+        post.changeCallback = callback;
+    };
+
+    // Set up change detection.
+
+    ['author', 'title', 'slug', 'description', 'type',
+        'content_type', 'published', 'commenting', 'tags',
+        'language', 'date', 'update'].forEach(function(input) {
+
+        post[input].subscribe(function() {
+
+            if (typeof post.changeCallback === 'function') {
+
+                post.changeCallback();
+            }
+        });
+    });
+
     return post;
 };
 
@@ -530,6 +552,8 @@ function updatePost(form, post, action) {
         message.info('The entry "' + post.title() + '" has been updated.');
 
         if (action === 'edit') {
+
+            post.parent.modified(false);
 
             post.slug_changed(false);
 

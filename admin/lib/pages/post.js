@@ -2,6 +2,7 @@ var fs = require('fs');
 var api = require('../api');
 var post = require('../vm/post');
 var view = require('../view');
+var editor = require('../editor');
 var preview = require('../preview');
 var resolveObject = require('../resolve_object');
 
@@ -17,7 +18,13 @@ exports.create = function(type, id) {
 
         info: ko.observable(false),
 
-        files: ko.observable(false)
+        files: ko.observable(false),
+
+        modified: ko.observable(false),
+
+        hasPreview: ko.observable(false),
+
+        previewNotice: ko.observable(false)
     };
 
     // Shows/hides the info section.
@@ -38,9 +45,43 @@ exports.create = function(type, id) {
 
     model.preview = function(callback) {
 
-        var url = model.post().preview.replace(/<slug>/g, model.post().slug());
+        if (id) {
 
-        preview.show(url, callback);
+            // Preview is shown only for saved posts.
+
+            model.post().submitUpdate().then(function() {
+
+                var slug = model.post().slug();
+
+                var url = model.post().preview.replace(/<slug>/g, slug);
+
+                preview.show(url, function() {
+
+                    editor.focus();
+                });
+            });
+
+        } else {
+
+            model.previewNotice(true);
+        }
+    };
+
+    // Leaves from the editing page.
+
+    model.leave = function() {
+
+        if (model.modified()) {
+
+            if (confirm('You have modifications. Leave without saving?')) {
+
+                route.go('entries/' + model.post().type());
+            }
+
+        } else {
+
+            route.go('entries/' + model.post().type());
+        }
     };
 
     return postData(id).then(function(data) {
@@ -65,13 +106,7 @@ exports.create = function(type, id) {
 
                 e.preventDefault();
 
-                model.post().submitUpdate().then(function() {
-
-                    model.preview(function() {
-
-                        editor.focus();
-                    });
-                });
+                model.preview();
             }
         }
 
@@ -85,58 +120,27 @@ exports.create = function(type, id) {
             document.removeEventListener('keydown', saveHandler, false);
 
             preview.dispose();
+
+            editor.dispose();
         };
 
         view.show(template, model);
 
-        // Setup Ace
+        // Enable editor for the
+        // current page.
 
-        var editor = ace.edit('editor');
-
-        editor.container.style.lineHeight = 1.5;
-
-        editor.setOptions({
-
-            maxLines: Infinity,
-
-            showLineNumbers: false,
-
-            wrap: true,
-
-            showPrintMargin: false,
-
-            showFoldWidgets: false,
-
-            showGutter: false,
-
-            displayIndentGuides: false,
-
-            fontSize: 14,
-
-            fontFamily: 'monospace',
-
-            useSoftTabs: true,
-
-            tabSize: 2
-        });
-
-        // Theme
-
-        editor.setTheme('ace/theme/github');
-
-        // Mode
-
-        editor.getSession().setMode('ace/mode/markdown');
+        editor.enable();
 
         if (id) {
 
-            editor.setValue(data.post.content);
+            editor.begin(data.post.content);
 
-            // Go to last line
+            // Enable preview
 
-            editor.focus();
+            if (model.post().preview) {
 
-            editor.gotoLine(1);
+                model.hasPreview(true);
+            }
 
         } else {
 
@@ -153,6 +157,16 @@ exports.create = function(type, id) {
                 title.setSelectionRange(0, title.value.length);
             }
         }
+
+        editor.change(function() {
+
+            model.modified(true);
+        });
+
+        model.post().change(function() {
+
+            model.modified(true);
+        });
 
         // Associate into the post.
 
