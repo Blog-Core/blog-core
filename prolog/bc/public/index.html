@@ -28,6 +28,8 @@
         .bc-heading { background-color: #eee; }
         .bc-heading h1 { font-weight: normal; color: #666; }
         .bc-menu { border-top: 1px solid #ccc; margin-bottom: 20px; padding-bottom: 10px; }
+        .bc-heading .container { position: relative; }
+        .bc-version { color: #999; position: absolute; top: 10px; right: 20px; }
         #editor-wrap { position: relative; }
         #editor { position: relative; }
         #preview { display: none; position: absolute; top: 0; left: 0; bottom: 0;
@@ -54,6 +56,7 @@
                 document.getElementById('heading-1').textContent = title
                 document.title = title;
             </script>
+            <small class="bc-version">Version {{= version }}</small>
         </div>
     </div>
     <div class="bc-menu">
@@ -76,13 +79,17 @@
         </div>
     </div>
     <div class="container" id="main">
-        <div data-bind="css: { hidden: bcEnvironment !== 'development'}"
-            class="hidden alert alert-warning" role="alert">
+        <div class="hidden alert alert-warning" id="env-warning">
             You are running in development mode. Many caching features
             are disabled. You can enable the production mode by setting the
             environment variable PL_ENV=production prior running the Blog-Core
             process.
         </div>
+        <script>
+            if (bcEnvironment === 'development') {
+                document.getElementById('env-warning').classList.remove('hidden');
+            }
+        </script>
         <div id="content"></div>
     </div>
     <div id="preview"></div>

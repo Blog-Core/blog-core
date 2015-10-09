@@ -31,9 +31,11 @@ send_admin:-
     bc_environment(Env),
     bc_config_get(default_language, Lang),
     admin_relative(index, Full),
+    pack_property(blog_core, version(Version)),
     bc_view_send(Full, _{
         environment: Env,
-        language: Lang
+        language: Lang,
+        version: Version
     }).
 
 send_file(Spec):-
