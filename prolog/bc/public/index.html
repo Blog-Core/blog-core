@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/t-{{= cache_token }}/admin/css/bootstrap.min.css">
     <title>Blog-Core admin</title>
     <style>
-        body { margin-top: 1em; margin-bottom: 1em; }
+        body { margin-bottom: 1em; }
         .nav { margin-bottom: 1em; }
         .messages { position: fixed; top: 2em; left: 2em; right: 2em; z-index: 10000; opacity: 0.85; }
         .text-right { text-align: right; }
@@ -25,6 +25,9 @@
         .bc-margin-top-sm { margin-top: 10px; }
         .bc-margin-bottom-sm { margin-bottom: 10px; }
         .bc-red { color: red; }
+        .bc-heading { background-color: #eee; }
+        .bc-heading h1 { font-weight: normal; color: #666; }
+        .bc-menu { border-top: 1px solid #ccc; margin-bottom: 20px; padding-bottom: 10px; }
         #editor-wrap { position: relative; }
         #editor { position: relative; }
         #preview { display: none; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background-color: #fff; }
@@ -39,26 +42,45 @@
 </head>
 <body>
     <div id="messages" class="messages"></div>
-    <div class="container" id="main">
-        <div class="spinner" id="spinner" style="display: none">
-            <img src="/t-{{= cache_token }}/admin/img/spinner.gif">
+    <div class="spinner" id="spinner" style="display: none">
+        <img src="/t-{{= cache_token }}/admin/img/spinner.gif">
+    </div>
+    <div class="bc-heading">
+        <div class="container">
+            <h1 id="heading-1">Blog-Core admin</h1>
+            <script>
+                var title = 'Blog-Core @' + window.location.hostname;
+                document.getElementById('heading-1').textContent = title
+                document.title = title;
+            </script>
         </div>
-        <h1>Blog-Core admin</h1>
+    </div>
+    <div class="bc-menu">
+        <div class="container">
+            <div data-bind="css: { hide: !active() }" class="btn-group hide" id="menu">
+                <!-- ko foreach: types -->
+                    <a data-bind="css: { active: $parent.active() === name },
+                        attr: { href: '#entries/' + name }"
+                        class="btn btn-default" href="#">
+                            <span class="glyphicon glyphicon-edit"></span>
+                            <!-- ko text: menu_label --><!-- /ko -->
+                        </a>
+                <!-- /ko -->
+                <a data-bind="css: { active: active() === 'users' }"
+                    class="btn btn-default" href="#users">
+                    <span class="glyphicon glyphicon-user"></span> Users</a>
+                <a class="btn btn-default" href="#logout">
+                    <span class="glyphicon glyphicon-log-out"></span> Logout</a>
+            </div>
+        </div>
+    </div>
+    <div class="container" id="main">
         <div data-bind="css: { hidden: bcEnvironment !== 'development'}"
             class="hidden alert alert-warning" role="alert">
             You are running in development mode. Many caching features
             are disabled. You can enable the production mode by setting the
             environment variable PL_ENV=production prior running the Blog-Core
             process.
-        </div>
-        <div data-bind="css: { hide: !active() }" class="btn-group hide" id="menu">
-            <!-- ko foreach: types -->
-                <a data-bind="css: { active: $parent.active() === name },
-                    attr: { href: '#entries/' + name }, text: menu_label"
-                    class="btn btn-default" href="#"></a>
-            <!-- /ko -->
-            <a data-bind="css: { active: active() === 'users' }" class="btn btn-default" href="#users">Users</a>
-            <a class="btn btn-default" href="#logout">Logout</a>
         </div>
         <div id="content"></div>
     </div>
