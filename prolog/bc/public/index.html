@@ -30,9 +30,10 @@
         .bc-menu { border-top: 1px solid #ccc; margin-bottom: 20px; padding-bottom: 10px; }
         #editor-wrap { position: relative; }
         #editor { position: relative; }
-        #preview { display: none; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background-color: #fff; }
+        #preview { display: none; position: absolute; top: 0; left: 0; bottom: 0;
+            right: 0; background-color: #fff; z-index: 10000; }
         #preview > iframe { width: 100%; border: 0; }
-        #preview-controls { display: none; position: fixed; top: 2em; left: 2em; }
+        #preview-controls { display: none; position: fixed; top: 2em; left: 2em; z-index: 10001; }
     </style>
     <script>
         var bcEnvironment = '{{= environment }}';
