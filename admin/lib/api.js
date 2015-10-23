@@ -318,6 +318,34 @@ exports.roles = function() {
     return fetchGet('/api/roles');
 };
 
+// Finds trash items.
+
+exports.trash = function() {
+
+    return fetchGet('/api/trash');
+};
+
+// Removes the given entry from trash.
+
+exports.removeFromTrash = function(id) {
+
+    return fetchDelete('/api/trash/' + encodeURIComponent(id));
+};
+
+// Purges the whole trash.
+
+exports.purge = function() {
+
+    return fetchDelete('/api/trash');
+};
+
+// Restores item in trash.
+
+exports.restore = function(id) {
+
+    return fetchUpdate('/api/restore/' + encodeURIComponent(id));
+};
+
 // Checks whether the API key has been set.
 
 exports.hasKey = function() {

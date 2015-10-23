@@ -1,12 +1,13 @@
 :- module(bc_access, [
-    bc_read_access_id/2,     % +Actor, +Id
-    bc_read_access_entry/2,  % +Actor, +Id
-    bc_remove_access_id/2,   % +Actor, +Id
-    bc_update_access_id/2,   % +Actor, +Id
-    bc_create_access_type/2, % +Actor, +Type
-    bc_files_access_id/2,    % +Actor, +Id
-    bc_publish_access_id/2,  % +Actor, +Id
-    bc_login_access/1        % +Actor
+    bc_read_access_id/2,      % +Actor, +Id
+    bc_read_access_entry/2,   % +Actor, +Entry
+    bc_remove_access_id/2,    % +Actor, +Id
+    bc_remove_access_entry/2, % +Actor, +Entry
+    bc_update_access_id/2,    % +Actor, +Id
+    bc_create_access_type/2,  % +Actor, +Type
+    bc_files_access_id/2,     % +Actor, +Id
+    bc_publish_access_id/2,   % +Actor, +Id
+    bc_login_access/1         % +Actor
 ]).
 
 :- use_module(bc_type).
@@ -52,6 +53,18 @@ bc_remove_access_id(Actor, Id):-
     ;   member(remove_own, Grants),
         bc_entry_author(Id, AuthorId),
         Actor.'$id' = AuthorId), !.
+
+% Succeeds when the Actor has
+% remove access to the entry.
+
+bc_remove_access_entry(Actor, _):-
+    Actor.type = admin, !.
+
+bc_remove_access_entry(Actor, Entry):-
+    bc_type_actor_grants(Entry.type, Actor, Grants),
+    (   member(remove_any, Grants)
+    ;   member(remove_own, Grants),
+        Actor.'$id' = Entry.author), !.
 
 % Succeeds when the Actor has
 % update access to the entry.

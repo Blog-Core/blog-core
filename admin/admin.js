@@ -6,6 +6,7 @@ var post = require('./lib/pages/post');
 var users = require('./lib/pages/users');
 var user = require('./lib/pages/user');
 var comments = require('./lib/pages/comments');
+var trash = require('./lib/pages/trash');
 
 // Errors binding.
 
@@ -102,6 +103,15 @@ route(/^comments\/([^\/]+)\/([^\/]+)/, function(type, id) {
     menu.active(type);
 
     comments.create(type, id).catch(message.error);
+});
+
+route(/^trash/, function() {
+
+    authenticated();
+
+    menu.active('trash');
+
+    trash.create().catch(message.error);
 });
 
 route(/^users/, function() {

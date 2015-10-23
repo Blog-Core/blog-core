@@ -70,6 +70,9 @@
                             <!-- ko text: menu_label --><!-- /ko -->
                         </a>
                 <!-- /ko -->
+                <a data-bind="css: { active: active() === 'trash' }"
+                    class="btn btn-default" href="#trash">
+                    <span class="glyphicon glyphicon-trash"></span> Trash</a>
                 <a data-bind="css: { active: active() === 'users' }"
                     class="btn btn-default" href="#users">
                     <span class="glyphicon glyphicon-user"></span> Users</a>

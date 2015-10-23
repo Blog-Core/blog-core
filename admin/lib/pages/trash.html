@@ -1,0 +1,25 @@
+<h2>Trash</h2>
+<!-- ko if: items().length === 0 -->
+    <div class="alert alert-info" role="alert">
+        Trash has no entries.
+    </div>
+<!-- /ko -->
+<ul data-bind="foreach: items" class="list-group">
+    <li class="list-group-item post-item">
+        <h4 data-bind="click: expand, text: title" class="list-group-item-heading"></h4>
+        <div class="list-group-item-text">
+            Type: <span data-bind="text: type"></span>
+            <div data-bind="visible: expanded" class="post-controls">
+                <a data-bind="click: remove" class="btn btn-default btn-sm" href="#">
+                    <span class="glyphicon glyphicon-remove"></span> Remove
+                </a>
+                <a data-bind="click: restore" class="btn btn-default btn-sm" href="#">
+                    <span class="glyphicon glyphicon-floppy-disk"></span> Restore
+                </a>
+            </div>
+        </div>
+    </li>
+</ul>
+<a data-bind="click: purge" class="btn btn-default" href="#">
+    <span class="glyphicon glyphicon-remove"></span> Purge trash
+</a>

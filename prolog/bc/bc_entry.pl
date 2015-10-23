@@ -16,29 +16,36 @@
 % FIXME document
 
 bc_entry_author(Id, AuthorId):-
-    ds_col_get(entry, Id, [author], Entry),
+    (   ds_col_get(entry, Id, [author], Entry)
+    ;   ds_col_get(trash, Id, [author], Entry)), !,
     Entry.author = AuthorId.
 
 bc_entry_type(Id, Type):-
-    ds_col_get(entry, Id, [type], Entry),
+    (   ds_col_get(entry, Id, [type], Entry)
+    ;   ds_col_get(trash, Id, [type], Entry)), !,
     Entry.type = Type.
 
 bc_entry_published(Id, Published):-
-    ds_col_get(entry, Id, [published], Entry),
+    (   ds_col_get(entry, Id, [published], Entry)
+    ;   ds_col_get(trash, Id, [published], Entry)), !,
     Entry.published = Published.
 
 bc_entry_commenting(Id, Commenting):-
-    ds_col_get(entry, Id, [commenting], Entry),
+    (   ds_col_get(entry, Id, [commenting], Entry)
+    ;   ds_col_get(trash, Id, [commenting], Entry)), !,
     Entry.commenting = Commenting.
 
 bc_entry_slug(Id, Slug):-
-    ds_col_get(entry, Id, [slug], Entry),
+    (   ds_col_get(entry, Id, [slug], Entry)
+    ;   ds_col_get(trash, Id, [slug], Entry)), !,
     Entry.slug = Slug.
 
 % Finds entry id by slug.
+% Also looks into trash.
 
 bc_slug_id(Slug, Id):-
-    ds_find(entry, slug=Slug, [slug], [Entry]),
+    (   ds_find(entry, slug=Slug, [slug], [Entry])
+    ;   ds_find(trash, slug=Slug, [slug], [Entry])), !,
     ds_id(Entry, Id).
 
 % Checks that slug is not used before.

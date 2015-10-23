@@ -2,7 +2,11 @@
     bc_entry_save/3,          % +Actor, +Entry, -Id
     bc_entry_update/2,        % +Actor, +Entry
     bc_entry_remove/2,        % +Actor, +Id
+    bc_entry_remove_trash/2,  % +Actor, +Id
+    bc_entry_restore/2,       % +Actor, +Id
     bc_entry_list/3,          % +Actor, +Type, -List
+    bc_trash_list/2,          % +Actor, -List
+    bc_purge_trash/1,         % +Actor
     bc_entry/3,               % +Actor, +Id, -Entry
     bc_entry_info/3           % +Actor, +Id, -Entry
 ]).
@@ -130,11 +134,29 @@ entry_format(EntryIn, EntryOut):-
 
 bc_entry_remove(Actor, Id):-
     can_remove(Actor, Id),
+    ds_move(entry, Id, trash),
+    debug(bc_data_entry, 'moved to trash: ~p', [Id]).
+
+%! bc_entry_remove_trash(+Actor, +Id) is det.
+%
+% Removes entry from trash.
+
+bc_entry_remove_trash(Actor, Id):-
+    can_remove(Actor, Id),
     bc_entry_slug(Id, Slug),
-    ds_col_remove(entry, Id),
+    ds_col_remove(trash, Id),
     ds_col_remove_cond(comment, post=Id),
     remove_files(Slug),
     debug(bc_data_entry, 'removed entry ~p', [Id]).
+
+%! bc_entry_restore(+Actor, +Id) is det.
+%
+% Restores the given entry from trash.
+% Require remove permission.
+
+bc_entry_restore(Actor, Id):-
+    can_remove(Actor, Id),
+    ds_move(trash, Id, entry).
 
 can_remove(Actor, Id):-
     bc_entry_exists(Id),
@@ -168,6 +190,34 @@ bc_entry_list(Actor, Type, Sorted):-
     maplist(attach_comment_count, Filtered, List),
     sort_dict(date_updated, desc, List, Sorted),
     debug(bc_data_entry, 'retrieved entry list', []).
+
+%! bc_trash_list(+Actor, -List) is det.
+%
+% Retrieves the list of entries in trash.
+% Does not include contents and HTML.
+% Sorts by date_updated desc. Only includes
+% these that the user has access to.
+
+bc_trash_list(Actor, Sorted):-
+    ds_all(trash, [slug, type, date_published,
+        date_updated, commenting, published,
+        title, author], Entries),
+    include(bc_remove_access_entry(Actor), Entries, Filtered),
+    maplist(attach_comment_count, Filtered, List),
+    sort_dict(date_updated, desc, List, Sorted),
+    debug(bc_data_entry, 'retrieved trash list', []).
+
+%! bc_purge_trash(Actor) is det.
+%
+% Removes all entries from trash
+% that the actor has access to.
+
+bc_purge_trash(Actor):-
+    ds_all(trash, [type, author], Entries),
+    include(bc_remove_access_entry(Actor), Entries, Filtered),
+    maplist(ds_id, Filtered, Ids),
+    maplist(bc_entry_remove_trash(Actor), Ids),
+    debug(bc_data_entry, 'purged trash', []).
 
 %! bc_entry(+Actor, +Id, -Entry) is det.
 %

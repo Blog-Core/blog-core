@@ -109,6 +109,68 @@ test('List of posts', [setup(new_database)]):-
     assertion(get_dict(date_published, First, _)),
     assertion(get_dict(date_updated, First, _)).
 
+test('List of trash, empty', [setup(new_database)]):-
+    list_trash(Posts),
+    assertion(Posts.status = "success"),
+    assertion(is_list(Posts.data)),
+    assertion(Posts.data = []).
+
+test('List of trash, one entry', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    new_post(AuthorId, test_post, Post),
+    assertion(Post.status = "success"),
+    remove_post(Post.data, Removed),
+    assertion(Removed.status = "success"),
+    list_trash(Posts),
+    assertion(Posts.status = "success"),
+    assertion(is_list(Posts.data)),
+    assertion(Posts.data = [_]).
+
+test('Restore trash entry', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    new_post(AuthorId, test_post, Post),
+    assertion(Post.status = "success"),
+    remove_post(Post.data, Removed),
+    assertion(Removed.status = "success"),
+    list_trash(Posts),
+    assertion(is_list(Posts.data)),
+    assertion(Posts.data = [_]),
+    restore_post(Post.data, Restored),
+    assertion(Restored.status = "success"),
+    list_trash(PostsAfter),
+    assertion(is_list(PostsAfter.data)),
+    assertion(PostsAfter.data = []).
+
+test('Purge trash entry', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    new_post(AuthorId, test_post, Post),
+    assertion(Post.status = "success"),
+    remove_post(Post.data, Removed),
+    assertion(Removed.status = "success"),
+    list_trash(Posts),
+    assertion(is_list(Posts.data)),
+    assertion(Posts.data = [_]),
+    purge_post(Post.data, Purged),
+    assertion(Purged.status = "success"),
+    list_trash(PostsAfter),
+    assertion(is_list(PostsAfter.data)),
+    assertion(PostsAfter.data = []).
+
+test('Purge all trash', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    new_post(AuthorId, test_post, Post),
+    assertion(Post.status = "success"),
+    remove_post(Post.data, Removed),
+    assertion(Removed.status = "success"),
+    list_trash(Posts),
+    assertion(is_list(Posts.data)),
+    assertion(Posts.data = [_]),
+    purge_trash(Purged),
+    assertion(Purged.status = "success"),
+    list_trash(PostsAfter),
+    assertion(is_list(PostsAfter.data)),
+    assertion(PostsAfter.data = []).
+
 test('List of posts, no authentication', [setup(new_database)]):-
     default_user_id(AuthorId),
     new_post(AuthorId, test_post, Post),

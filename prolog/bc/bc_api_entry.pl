@@ -57,6 +57,46 @@ entry_list(Type):-
     bc_entry_list(Actor, Type, List),
     bc_reply_success(List).
 
+% List of entries in trash.
+
+:- route_get(api/trash,
+    bc_auth, trash_list).
+
+trash_list:-
+    bc_actor(Actor),
+    bc_trash_list(Actor, List),
+    bc_reply_success(List).
+
+% Restores the entry from trash.
+
+:- route_put(api/restore/Id,
+    bc_auth, entry_restore(Id)).
+
+entry_restore(Id):-
+    bc_actor(Actor),
+    bc_entry_restore(Actor, Id),
+    bc_reply_success(Id).
+
+% Removes the entry from trash.
+
+:- route_del(api/trash/Id,
+    bc_auth, entry_remove_trash(Id)).
+
+entry_remove_trash(Id):-
+    bc_actor(Actor),
+    bc_entry_remove_trash(Actor, Id),
+    bc_reply_success(Id).
+
+% Purges all entries from trash.
+
+:- route_del(api/trash,
+    bc_auth, purge_trash).
+
+purge_trash:-
+    bc_actor(Actor),
+    bc_purge_trash(Actor),
+    bc_reply_success([]).
+
 % Single entry with contents.
 
 :- route_get(api/entry/Id,

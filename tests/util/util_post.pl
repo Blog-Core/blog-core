@@ -5,7 +5,11 @@
     new_post/4,      % +AuthorId, +Slug, +Override, -Response
     update_post/3,   % +PostId, +Override, -Response
     remove_post/2,   % +PostId, -Response
-    list_posts/1,    % -Response,
+    restore_post/2,  % +PostId, -Response
+    purge_post/2,    % +PostId, -Response
+    purge_trash/1,   % -Response
+    list_posts/1,    % -Response
+    list_trash/1,    % -Response
     get_entry/2,     % +EntryId, -Response
     get_entry_info/2 % +EntryId, -Response
 ]).
@@ -65,10 +69,32 @@ remove_post(EntryId, Response):-
     atom_concat('/api/entry/', EntryId, Path),
     request_del(Path, Response).
 
+% Restores the given post.
+
+restore_post(EntryId, Response):-
+    atom_concat('/api/restore/', EntryId, Path),
+    request_put(Path, _{}, Response).
+
+% Purges the given post from trash.
+
+purge_post(EntryId, Response):-
+    atom_concat('/api/trash/', EntryId, Path),
+    request_del(Path, Response).
+
+% Purges all posts from trash.
+
+purge_trash(Response):-
+    request_del('/api/trash', Response).
+
 % Retrieves the list of posts.
 
 list_posts(Response):-
     request_get('/api/entries/post', Response).
+
+% Retrieves the list of trash.
+
+list_trash(Response):-
+    request_get('/api/trash', Response).
 
 % Retrieves the given entry.
 
