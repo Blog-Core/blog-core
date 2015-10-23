@@ -11,6 +11,7 @@
 
 :- use_module(library(http/http_wrapper)).
 :- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_header)).
 :- use_module(library(debug)).
 :- use_module(library(st/st_file)).
 :- use_module(library(st/st_render)).
@@ -20,7 +21,7 @@
 :- st_set_extension(html).
 
 :- dynamic(cache_enabled/0).
-:- dynamic(cache/3).
+:- dynamic(cache/4).
 
 %! bc_view_enable_cache is det.
 %
@@ -36,7 +37,7 @@ bc_view_enable_cache:-
 
 bc_view_disable_cache:-
     retractall(cache_enabled),
-    retractall(cache(_, _, _)),
+    retractall(cache(_, _, _, _)),
     debug(bc_view, 'view caching is disabled', []).
 
 %! bc_view_purge_cache is det.
@@ -44,7 +45,7 @@ bc_view_disable_cache:-
 % Purges all cache entries.
 
 bc_view_purge_cache:-
-    retractall(cache(_, _, _)),
+    retractall(cache(_, _, _, _)),
     debug(bc_view, 'purged cache', []).
 
 %! bc_view_not_found is det.
@@ -68,13 +69,22 @@ bc_view_see_other(Url):-
 %! bc_view_cached(+Path, +Content) is semidet.
 %
 % Produces reply from cached view. Fails when
-% there is no caches result for the URL path.
+% there is no cached result for the URL path.
 
 bc_view_cached(Path):-
-    cache(Path, Content, Type),
-    debug(bc_view, 'sending cached view for ~p', [Path]),
-    write_content_type(Type),
-    write(Content).
+    cache(Path, Content, Type, Timestamp),
+    http_current_request(Request),
+    (   memberchk(if_modified_since(Text), Request),
+        parse_time(Text, rfc_1123, Since),
+        Since >= Timestamp
+    ->  debug(bc_view, 'sending not-modified status for ~p', [Path]),
+        throw(http_reply(not_modified))
+    ;   debug(bc_view, 'sending cached view for ~p', [Path]),
+        get_time(Now),
+        write_cache_control_public,
+        write_last_modified(Now),
+        write_content_type(Type),
+        write(Content)).
 
 %! bc_view_send(+Name, +Data) is det.
 %
@@ -96,9 +106,12 @@ bc_view_send(Name, Data, Type):-
     cache_enabled, !,
     http_current_request(Request),
     memberchk(path(Path), Request),
+    get_time(Now),
+    write_cache_control_public,
+    write_last_modified(Now),
     write_content_type(Type),
     with_output_to(string(Content), st_render_file(Name, Data)),
-    asserta(cache(Path, Content, Type)),
+    asserta(cache(Path, Content, Type, Now)),
     debug(bc_view, 'stored view in cache ~p', [Path]),
     write(Content).
 
@@ -117,3 +130,21 @@ default_content_type('Content-type: text/html; charset=UTF-8').
 
 write_content_type(Type):-
     format('~w\r\n\r\n', [Type]).
+
+%! write_cache_control_public is det.
+%
+% Writes Cache-control: public header.
+
+write_cache_control_public:-
+    write('Cache-Control: public\r\n').
+
+%! write_last_modified(+Timestamp) is det.
+%
+% Writes Last-Modified header
+% based on the given timestamp.
+
+write_last_modified(Timestamp):-
+    stamp_date_time(Timestamp, Date, 'UTC'),
+    format_time(string(String),
+        '%a, %d %b %Y %T GMT', Date, posix),
+    format('Last-Modified: ~w\r\n', [String]).
