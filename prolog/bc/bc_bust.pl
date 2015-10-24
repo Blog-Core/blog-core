@@ -45,7 +45,7 @@ http:request_expansion(RequestIn, RequestOut):-
     atom_codes(PathIn, CodesIn),
     phrase(cache_busting_prefix, CodesIn, OutCodes),
     atom_codes(PathOut, OutCodes),
-    RequestOut = [path(PathOut)|Request],
+    RequestOut = [path(PathOut),cache_token(true)|Request],
     debug(bc_bust, 'Rewrote cache bust prefixed path ~p', [PathIn]).
 
 cache_busting_prefix -->

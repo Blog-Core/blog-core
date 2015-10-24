@@ -55,6 +55,7 @@
     :- asserta(bc_environment(production)).
     :- st_enable_cache.
     :- bc_view_enable_cache.
+    :- bc_enable_expires.
 :- else.
     :- asserta(bc_environment(development)).
     :- write(user_error, 'Running in development mode!'), nl(user_error).

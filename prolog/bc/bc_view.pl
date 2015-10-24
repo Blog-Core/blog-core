@@ -16,6 +16,8 @@
 :- use_module(library(st/st_file)).
 :- use_module(library(st/st_render)).
 
+:- use_module(bc_headers).
+
 % Sets file extension to be `.html`.
 
 :- st_set_extension(html).
@@ -72,11 +74,10 @@ bc_view_see_other(Url):-
 % there is no cached result for the URL path.
 
 bc_view_cached(Path):-
-    cache(Path, Content, Type, Timestamp),
+    cache(Path, Content, Type, Time),
     http_current_request(Request),
-    (   memberchk(if_modified_since(Text), Request),
-        parse_time(Text, rfc_1123, Since),
-        Since >= Timestamp
+    (   bc_if_modified_since(Request, Since),
+        Since >= Time
     ->  debug(bc_view, 'sending not-modified status for ~p', [Path]),
         throw(http_reply(not_modified))
     ;   debug(bc_view, 'sending cached view for ~p', [Path]),
@@ -144,7 +145,5 @@ write_cache_control_public:-
 % based on the given timestamp.
 
 write_last_modified(Timestamp):-
-    stamp_date_time(Timestamp, Date, 'UTC'),
-    format_time(string(String),
-        '%a, %d %b %Y %T GMT', Date, posix),
+    http_timestamp(Timestamp, String),
     format('Last-Modified: ~w\r\n', [String]).

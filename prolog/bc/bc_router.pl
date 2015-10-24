@@ -1,5 +1,6 @@
 :- module(bc_router, [
-    bc_route/1 % +Request
+    bc_route/1,         % +Request
+    bc_enable_expires/0
 ]).
 
 /** <module> HTTP routing
@@ -10,10 +11,30 @@ fallback to http_dispatch/1.
 */
 
 :- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_header)).
 :- use_module(library(debug)).
 :- use_module(library(arouter)).
 
 :- use_module(bc_view).
+:- use_module(bc_headers).
+
+:- dynamic(expires/0).
+
+%! bc_enable_expires is det.
+%
+% Enables Cache-Control and
+% Expires headers.
+
+bc_enable_expires:-
+    (   expires
+    ->  true
+    ;   asserta(expires)),
+    debug(bc_route, 'static file Expires/Cache-Control enabled', []).
+
+% Time in seconds for files
+% to be cached by clients.
+
+cache_control(5184000). % 60 days
 
 %! bc_route(+Request) is det.
 %
@@ -47,4 +68,13 @@ serve_file(Request):-
     memberchk(path(Path), Request),
     atom_concat(public, Path, File),
     exists_file(File),
-    http_reply_file(File, [], Request).
+    (   expires,
+        memberchk(cache_token(true), Request)
+    ->  cache_control(MaxAge),
+        get_time(Time),
+        Expires is Time + MaxAge,
+        http_timestamp(Expires, ExpiresString), % TODO move to bc_headers
+        format('Expires: ~w\r\n', [ExpiresString]),
+        format('Cache-Control: max-age=~w\r\n', [MaxAge])
+    ;   true),
+    http_reply_file(File, [cache(true)], Request).
