@@ -89,8 +89,6 @@
 
 % Sets up simple-template.
 
-:- st_enable_strip_white.
-:- st_set_extension(html).
 :- st_set_function(excerpt, 2, bc_excerpt).
 
 :- dynamic(initialized).

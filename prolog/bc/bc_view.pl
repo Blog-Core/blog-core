@@ -18,10 +18,6 @@
 
 :- use_module(bc_headers).
 
-% Sets file extension to be `.html`.
-
-:- st_set_extension(html).
-
 :- dynamic(cache_enabled/0).
 :- dynamic(cache/4).
 
@@ -111,14 +107,23 @@ bc_view_send(Name, Data, Type):-
     write_cache_control_public,
     write_last_modified(Now),
     write_content_type(Type),
-    with_output_to(string(Content), st_render_file(Name, Data)),
+    with_output_to(string(Content),
+        render_with_options(Name, Data)),
     asserta(cache(Path, Content, Type, Now)),
     debug(bc_view, 'stored view in cache ~p', [Path]),
     write(Content).
 
 bc_view_send(Name, Data, Type):-
     write_content_type(Type),
-    st_render_file(Name, Data).
+    render_with_options(Name, Data).
+
+% FIXME use cache option from bc_environment.
+
+render_with_options(Name, Data):-
+    current_output(Stream),
+    st_render_file(Name, Data, Stream,
+        _{ encoding: utf8, strip: true,
+           cache: true, extension: html }).
 
 % The default content type for views.
 
