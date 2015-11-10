@@ -17,6 +17,21 @@
 
 :- set_prolog_flag(encoding, utf8).
 
+:- use_module(bc_dep).
+
+% Install hook to intercept messages
+% about too old packs or SWI version.
+
+user:message_hook(Term, _, _):-
+    Term = error(bc_dep:_, _),
+    message_to_string(Term, String),
+    write(user_error, String), nl(user_error),
+    halt(1).
+
+% Check that SWI and pack dependecies are met.
+
+:- bc_check_dependencies.
+
 :- load_settings('settings.db').
 
 :- use_module(library(dcg/basics)).
