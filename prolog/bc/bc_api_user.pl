@@ -16,7 +16,7 @@
     bc_auth, user_save).
 
 user_save:-
-    bc_read_by_schema(user, User),
+    bc_read_by_schema(bc_user, User),
     bc_actor(Actor),
     bc_user_save(Actor, User, Id),
     bc_reply_success(Id).
@@ -27,7 +27,7 @@ user_save:-
     bc_auth, user_update(Id)).
 
 user_update(Id):-
-    bc_read_by_schema(user, User),
+    bc_read_by_schema(bc_user, User),
     put_dict('$id', User, Id, Update),
     bc_actor(Actor),
     bc_user_update(Actor, Update),
@@ -78,7 +78,7 @@ user_info:-
 
 % Schema for user data.
 
-:- register_schema(user, _{
+:- register_schema(bc_user, _{
     type: dict,
     tag: user,
     keys: _{

@@ -27,7 +27,7 @@ config_list:-
     bc_auth, config_update).
 
 config_update:-
-    bc_read_by_schema(config, Config),
+    bc_read_by_schema(bc_config, Config),
     Name = Config.name,
     Value = Config.value,
     bc_actor(Actor),
@@ -37,7 +37,7 @@ config_update:-
 
 % Generic config entry.
 
-:- register_schema(config, _{
+:- register_schema(bc_config, _{
     type: dict,
     tag: config,
     keys: _{

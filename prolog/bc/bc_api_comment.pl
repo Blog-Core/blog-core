@@ -28,7 +28,7 @@ comment_tree(PostId):-
     bc_call_handle_error, comment_save(Id)).
 
 comment_save(PostId):-
-    bc_read_by_schema(comment, Comment),
+    bc_read_by_schema(bc_comment, Comment),
     bc_comment_save(PostId, Comment, CommentId),
     bc_view_purge_cache,
     bc_reply_success(CommentId).
@@ -56,7 +56,7 @@ comment_question:-
 % Basic comments. Can be overriden to
 % add more properties.
 
-:- register_schema(comment, _{
+:- register_schema(bc_comment, _{
     type: dict,
     tag: comment,
     keys: _{

@@ -17,7 +17,7 @@
     bc_auth, entry_save).
 
 entry_save:-
-    bc_read_by_schema(entry, Post),
+    bc_read_by_schema(bc_entry, Post),
     bc_actor(Actor),
     bc_entry_save(Actor, Post, Id),
     bc_view_purge_cache,
@@ -29,7 +29,7 @@ entry_save:-
     bc_auth, entry_update(Id)).
 
 entry_update(Id):-
-    bc_read_by_schema(entry, Entry),
+    bc_read_by_schema(bc_entry, Entry),
     put_dict('$id', Entry, Id, Update),
     bc_actor(Actor),
     bc_entry_update(Actor, Update),
@@ -120,7 +120,7 @@ entry_get_info(Id):-
 % Entry schema.
 % can probably be reduced.
 
-:- register_schema(entry, _{
+:- register_schema(bc_entry, _{
     type: dict,
     tag: entry,
     keys: _{

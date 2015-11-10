@@ -44,13 +44,13 @@ bc_auth_user_by_key(User):-
     bc_call_handle_error, user_auth).
 
 user_auth:-
-    bc_read_by_schema(user_auth, Auth),
+    bc_read_by_schema(bc_user_auth, Auth),
     bc_user_auth(Auth, Info),
     bc_reply_success(Info).
 
 % Schema for authentication requests.
 
-:- register_schema(user_auth, _{
+:- register_schema(bc_user_auth, _{
     type: dict,
     tag: user,
     keys: _{
