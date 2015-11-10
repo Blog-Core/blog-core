@@ -61,7 +61,7 @@ function authenticated() {
         // check if custom menu entries need
         // reloading.
 
-        menu.load();
+        menu.load().catch(message.error);
 
     } else {
 
@@ -174,7 +174,8 @@ route(/^landing/, function() {
 
             route.go('entries/' + types[0].name);
         }
-    });
+
+    }).catch(message.error);
 });
 
 route(/.*/, function() {

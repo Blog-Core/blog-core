@@ -28,11 +28,28 @@ exports.create = function(data) {
 
         if (confirm('Remove the user?')) {
 
-            api.removeUser(user.$id).then(function() {
+            api.userInfo().then(function(userInfo) {
 
-                message.info('User "' + user.username + '" has been removed.');
+                return api.removeUser(user.$id).then(function() {
 
-                route.refresh();
+                    message.info('User "' + user.username + '" has been removed.');
+
+                    if (userInfo.$id === user.$id) {
+
+                        // User removed itself.
+
+                        sessionStorage.removeItem('api-key');
+
+                        localStorage.removeItem('api-key');
+
+                        window.location = '/admin';
+
+                    } else {
+
+                        route.refresh();
+                    }
+
+                });
 
             }).catch(message.error);
         }
