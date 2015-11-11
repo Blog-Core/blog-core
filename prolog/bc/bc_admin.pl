@@ -4,6 +4,7 @@
 :- use_module(library(http/http_wrapper)).
 :- use_module(library(arouter)).
 
+:- use_module(bc_env).
 :- use_module(bc_view).
 :- use_module(bc_main).
 :- use_module(bc_data_config).
@@ -28,7 +29,7 @@
 % Provides it configuration info.
 
 send_admin:-
-    bc_environment(Env),
+    bc_env(Env),
     bc_config_get(default_language, Lang),
     admin_relative(index, Full),
     pack_property(blog_core, version(Version)),
