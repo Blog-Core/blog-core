@@ -17,6 +17,7 @@
 :- use_module(library(st/st_render)).
 
 :- use_module(bc_headers).
+:- use_module(bc_env).
 
 :- dynamic(cache_enabled/0).
 :- dynamic(cache/4).
@@ -117,13 +118,14 @@ bc_view_send(Name, Data, Type):-
     write_content_type(Type),
     render_with_options(Name, Data).
 
-% FIXME use cache option from bc_environment.
-
 render_with_options(Name, Data):-
     current_output(Stream),
+    (   bc_env_production
+    ->  Cache = true
+    ;   Cache = false),
     st_render_file(Name, Data, Stream,
         _{ encoding: utf8, strip: true,
-           cache: true, extension: html }).
+           cache: Cache, extension: html }).
 
 % The default content type for views.
 

@@ -1,21 +1,25 @@
 :- module(bc_main, [
-    bc_main/1,
-    bc_main/2,
-    bc_environment/1 % -Env
+    bc_main/1, % +DatabaseFile
+    bc_main/2  % +DatabaseFile, +Options
 ]).
+
+/** <module> The main module
+*/
+
+:- set_prolog_flag(encoding, utf8).
+
+:- use_module(bc_env).
 
 % Catch uncaught errors/warnings and shut down
 % when they occur.
 
-:- if(getenv('PL_ENV', production)).
+:- if(bc_env_production).
     user:message_hook(Term, Type, _):-
         ( Type = error ; Type = warning ),
         message_to_string(Term, String),
         write(user_error, String), nl(user_error),
         halt(1).
 :- endif.
-
-:- set_prolog_flag(encoding, utf8).
 
 :- use_module(bc_dep).
 
@@ -53,29 +57,15 @@ user:message_hook(Term, _, _):-
 :- use_module(bc_data).
 :- use_module(bc_migrate).
 
-%! bc_environment(-Env) is det.
-%
-% Queries the current environment.
-% Env is either an atom `production` or `development`.
-% The environment is determined by the PL_ENV environment
-% variable. All values other than production will enable
-% the development environment.
-
-:- dynamic(bc_environment/1).
-
 % In development: most debug features.
 % In production: enable simple-template and view caching.
 
-:- if(getenv('PL_ENV', production)).
-    :- asserta(bc_environment(production)).
-    :- st_enable_cache.
+:- if(bc_env_production).
     :- bc_view_enable_cache.
     :- bc_enable_expires.
 :- else.
-    :- asserta(bc_environment(development)).
     :- write(user_error, 'Running in development mode!'), nl(user_error).
     :- use_module(library(http/http_error)).
-    %:- debug(http(_)).
     :- debug(arouter).
     :- debug(docstore).
     :- debug(bc_data).
