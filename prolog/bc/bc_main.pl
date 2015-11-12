@@ -88,6 +88,7 @@ user:message_hook(Term, _, _):-
     Term \= timeout_error(_, _),
     Term \= existence_error(_, _),
     Term \= io_error(_, _),
+    Term \= syntax_error(illegal_uri_query),
     get_prolog_backtrace(Frame, 20, Trace),
     format(user_error, 'Error: ~p', [Term]), nl(user_error),
     print_prolog_backtrace(user_error, Trace), nl(user_error), fail)).
