@@ -9,18 +9,6 @@
 :- set_prolog_flag(encoding, utf8).
 
 :- use_module(bc_env).
-
-% Catch uncaught errors/warnings and shut down
-% when they occur.
-
-:- if(bc_env_production).
-    user:message_hook(Term, Type, _):-
-        ( Type = error ; Type = warning ),
-        message_to_string(Term, String),
-        write(user_error, String), nl(user_error),
-        halt(1).
-:- endif.
-
 :- use_module(bc_dep).
 
 % Install hook to intercept messages
@@ -29,7 +17,7 @@
 user:message_hook(Term, _, _):-
     Term = error(bc_dep:_, _),
     message_to_string(Term, String),
-    write(user_error, String), nl(user_error),
+    writeln(user_error, String),
     halt(1).
 
 % Check that SWI and pack dependecies are met.
@@ -86,7 +74,7 @@ user:message_hook(Term, _, _):-
     (   Exception = error(Term)
     ;   Exception = error(Term, _)),
     Term \= timeout_error(_, _),
-    Term \= existence_error(_, _),
+    Term \= existence_error(_, _), % FIXME blocks missing predicate errors too
     Term \= io_error(_, _),
     Term \= syntax_error(illegal_uri_query),
     get_prolog_backtrace(Frame, 20, Trace),
