@@ -1,6 +1,7 @@
 :- module(bc_mail, [
-    bc_mail_send/4,
-    bc_mail_test/3 % +User, +Params, -Result
+    bc_mail_send/4,      % +Goal, +From, +Subject, +To
+    bc_mail_send_text/4, % +Text, +From, +Subject, +To
+    bc_mail_test/3       % +User, +Params, -Result
 ]).
 
 /** <module> Helper module to send mail notifications */
@@ -8,9 +9,14 @@
 :- use_module(library(smtp)).
 :- use_module(bc_data_config).
 
-% Tries to send a test email.
+%! bc_mail_test(+User, +Params, -Result) is det.
+%
+% Tries to send a test email. Result is one
+% of: error(E), fail, ok.
 
 bc_mail_test(User, Params, Result):-
+    must_be(dict, User),
+    must_be(dict, Params),
     BaseConfig = _{
         smtp: Params.host,
         from: Params.from,
@@ -22,7 +28,7 @@ bc_mail_test(User, Params, Result):-
     ->  Config = BaseConfig.put(auth, Params.user - Params.password)
     ;   Config = BaseConfig),
     wrap_smtp(User.username,
-        bc_mail_text_body(Params.body), Config, Result).
+        text_body(Params.body), Config, Result).
 
 :- meta_predicate(wrap_smtp(+, 1, +, -)).
 
@@ -41,18 +47,37 @@ wrap_smtp(To, Goal, Config, Result):-
 % Helper to write given
 % text to output.
 
-bc_mail_text_body(Text, Out):-
+text_body(Text, Out):-
     writeln(Out, Text).
 
 :- meta_predicate(bc_mail_send(1, +, +, +)).
 
+%! bc_mail_send(:Goal, +From, +Subject, +To) is det.
+%
+% Sends mail using the current SMTP configuration.
+% Takes Goal argument that must produce the mail
+% body. Goal must accept argument for output Stream.
+
 bc_mail_send(Goal, From, Subject, To):-
+    must_be(atom, From),
+    must_be(atom, Subject),
+    must_be(atom, To),
+    must_be(callable, Goal),
     (   bc_config_get(smtp_enabled, true)
     ->  smtp_config(Config),
         put_dict(_{ from: From, subject: Subject },
             Config, Options),
-        smtp_send_mail(To, Goal, Options)
+        wrap_smtp(To, Goal, Options, _)
     ;   true).
+
+%! bc_mail_send_text(+Text, +From, +Subject, +To) is det.
+%
+% Same as bc_mail_send/4 but takes prepared
+% text instead of closure.
+
+bc_mail_send_text(Text, From, Subject, To):-
+    must_be(atomic, Text),
+    bc_mail_send(text_body(Text), From, Subject, To).
 
 % Builds dict from the current
 % SMTP config options.
