@@ -6,22 +6,37 @@ exports.create = function(roles, data) {
     var user = {
 
         username: ko.observable(''),
+
         fullname: ko.observable(''),
+
         type: ko.observable('author'),
+
         link: ko.observable(''),
+
         password: ko.observable(''),
+
         password_edit: ko.observable(true),
+
         password_text: ko.observable(false),
+
         error: ko.observable(''),
+
         creating: true,
+
         roles: roles,
+
+        comment_notifications: ko.observable(false),
 
         errors: {
 
             username: ko.observableArray([]),
+
             fullname: ko.observableArray([]),
+
             password: ko.observableArray([]),
+
             link: ko.observableArray([]),
+
             type: ko.observableArray([])
         },
 
@@ -121,7 +136,8 @@ exports.create = function(roles, data) {
                 username: user.username(),
                 fullname: user.fullname(),
                 type: user.type(),
-                link: user.link()
+                link: user.link(),
+                comment_notifications: user.comment_notifications()
             };
 
             if (user.password_edit()) {
@@ -154,6 +170,7 @@ exports.create = function(roles, data) {
         user.type(data.type);
         user.link(data.link);
         user.password_edit(false);
+        user.comment_notifications(data.comment_notifications);
 
     } else {
 

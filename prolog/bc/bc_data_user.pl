@@ -129,13 +129,14 @@ bc_user_list(Actor, Sorted):-
 
 %! bc_user(+Actor, +Id, -User) is det.
 %
-% Retrieves the given user. Retrieved
-% fields are `username`, `fullname`, `type`, `link`.
+% Retrieves the given user.
 
 bc_user(Actor, Id, User):-
     users_access(Actor),
     bc_user_exists(Id),
-    ds_col_get(user, Id, [username, fullname, type, link], User),
+    ds_col_get(user, Id,
+        [username, fullname, type,
+        link, comment_notifications], User),
     debug(bc_data, 'retrieved the user ~p', [Id]).
 
 %! bc_user_remove(+Actor, +Id) is det.

@@ -1,6 +1,7 @@
 :- module(bc_entry, [
     bc_entry_exists/1,     % +Id
     bc_entry_author/2,     % +Id, -AuthorId
+    bc_entry_title/2,      % +Id, -Title
     bc_entry_type/2,       % +Id, -Type
     bc_entry_published/2,  % +Id, -Published
     bc_entry_commenting/2, % +Id, -Commenting
@@ -19,6 +20,11 @@ bc_entry_author(Id, AuthorId):-
     (   ds_col_get(entry, Id, [author], Entry)
     ;   ds_col_get(trash, Id, [author], Entry)), !,
     Entry.author = AuthorId.
+
+bc_entry_title(Id, Title):-
+    (   ds_col_get(entry, Id, [title], Entry)
+    ;   ds_col_get(trash, Id, [title], Entry)), !,
+    Entry.title = Title.
 
 bc_entry_type(Id, Type):-
     (   ds_col_get(entry, Id, [type], Entry)

@@ -85,6 +85,7 @@ user_info:-
         fullname: _{ type: atom, min_length: 1 },
         username: _{ type: atom, min_length: 1 },
         password: _{ type: atom, min_length: 6 },
+        comment_notifications: bool,
         type: _{ type: atom, min_length: 1, max_length: 100 },
         link: string
     },

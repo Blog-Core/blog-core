@@ -10,10 +10,12 @@
 :- use_module(library(docstore)).
 :- use_module(library(debug)).
 
+:- use_module(bc_mail).
 :- use_module(bc_entry).
 :- use_module(bc_comment).
 :- use_module(bc_access).
 :- use_module(bc_type).
+:- use_module(bc_data_config).
 :- use_module(bc_comment_question).
 :- use_module(bc_comment_format).
 :- use_module(bc_comment_tree).
@@ -36,7 +38,30 @@ bc_comment_tree(EntryId, Tree):-
 bc_comment_save(EntryId, Comment, Id):-
     can_create(EntryId, Comment),
     comment_save(EntryId, Comment, Id),
+    comment_notify(EntryId, Comment),
     debug(bc_data, 'saved comment ~p', [Id]).
+
+% Sends comment notification to the
+% post author when SMTP is enabled
+% and user wants to receive notifications.
+
+comment_notify(EntryId, Comment):-
+    bc_entry_author(EntryId, AuthorId),
+    ds_col_get(user, AuthorId, Author),
+    bc_entry_title(EntryId, Title),
+    bc_config_get(smtp_from, From),
+    atom_concat('Comment notification: ', Title, Subject),
+    (   Author.comment_notifications = true
+    ->  bc_mail_send(comment_notify_body(Comment),
+            From, Subject, Author.username)
+    ;   true).
+
+% Generates body for the comment
+% mail notification.
+
+comment_notify_body(Comment, Out):-
+    format(Out, 'Comment author: ~w~n~n', [Comment.author]),
+    writeln(Out, Comment.content).
 
 can_create(EntryId, Comment):-
     bc_entry_exists(EntryId),

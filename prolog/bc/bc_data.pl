@@ -84,7 +84,11 @@ bc_init:-
     bc_migrate(
         bc_smtp_from,
         'Adds smtp_from configuration parameter',
-        bc_smtp_from).
+        bc_smtp_from),
+    bc_migrate(
+        bc_comment_notifications,
+        'Adds option for users to receive comment notifications',
+        bc_comment_notifications).
 
 % Inserts the initial config.
 
@@ -103,6 +107,9 @@ bc_smtp_security:-
 
 bc_smtp_from:-
     bc_config_set(smtp_from, 'admin@example.com').
+
+bc_comment_notifications:-
+    ds_col_add_key(user, comment_notifications, true).
 
 % Inserts the initial user.
 
