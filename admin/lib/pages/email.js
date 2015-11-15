@@ -91,7 +91,7 @@ exports.create = function(id) {
 
             message.info('Mailing system parameters have been updated.');
 
-            model.editing(false);
+            route.refresh();
 
         }).catch(message.error);
     };
@@ -137,6 +137,13 @@ exports.create = function(id) {
             model.error('Mail testing failed: ' +
                 (err.jsendMessage ? err.jsendMessage : err.toString()));
         });
+    };
+
+    // Cancels editing. Refreshes current page.
+
+    model.cancel = function() {
+
+        route.refresh();
     };
 
     // Clears current form errors.
