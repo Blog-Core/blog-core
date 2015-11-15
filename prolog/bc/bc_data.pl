@@ -9,6 +9,7 @@
 :- use_module(bc_data_config).
 :- use_module(bc_data_user).
 :- use_module(bc_migrate).
+:- use_module(bc_search).
 :- use_module(bc_type).
 :- use_module(bc_role).
 
@@ -43,6 +44,7 @@
 bc_data_open(File):-
     ds_open(File),
     bc_init,
+    bc_index_all,
     debug(bc_data, 'opened docstore file ~p', [File]).
 
 %! bc_data_close is det.
@@ -51,6 +53,7 @@ bc_data_open(File):-
 
 bc_data_close:-
     ds_close,
+    bc_index_remove,
     debug(bc_data, 'closed docstore file', []).
 
 % Sets up initial values.

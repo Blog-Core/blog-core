@@ -44,6 +44,7 @@ user:message_hook(Term, _, _):-
 :- use_module(bc_excerpt).
 :- use_module(bc_data).
 :- use_module(bc_migrate).
+:- use_module(bc_search).
 
 % In development: most debug features.
 % In production: enable simple-template and view caching.
@@ -64,6 +65,7 @@ user:message_hook(Term, _, _):-
     :- debug(bc_main).
     :- debug(bc_type).
     :- debug(bc_role).
+    :- debug(bc_search).
 :- endif.
 
 % Writes exceptions with stacktrace into stderr.

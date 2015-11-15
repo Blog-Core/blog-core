@@ -13,6 +13,7 @@
     tests/api_user,
     tests/api_entry,
     tests/api_comment,
+    tests/api_search,
     tests/files,
     tests/view
 ], [ if(not_loaded) ]).

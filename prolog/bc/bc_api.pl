@@ -12,3 +12,4 @@
 :- use_module(bc_api_type).
 :- use_module(bc_api_role).
 :- use_module(bc_api_mail).
+:- use_module(bc_api_search).

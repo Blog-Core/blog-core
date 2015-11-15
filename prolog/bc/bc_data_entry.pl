@@ -19,6 +19,7 @@
 :- use_module(library(md/md_parse)).
 
 :- use_module(bc_access).
+:- use_module(bc_search).
 :- use_module(bc_entry).
 :- use_module(bc_files).
 :- use_module(bc_user).
@@ -31,6 +32,7 @@ bc_entry_save(Actor, Entry, Id):-
     can_create(Actor, Entry),
     entry_format(Entry, Formatted),
     ds_insert(Formatted, Id),
+    bc_index(Id),
     debug(bc_data_entry, 'saved entry ~p', [Id]).
 
 can_create(Actor, Entry):-
@@ -55,6 +57,7 @@ bc_entry_update(Actor, Entry):-
     bc_entry_slug(Id, OldSlug),
     entry_format(Entry, Formatted),
     ds_update(Formatted),
+    bc_index(Id),
     rename_directory(OldSlug, Entry.slug),
     debug(bc_data_entry, 'updated entry ~p', [Id]).
 
@@ -146,6 +149,7 @@ bc_entry_remove_trash(Actor, Id):-
     bc_entry_slug(Id, Slug),
     ds_col_remove(trash, Id),
     ds_col_remove_cond(comment, post=Id),
+    bc_index_remove(Id),
     remove_files(Slug),
     debug(bc_data_entry, 'removed entry ~p', [Id]).
 
