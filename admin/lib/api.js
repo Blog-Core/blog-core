@@ -163,7 +163,11 @@ function handleResponse(response) {
 
         } else {
 
-            throw new Error('API response is not success: ' + json.message);
+            var err = new Error('API response is not success: ' + json.message);
+
+            err.jsendMessage = json.message;
+
+            throw err;
         }
     });
 }
@@ -344,6 +348,29 @@ exports.purge = function() {
 exports.restore = function(id) {
 
     return fetchUpdate('/api/restore/' + encodeURIComponent(id));
+};
+
+// Finds configuration entries.
+
+exports.config = function() {
+
+    return fetchGet('/api/configs');
+};
+
+// Updates configuration entries.
+// Takes array of objects with name and
+// value properties.
+
+exports.updateConfig = function(array) {
+
+    return fetchUpdate('/api/configs', array);
+};
+
+// Tests the given mail settings.
+
+exports.testMail = function(settings) {
+
+    return fetchPost('/api/mail/test', settings);
 };
 
 // Checks whether the API key has been set.

@@ -1,8 +1,9 @@
 :- module(bc_data_config, [
-    bc_config_get/2,     % +Name, -Value
-    bc_config_set/2,     % +Name, +Value
-    bc_config_set_api/3, % +Actor, +Name, +Value
-    bc_config_list/2     % +Actor, -List
+    bc_config_get/2,          % +Name, -Value
+    bc_config_set/2,          % +Name, +Value
+    bc_config_set_api/3,      % +Actor, +Name, +Value
+    bc_config_set_list_api/2, % +Actor, +List
+    bc_config_list/2          % +Actor, -List
 ]).
 
 :- use_module(library(debug)).
@@ -21,12 +22,24 @@ bc_config_get(Name, Value):-
 
 %! bc_config_set_api(+Actor, +Name, +Value) is det.
 %
-% Same as bc_config_get/2 but checks that
+% Same as bc_config_set/2 but checks that
 % the current API user is an admin.
 
 bc_config_set_api(Actor, Name, Value):-
     config_access(Actor),
     bc_config_set(Name, Value).
+
+%! bc_config_set_list_api(+Actor, List) is det.
+%
+% Same as bc_config_set_api/2 but takes
+% a list of configuration entries.
+
+bc_config_set_list_api(Actor, List):-
+    config_access(Actor),
+    maplist(config_set_dict, List).
+
+config_set_dict(Dict):-
+    bc_config_set(Dict.name, Dict.value).
 
 config_access(Actor):-
     Actor.type = admin, !.

@@ -5,6 +5,7 @@ var posts = require('./lib/pages/posts');
 var post = require('./lib/pages/post');
 var users = require('./lib/pages/users');
 var user = require('./lib/pages/user');
+var email = require('./lib/pages/email');
 var comments = require('./lib/pages/comments');
 var trash = require('./lib/pages/trash');
 
@@ -148,6 +149,15 @@ route(/^login/, function() {
     menu.active(null);
 
     login.create().catch(message.error);
+});
+
+route(/^email/, function() {
+
+    authenticated();
+
+    menu.active('email');
+
+    email.create().catch(message.error);
 });
 
 route(/^logout/, function() {

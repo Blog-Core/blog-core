@@ -22,6 +22,7 @@
         .bc-controls { margin-bottom: 20px; }
         .hide { display: none; }
         .bc-margin-bottom { margin-bottom: 20px; }
+        .bc-margin-top { margin-top: 20px; }
         .bc-margin-top-sm { margin-top: 10px; }
         .bc-margin-bottom-sm { margin-bottom: 10px; }
         .bc-red { color: red; }
@@ -76,6 +77,9 @@
                 <a data-bind="css: { active: active() === 'users' }"
                     class="btn btn-default" href="#users">
                     <span class="glyphicon glyphicon-user"></span> Users</a>
+                <a data-bind="css: { active: active() === 'email' }"
+                    class="btn btn-default" href="#email">
+                    <span class="glyphicon glyphicon-envelope"></span> Email</a>
                 <a class="btn btn-default" href="#logout">
                     <span class="glyphicon glyphicon-log-out"></span> Logout</a>
             </div>

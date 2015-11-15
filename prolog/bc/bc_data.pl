@@ -76,7 +76,15 @@ bc_init:-
     bc_migrate(
         bc_remove_files,
         'Removes files key from users',
-        bc_remove_files).
+        bc_remove_files),
+    bc_migrate(
+        bc_smtp_security,
+        'Adds smtp_security configuration parameter',
+        bc_smtp_security),
+    bc_migrate(
+        bc_smtp_from,
+        'Adds smtp_from configuration parameter',
+        bc_smtp_from).
 
 % Inserts the initial config.
 
@@ -89,6 +97,12 @@ bc_smtp_settings:-
     bc_config_set(smtp_user, 'user'),
     bc_config_set(smtp_password, 'password'),
     bc_config_set(smtp_auth, 'login').
+
+bc_smtp_security:-
+    bc_config_set(smtp_security, 'none').
+
+bc_smtp_from:-
+    bc_config_set(smtp_from, 'admin@example.com').
 
 % Inserts the initial user.
 
