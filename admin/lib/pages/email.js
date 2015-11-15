@@ -63,7 +63,11 @@ exports.create = function(id) {
 
         // Test info message.
 
-        info: ko.observable()
+        info: ko.observable(),
+
+        // Flag to show password unmasked.
+
+        password_text: ko.observable(false)
     };
 
     // Saves settings and updates the

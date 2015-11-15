@@ -88,9 +88,14 @@
             <div data-bind="errors: errors.password" class="form-group">
                 <label for="smtp-password">SMTP password</label>
                 <input data-bind="textInput: form.password,
-                        disable: form.auth() === 'plain'"
+                        disable: form.auth() === 'plain',
+                        attr: { type: password_text() ? 'text' : 'password' }"
                     type="password" class="form-control" id="smtp-password"
                     placeholder="SMTP server password">
+            </div>
+            <div class="checkbox">
+                <label><input data-bind="checked: password_text" type="checkbox">
+                    Show text</label>
             </div>
             <div class="form-group">
                 <label for="smtp-security">SMTP security</label>
