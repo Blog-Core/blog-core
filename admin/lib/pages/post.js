@@ -84,7 +84,7 @@ exports.create = function(type, id) {
         }
     };
 
-    return postData(id).then(function(data) {
+    return postData(type, id).then(function(data) {
 
         // data.post will be undefined when id is not set.
 
@@ -175,6 +175,69 @@ exports.create = function(type, id) {
         // Associate current model as well.
 
         model.post().parent = model;
+
+        // Automatically update tags input.
+
+        model.post().tags.subscribe(function(value) {
+
+            var datalist = document.getElementById('taglist');
+
+            while (datalist.firstChild) {
+
+                datalist.removeChild(datalist.firstChild);
+            }
+
+            var options = [], length;
+
+            // Find matches.
+
+            var lwMatch = value.match(/^(.+\,\s*)(\w+)$/);
+
+            if (lwMatch) {
+
+                var prefix = lwMatch[1];
+
+                var last = lwMatch[2];
+
+                length = last.length;
+
+                data.tags.forEach(function(entry) {
+
+                    if (entry.tag.substring(0, length) === last) {
+
+                        options.push(prefix + entry.tag);
+                    }
+                });
+
+            } else {
+
+                var fMatch = value.match(/^\w+$/);
+
+                if (fMatch) {
+
+                    length = value.length;
+
+                    data.tags.forEach(function(entry) {
+
+                        if (entry.tag.substring(0, length) === value) {
+
+                            options.push(entry.tag);
+                        }
+                    });
+                }
+            }
+
+            // Repopulate the datalist.
+
+            options.forEach(function(option) {
+
+                var elem = document.createElement('option');
+
+                elem.value = option;
+
+                datalist.appendChild(elem);
+            });
+        });
     });
 };
 
@@ -183,7 +246,7 @@ exports.create = function(type, id) {
 // then retrieves data needed for the
 // new post.
 
-function postData(id) {
+function postData(type, id) {
 
     return api.userInfo().then(function(userInfo) {
 
@@ -193,7 +256,9 @@ function postData(id) {
 
             users: authors(userInfo),
 
-            userInfo: Promise.resolve(userInfo)
+            userInfo: Promise.resolve(userInfo),
+
+            tags: api.tags(type)
         };
 
         if (id) {

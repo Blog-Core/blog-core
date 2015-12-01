@@ -58,7 +58,11 @@
                             <label for="post-tags">Tags</label>
                             <input data-bind="textInput: tags"
                                 type="text" class="form-control input-sm" id="post-tags"
-                                placeholder="Tags">
+                                placeholder="Tags" list="taglist">
+                            <datalist id="taglist">
+                                <option value="node.js">
+                                <option value="javascript">
+                            </datalist>
                             <p class="help-block">Separate multiple tags with commas.</p>
                         </div>
                     </div>

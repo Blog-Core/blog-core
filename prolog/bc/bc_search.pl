@@ -1,18 +1,22 @@
 :- module(bc_search, [
     bc_search/3,
-    bc_index/1,        % +Id
-    bc_index_remove/1, % +Id
-    bc_index_remove/0, % +Id
+    bc_index/1,             % +Id
+    bc_index_remove/1,      % +Id
+    bc_index_remove/0,      % +Id
     bc_index_all/0,
-    bc_index_size/1    % -Bytes
+    bc_cosine_similarity/3, % +Id1, +Id2, -Cosine
+    bc_add_stopword/1,      % +Word
+    bc_terms/1              % -List
 ]).
 
 /** <module> Search support */
 
+:- use_module(library(error)).
 :- use_module(library(debug)).
 :- use_module(library(docstore)).
 :- use_module(library(sort_dict)).
 :- use_module(library(dcg/basics)).
+:- use_module(library(porter_stem)).
 
 :- use_module(bc_excerpt).
 
@@ -20,6 +24,138 @@
 % tokens.
 
 :- dynamic(content_index/4).
+:- dynamic(indexed/1).
+:- dynamic(term/1).
+:- dynamic(term_idf/2).
+:- dynamic(entry_tfidf/4).
+:- dynamic(stopword/1).
+
+bc_terms(List):-
+    findall(Idf-Term, term_idf(Term, Idf), Pairs),
+    sort(Pairs, List).
+
+bc_add_stopword(Word):-
+    must_be(atom, Word),
+    (   stopword(Word)
+    ->  true
+    ;   assertz(stopword(Word))).
+
+:- bc_add_stopword(the).
+:- bc_add_stopword(to).
+:- bc_add_stopword(for).
+:- bc_add_stopword(in).
+:- bc_add_stopword(is).
+:- bc_add_stopword(it).
+:- bc_add_stopword(about).
+:- bc_add_stopword(have).
+:- bc_add_stopword(many).
+:- bc_add_stopword(other).
+:- bc_add_stopword(some).
+:- bc_add_stopword(that).
+:- bc_add_stopword(them).
+:- bc_add_stopword(this).
+:- bc_add_stopword(when).
+
+% Calculates cosine similarity
+% between the two given documents.
+% See also:
+% https://janav.wordpress.com/2013/10/27/tf-idf-and-cosine-similarity/
+
+bc_cosine_similarity(Id1, Id2, Cosine):-
+    must_be(atom, Id1),
+    must_be(atom, Id2),
+    entry_tfidf(Id1, Vector1, Norm1, NonZero1),
+    score_vector(Vector1, Norm1, NonZero1, Id2, Cosine).
+
+score_vector(Vector1, Norm1, NonZero1, Id, Cosine):-
+    entry_tfidf(Id, Vector2, Norm2, NonZero2),
+    ord_intersection(NonZero1, NonZero2, NonZero),
+    dot_product(NonZero, 0, Vector1, Vector2, Product),
+    Cosine is Product / (Norm1 * Norm2).
+
+% Calculates dot product between the
+% two given documents.
+
+dot_product([Index|Indices], Acc, Vector1, Vector2, Product):-
+    arg(Index, Vector1, TfIdf1),
+    arg(Index, Vector2, TfIdf2),
+    Tmp is TfIdf1 * TfIdf2 + Acc,
+    dot_product(Indices, Tmp, Vector1, Vector2, Product).
+
+dot_product([], Acc, _, _, Acc).
+
+term_freq(Id, Term, Freq):-
+    (   content_index(Term, Id, _, Freq)
+    ->  true
+    ;   Freq = 0).
+
+% Rebuilds IDF values for terms.
+
+term_idf_rebuild:-
+    debug(bc_search, 'rebuilding IDF factor index', []),
+    retractall(term_idf(_, _)),
+    findall(Term, term(Term), Terms),
+    findall(_, indexed(_), Docs),
+    length(Docs, Count),
+    maplist(add_term_idf(Count), Terms).
+
+% Calculates and updates the
+% IDF value for the given term.
+
+add_term_idf(Count, Term):-
+    findall(_, content_index(Term, _, _, _), Docs),
+    length(Docs, NumDocs),
+    (   NumDocs = 0
+    ->  Idf = 1
+    ;   Idf is 1 + log(Count/NumDocs)),
+    assertz(term_idf(Term, Idf)).
+
+% Rebuilds all TF*IDF vectors.
+
+entry_tfidf_rebuild_all:-
+    debug(bc_search, 'rebuilding all TF*IDF vectors', []),
+    findall(Id, indexed(Id), Ids),
+    maplist(entry_tfidf_rebuild, Ids).
+
+% Rebuilds precalculated entry TF*IDF vector.
+
+entry_tfidf_rebuild(Id):-
+    debug(bc_search, 'rebuilding TF*IDF vector for ~w', [Id]),
+    retractall(entry_tfidf(Id, _, _, _)),
+    findall(Term-Idf, term_idf(Term, Idf), IdfsPairs),
+    maplist(entry_term_tfidf(Id), IdfsPairs, Items),
+    items_tfidf_vector_norm(Items, Vector, Norm, NonZero),
+    assertz(entry_tfidf(Id, Vector, Norm, NonZero)).
+
+items_tfidf_vector_norm(Items, Vector, Norm, NonZero):-
+    Vector =.. [tfid|Items],
+    tfidf_vector_norm(Vector, Norm),
+    findall(Index, (
+        arg(Index, Vector, Value), Value > 0),
+        NonZero).
+
+% Calculates the TF*IDF value for the given
+% term in the given entry.
+
+entry_term_tfidf(Id, Term-Idf, TfIdf):-
+    term_freq(Id, Term, Freq),
+    TfIdf is Freq * Idf.
+
+% Calculates vector norm from TF*IDF
+% vector.
+% FIXME write as tail-recursive predicate.
+
+tfidf_vector_norm(Vector, Norm):-
+    functor(Vector, _, Length),
+    Var = norm(0),
+    (   between(1, Length, Arg),
+        arg(Arg, Vector, TfIdf),
+        arg(1, Var, Current),
+        Value is TfIdf * TfIdf + Current,
+        nb_setarg(1, Var, Value),
+        fail
+    ;   arg(1, Var, Sum),
+        Norm is sqrt(Sum)).
 
 %! bc_search(Type, Query, Results) is det.
 %
@@ -33,11 +169,27 @@ bc_search(Type, Query, Results):-
     ds_find(entry, (type=Type, published=true),
         [slug, tags, title, author, date_published,
         date_updated, description, language], Entries),
-    maplist(score_tokens(Tokens), Entries, Scored),
-    include(above_zero, Scored, Filtered),
-    sort_dict(search_score, desc, Filtered, Sorted),
-    maplist(add_excerpt, Sorted, WithExcerpt),
-    maplist(add_author, WithExcerpt, Results).
+    query_tfidf_norm(Tokens, Vector, Norm, NonZero),
+    (   NonZero = []
+    ->  Results = []
+    ;   maplist(score_entry(Vector, Norm, NonZero), Entries, Scored),
+        include(above_zero, Scored, Filtered),
+        sort_dict(search_score, desc, Filtered, Sorted),
+        maplist(add_excerpt, Sorted, WithExcerpt),
+        maplist(add_author, WithExcerpt, Results)).
+
+query_tfidf_norm(Tokens, Vector, Norm, NonZero):-
+    findall(Term-Idf, term_idf(Term, Idf), IdfsPairs),
+    maplist(query_term_tfidf(Tokens), IdfsPairs, Items),
+    items_tfidf_vector_norm(Items, Vector, Norm, NonZero).
+
+% Helper to turn query tokens
+% into a vector of TF*IDF values.
+
+query_term_tfidf(Tokens, Term-Idf, TfIdf):-
+    (   memberchk(Term, Tokens)
+    ->  TfIdf = Idf
+    ;   TfIdf = 0).
 
 above_zero(Entry):-
     Entry.search_score > 0.
@@ -56,33 +208,10 @@ add_author(Entry, WithAuthor):-
 % based on token relevancy. Sets search_score
 % to -1 when no token matches.
 
-score_tokens(Tokens, Entry, WithScore):-
+score_entry(Vector, Norm, NonZero, Entry, WithScore):-
     ds_id(Entry, Id),
-    maplist(score_token(Id), Tokens, Scores),
-    (   memberchk(-1, Scores)
-    ->  Total = -1
-    ;   sum_list(Scores, Total)),
-    WithScore = Entry.put(search_score, Total).
-
-score_token(Id, Token, Score):-
-    (   content_index(Token, Id, _, Score)
-    ->  true
-    ;   Score = -1).
-
-%! bc_index_size(-Bytes) is det.
-%
-% Gives the memory usage of index
-% by number of bytes. This does include
-% atoms held by the index.
-
-bc_index_size(Bytes):-
-    findall(Ref,
-        nth_clause(content_index(_, _, _, _), _, Ref), List),
-    maplist(clause_size, List, Sizes),
-    sum_list(Sizes, Bytes).
-
-clause_size(Ref, Size):-
-    clause_property(Ref, size(Size)).
+    score_vector(Vector, Norm, NonZero, Id, Score),
+    WithScore = Entry.put(search_score, Score).
 
 %! bc_index_all is det.
 %
@@ -90,12 +219,15 @@ clause_size(Ref, Size):-
 
 bc_index_all:-
     debug(bc_search, 'indexing all entries', []),
-    ds_all(entry, [], Entries),
-    maplist(index_entry, Entries).
+    with_mutex(bc_index, (
+        ds_all(entry, [], Entries),
+        maplist(index_entry, Entries),
+        term_idf_rebuild,
+        entry_tfidf_rebuild_all)).
 
 index_entry(Entry):-
     ds_id(Entry, Id),
-    bc_index(Id).
+    index_unsafe(Id).
 
 %! bc_index(+Id, +Content) is det.
 %
@@ -105,12 +237,15 @@ index_entry(Entry):-
 
 bc_index(Id):-
     must_be(atom, Id),
-    with_mutex(bc_index,
-        bc_index_unsafe(Id)).
+    with_mutex(bc_index, (
+        index_unsafe(Id),
+        term_idf_rebuild,
+        entry_tfidf_rebuild(Id))).
 
-bc_index_unsafe(Id):-
+index_unsafe(Id):-
     debug(bc_search, 'indexing ~w', [Id]),
     retractall(content_index(_, Id, _, _)),
+    retractall(indexed(Id)),
     ds_col_get(entry, Id,
         [content, tags, title, slug], Entry),
     split(Entry.content, Tokens),
@@ -120,14 +255,17 @@ bc_index_unsafe(Id):-
     split(Entry.title, TitleTokens),
     maplist(add_tag_token(Id), TitleTokens),
     split(Entry.slug, SlugTokens),
-    maplist(add_tag_token(Id), SlugTokens).
+    maplist(add_tag_token(Id), SlugTokens),
+    assertz(indexed(Id)).
 
 % Adds tag token. Tag token has
 % relative weight 1.
 
 add_tag_token(Id, Tag):-
-    retractall(content_index(Tag, Id, _, _)),
-    assertz(content_index(Tag, Id, 1, 1)).
+    porter_stem(Tag, Stemmed),
+    add_term(Stemmed),
+    retractall(content_index(Stemmed, Id, _, _)),
+    assertz(content_index(Stemmed, Id, 1, 1)).
 
 %! bc_index_remove(+Id) is det.
 %
@@ -151,18 +289,30 @@ bc_index_remove:-
 % Recalculates relative historgram.
 
 add_token(Id, Length, Token):-
-    (   content_index(Token, Id, Count, _)
-    ->  retractall(content_index(Token, Id, _, _)),
-        NewCount is Count + 1,
-        NewRel is NewCount / Length,
-        assertz(content_index(Token, Id, NewCount, NewRel))
-    ;   NewRel is 1/Length,
-        assertz(content_index(Token, Id, 1, NewRel))).
+    (   stopword(Token)
+    ->  true
+    ;   add_term(Token),
+        (   content_index(Token, Id, Count, _)
+        ->  retractall(content_index(Token, Id, _, _)),
+            NewCount is Count + 1,
+            NewRel is NewCount / Length,
+            assertz(content_index(Token, Id, NewCount, NewRel))
+        ;   NewRel is 1/Length,
+            assertz(content_index(Token, Id, 1, NewRel)))).
 
-split(Text, Filtered):-
+% Helper to add token. Only
+% adds when it does not exist yet.
+
+add_term(Token):-
+    (   term(Token)
+    ->  true
+    ;   assertz(term(Token))).
+
+split(Text, Stemmed):-
     atom_codes(Text, Codes),
     split(Codes, [], [], Tokens),
-    exclude(empty_token, Tokens, Filtered).
+    exclude(empty_token, Tokens, Filtered),
+    maplist(porter_stem, Filtered, Stemmed).
 
 empty_token(Token):-
     atom_length(Token, Length),

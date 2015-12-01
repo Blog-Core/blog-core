@@ -1,19 +1,45 @@
 :- module(bc_tag_stat, [
-    bc_tag_stat/1 % -Tags
+    bc_tag_stat/1,     % -Tags
+    bc_tag_stat/2,     % +Type, -Tags
+    bc_tag_stat_all/2  % +Type, -Tags
 ]).
 
+/** <module> Tag statistics */
+
+:- use_module(library(assoc)).
 :- use_module(library(docstore)).
 :- use_module(library(sort_dict)).
 
-%! bc_tag_stat(-Tags) is det.
+%! bc_tag_stat(+Type, -Tags) is det.
 %
 % Finds tags that are used by published
 % posts. Gives list of dicts
 % _{ tag: Tag, count: Count }
 
+bc_tag_stat(Type, Tags):-
+    must_be(atom, Type),
+    ds_find(entry,
+        (published=true, type=Type),
+        [tags], Posts),
+    time(tag_statistics(Posts, _{}, Tags)).
+
+%! bc_tag_stat_all(+Type, -Tags) is det.
+%
+% Finds tags that are used by all
+% posts. Otherwise same as bc_tag_stat/2.
+
+bc_tag_stat_all(Type, Tags):-
+    must_be(atom, Type),
+    ds_find(entry, type=Type, [tags], Posts),
+    time(tag_statistics(Posts, _{}, Tags)).
+
+%! bc_tag_stat(-Tags) is det.
+%
+% Same as bc_tag_stat/2 but uses
+% post as the entry type.
+
 bc_tag_stat(Tags):-
-    ds_find(entry, (published=true, type=post), [tags], Posts),
-    tag_statistics(Posts, _{}, Tags).
+    bc_tag_stat(post, Tags).
 
 tag_statistics([Post|Posts], Acc, Tags):-
     PostTags = Post.tags,

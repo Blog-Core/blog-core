@@ -373,6 +373,13 @@ exports.testMail = function(settings) {
     return fetchPost('/api/mail/test', settings);
 };
 
+// List of all tags for the type.
+
+exports.tags = function(type) {
+
+    return fetchGet('/api/tags/' + encodeURIComponent(type) + '/all');
+};
+
 // Checks whether the API key has been set.
 
 exports.hasKey = function() {
