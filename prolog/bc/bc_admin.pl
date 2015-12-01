@@ -25,6 +25,8 @@
 
 :- route_get(admin, send_admin).
 
+:- route_get(admin/unsupported, send_unsupported).
+
 % Renders the main admin HTML page.
 % Provides it configuration info.
 
@@ -38,6 +40,13 @@ send_admin:-
         language: Lang,
         version: Version
     }).
+
+% Server the page that is shown to
+% unsupported browsers.
+
+send_unsupported:-
+    admin_relative(unsupported, Full),
+    bc_view_send(Full, _{}).
 
 send_file(Spec):-
     admin_relative(Spec, Full),

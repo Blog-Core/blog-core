@@ -5,6 +5,16 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/t-{{= cache_token }}/admin/css/bootstrap.min.css">
+    <script>var oldie = false;</script>
+    <!--[if lte IE 9]>
+        <script>oldie = true;</script>
+    <![endif]-->
+    <script>
+        if (oldie || !(Array.prototype.forEach) || !(console.log) ||
+            !(JSON) || !(FormData) || (!String.prototype.trim)) {
+            window.location.href = '/admin/unsupported';
+        }
+    </script>
     <title>Blog-Core admin</title>
     <style>
         body { margin-bottom: 1em; }
