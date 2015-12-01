@@ -36,6 +36,8 @@
     author(create, read_any, update_own, remove_own, publish_own, files)
 ], false).
 
+:- dynamic(opened/0).
+
 %! bc_data_open(+File) is det.
 %
 % Opens the docstore database file.
@@ -45,6 +47,7 @@ bc_data_open(File):-
     ds_open(File),
     bc_init,
     bc_index_all,
+    asserta(opened),
     debug(bc_data, 'opened docstore file ~p', [File]).
 
 %! bc_data_close is det.
@@ -54,6 +57,7 @@ bc_data_open(File):-
 bc_data_close:-
     ds_close,
     bc_index_remove,
+    retractall(opened),
     debug(bc_data, 'closed docstore file', []).
 
 % Sets up initial values.
@@ -134,3 +138,37 @@ bc_add_language:-
 
 bc_remove_files:-
     ds_col_remove_key(user, files).
+
+% Sleep time setting for the
+% Docstore snapshot thread.
+
+ds_snapshot_sleep(86400).
+
+start_ds_snapshot:-
+    debug(bc_data, 'started Docstore snapshot thread', []),
+    ds_snapshot_sleep(Sleep),
+    sleep(Sleep),
+    ds_snapshot_loop.
+
+% Tail-call optimized loop for
+% periodically sleeping and taking
+% Docstore snapshots.
+
+ds_snapshot_loop:-
+    debug(bc_data, 'taking Docstore snapshot', []),
+    ds_snapshot_iteration,
+    ds_snapshot_sleep(Sleep),
+    sleep(Sleep),
+    ds_snapshot_loop.
+
+ds_snapshot_iteration:-
+    \+ opened, !.
+
+ds_snapshot_iteration:-
+    (   catch(ds_snapshot, E, true)
+    ->  (   var(E)
+        ->  true
+        ;   format(user_error, 'Docstore snapshot call threw error: ~w~n', [E]))
+    ;   writeln(user_error, 'Docstore snapshot call failed')).
+
+:- thread_create(start_ds_snapshot, _, []).
