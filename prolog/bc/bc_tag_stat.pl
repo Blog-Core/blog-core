@@ -21,7 +21,7 @@ bc_tag_stat(Type, Tags):-
     ds_find(entry,
         (published=true, type=Type),
         [tags], Posts),
-    time(tag_statistics(Posts, _{}, Tags)).
+    tag_statistics(Posts, _{}, Tags).
 
 %! bc_tag_stat_all(+Type, -Tags) is det.
 %
@@ -31,7 +31,7 @@ bc_tag_stat(Type, Tags):-
 bc_tag_stat_all(Type, Tags):-
     must_be(atom, Type),
     ds_find(entry, type=Type, [tags], Posts),
-    time(tag_statistics(Posts, _{}, Tags)).
+    tag_statistics(Posts, _{}, Tags).
 
 %! bc_tag_stat(-Tags) is det.
 %

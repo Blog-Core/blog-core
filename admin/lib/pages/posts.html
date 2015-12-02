@@ -1,12 +1,40 @@
 <h2 data-bind="text: title"></h2>
 
+<div class="bc-margin-bottom">
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group">
+                <label for="filter-tag">Tag filter</label>
+                <select data-bind="value: tag, options: tags,
+                    optionsText: 'label', optionsValue: 'tag',
+                    optionsCaption: 'All tags'"
+                    class="form-control input-sm"></select>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label for="filter-status">Status filter</label>
+                <select data-bind="value: status"
+                    class="form-control input-sm">
+                    <option value="all">All</option>
+                    <option value="published">Published</option>
+                    <option value="unpublished">Not published</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
 <ul data-bind="foreach: posts" class="list-group">
     <li class="list-group-item post-item">
         <h4 data-bind="click: expand, text: title" class="list-group-item-heading"></h4>
         <div class="list-group-item-text">
             Update date: <span data-bind="text: formatDate(date_updated)"></span>
             <!-- ko if: $parent.comments() -->
-                comments: <span data-bind="text: comments"></span>
+                comments: <span data-bind="text: comments"></span><br>
+            <!-- /ko -->
+            <!-- ko if: tags.length > 0 -->
+                <span data-bind="text: tags.join(', ')" class="bc-entries-tag"></span>
             <!-- /ko -->
             <div data-bind="visible: expanded" class="post-controls bc-margin-bottom-sm">
                 <!-- ko if: editable -->
@@ -29,7 +57,7 @@
             </div>
             <!-- ko if: !published -->
                 <div>
-                    <span class="label label-danger">Not published</span>
+                    <span class="label label-info">Not published</span>
                 </div>
             <!-- /ko -->
         </div>
@@ -38,7 +66,7 @@
 
 <!-- ko if: posts().length === 0 -->
     <div class="alert alert-info" role="alert">
-        This entry type has no entries with access.
+        No entries to show.
     </div>
 <!-- /ko -->
 

@@ -24,6 +24,20 @@
             </button>
         <!-- /ko -->
     </div>
+    <!-- ko if: published() -->
+        <div class="bc-margin-bottom">
+            <div>
+                <span class="label label-danger">Published</span>
+            </div>
+        </div>
+    <!-- /ko -->
+    <!-- ko if: !published() -->
+        <div class="bc-margin-bottom">
+            <div>
+                <span class="label label-info">Not published</span>
+            </div>
+        </div>
+    <!-- /ko -->
     <!-- ko if: $root.previewNotice() -->
         <div class="alert alert-warning" role="alert">
             Previews are not available for new entries.

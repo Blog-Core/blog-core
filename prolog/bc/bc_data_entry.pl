@@ -189,7 +189,7 @@ remove_files(Slug):-
 bc_entry_list(Actor, Type, Sorted):-
     ds_find(entry, type=Type, [slug, type, date_published,
         date_updated, commenting, published,
-        title, author], Entries),
+        title, author, tags], Entries),
     include(bc_read_access_entry(Actor), Entries, Filtered),
     maplist(attach_comment_count, Filtered, List),
     sort_dict(date_updated, desc, List, Sorted),
@@ -205,7 +205,7 @@ bc_entry_list(Actor, Type, Sorted):-
 bc_trash_list(Actor, Sorted):-
     ds_all(trash, [slug, type, date_published,
         date_updated, commenting, published,
-        title, author], Entries),
+        title, author, tags], Entries),
     include(bc_remove_access_entry(Actor), Entries, Filtered),
     maplist(attach_comment_count, Filtered, List),
     sort_dict(date_updated, desc, List, Sorted),
