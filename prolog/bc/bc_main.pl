@@ -28,13 +28,17 @@ user:message_hook(Term, _, _):-
 
 :- use_module(library(dcg/basics)).
 :- use_module(library(http/thread_httpd)).
-:- use_module(library(prolog_stack)).
+:- use_module(library(http/http_error)).
 :- use_module(library(debug)).
 :- use_module(library(docstore)).
 :- use_module(library(arouter)).
 :- use_module(library(st/st_expr)).
 :- use_module(library(st/st_file)).
 :- use_module(library(st/st_parse)).
+
+% Log HTTP errors to stderr.
+
+:- debug(http(error)).
 
 :- use_module(bc_api).
 :- use_module(bc_router).
@@ -54,7 +58,6 @@ user:message_hook(Term, _, _):-
     :- bc_enable_expires.
 :- else.
     :- write(user_error, 'Running in development mode!'), nl(user_error).
-    :- use_module(library(http/http_error)).
     :- debug(arouter).
     :- debug(docstore).
     :- debug(bc_data).
@@ -67,21 +70,6 @@ user:message_hook(Term, _, _):-
     :- debug(bc_role).
     :- debug(bc_search).
 :- endif.
-
-% Writes exceptions with stacktrace into stderr.
-% Fail/0 call at the end allows the exception to be
-% processed by other hooks too.
-
-:- asserta((user:prolog_exception_hook(Exception, Exception, Frame, _):-
-    (   Exception = error(Term)
-    ;   Exception = error(Term, _)),
-    Term \= timeout_error(_, _),
-    Term \= existence_error(_, _), % FIXME blocks missing predicate errors too
-    Term \= io_error(_, _),
-    Term \= syntax_error(illegal_uri_query),
-    get_prolog_backtrace(Frame, 20, Trace),
-    format(user_error, 'Error: ~p', [Term]), nl(user_error),
-    print_prolog_backtrace(user_error, Trace), nl(user_error), fail)).
 
 % Sets up simple-template.
 
