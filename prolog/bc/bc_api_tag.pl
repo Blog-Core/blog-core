@@ -9,7 +9,7 @@
 :- use_module(bc_api_actor).
 :- use_module(bc_tag_stat).
 
-:- route_get(api/tags/Type/public,
+:- route_get(api/tags/Type/(public),
     public_tags(Type)).
 
 public_tags(Type):-

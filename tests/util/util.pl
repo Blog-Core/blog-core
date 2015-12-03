@@ -27,6 +27,7 @@ for unit/integration testing.
 :- use_module(prolog/bc/bc_data_user).
 :- use_module(prolog/bc/bc_data_comment).
 :- use_module(prolog/bc/bc_data_entry).
+:- use_module(prolog/bc/bc_search).
 
 :- dynamic(default_username/1).
 :- dynamic(no_auth/0).
@@ -40,6 +41,7 @@ new_database:-
     ->  delete_file('test.docstore')
     ;   true),
     bc_data_open('test.docstore'),
+    bc_index_clean,
     retractall(default_username(_)),
     asserta(default_username('admin@example.com')),
     retractall(no_auth).

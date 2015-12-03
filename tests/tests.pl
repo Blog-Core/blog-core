@@ -15,6 +15,7 @@
     tests/api_comment,
     tests/api_search,
     tests/api_tag,
+    tests/api_similarity,
     tests/files,
     tests/view
 ], [ if(not_loaded) ]).

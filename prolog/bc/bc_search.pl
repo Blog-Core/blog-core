@@ -4,6 +4,7 @@
     bc_index_remove/1,      % +Id
     bc_index_remove/0,      % +Id
     bc_index_all/0,
+    bc_index_clean/0,
     bc_cosine_similarity/3, % +Id1, +Id2, -Cosine
     bc_add_stopword/1,      % +Word
     bc_terms/1              % -List
@@ -29,6 +30,24 @@
 :- dynamic(term_idf/2).
 :- dynamic(entry_tfidf/4).
 :- dynamic(stopword/1).
+
+%! bc_index_clean is det.
+%
+% Cleans current index data.
+% Whole index must be rebuilt
+% afterwards.
+
+bc_index_clean:-
+    with_mutex(bc_index,
+        index_clean_unsafe).
+
+index_clean_unsafe:-
+    debug(bc_index, 'cleaning index', []),
+    retractall(content_index(_, _, _, _)),
+    retractall(indexed(_)),
+    retractall(term(_)),
+    retractall(term_idf(_, _)),
+    retractall(entry_term_tfidf(_, _, _, _)).
 
 bc_terms(List):-
     findall(Idf-Term, term_idf(Term, Idf), Pairs),
@@ -129,10 +148,10 @@ entry_tfidf_rebuild(Id):-
 
 items_tfidf_vector_norm(Items, Vector, Norm, NonZero):-
     Vector =.. [tfid|Items],
-    tfidf_vector_norm(Vector, Norm),
     findall(Index, (
         arg(Index, Vector, Value), Value > 0),
-        NonZero).
+        NonZero),
+    tfidf_vector_norm(NonZero, 0, Vector, Norm).
 
 % Calculates the TF*IDF value for the given
 % term in the given entry.
@@ -141,21 +160,15 @@ entry_term_tfidf(Id, Term-Idf, TfIdf):-
     term_freq(Id, Term, Freq),
     TfIdf is Freq * Idf.
 
-% Calculates vector norm from TF*IDF
-% vector.
-% FIXME write as tail-recursive predicate.
+% Calculates vector norm from the TF*IDF vector.
 
-tfidf_vector_norm(Vector, Norm):-
-    functor(Vector, _, Length),
-    Var = norm(0),
-    (   between(1, Length, Arg),
-        arg(Arg, Vector, TfIdf),
-        arg(1, Var, Current),
-        Value is TfIdf * TfIdf + Current,
-        nb_setarg(1, Var, Value),
-        fail
-    ;   arg(1, Var, Sum),
-        Norm is sqrt(Sum)).
+tfidf_vector_norm([Index|Indices], Acc, Vector, Norm):-
+    arg(Index, Vector, TfIdf),
+    Tmp is TfIdf * TfIdf + Acc,
+    tfidf_vector_norm(Indices, Tmp, Vector, Norm).
+
+tfidf_vector_norm([], Sum, _, Norm):-
+    Norm is sqrt(Sum).
 
 %! bc_search(Type, Query, Results) is det.
 %

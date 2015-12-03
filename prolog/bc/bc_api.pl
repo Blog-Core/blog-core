@@ -14,3 +14,4 @@
 :- use_module(bc_api_mail).
 :- use_module(bc_api_search).
 :- use_module(bc_api_tag).
+:- use_module(bc_api_similarity).
