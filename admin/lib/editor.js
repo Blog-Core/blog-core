@@ -84,6 +84,7 @@ exports.content = function() {
 };
 
 // Cleans up the current editor.
+// FIXME remove change callback.
 
 exports.dispose = function() {
 

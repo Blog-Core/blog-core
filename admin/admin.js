@@ -51,6 +51,7 @@ var menu = {
 ko.applyBindings(menu,
     document.getElementById('menu'));
 
+// Returns true when user is authenticated.
 // Redirects user if he/she is not
 // authenticated.
 
@@ -58,93 +59,181 @@ function authenticated() {
 
     if (api.hasKey()) {
 
-        // If user if authenticated then
+        // If user is authenticated then
         // check if custom menu entries need
         // reloading.
 
         menu.load().catch(message.error);
 
+        return true;
+
     } else {
 
         route.go('login');
     }
+
+    return false;
 }
+
+var recovered;
+
+// Offers recovery option and returns
+// true when user accepts it.
+
+function recovery() {
+
+    // Offer recover option to the user.
+
+    var autosave = localStorage.getItem('autosave');
+
+    if (autosave) {
+
+        var data = JSON.parse(autosave);
+
+        // Remove entry from localStorage.
+
+        localStorage.removeItem('autosave');
+
+        // Ask confirmation.
+
+        if (confirm('You have unsaved entry "' + data.title + '",' +
+            ' would you like to recover it?')) {
+
+            // Assign global data that is used for
+            // actual recovery.
+
+            recovered = data;
+
+            // Redirect to transient route.
+
+            route.go('recover');
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// Transient route for recovering
+// an entry.
+
+route(/^recover$/, function() {
+
+    if (authenticated() && !recovery()) {
+
+        if (recovered) {
+
+            if (recovered.$id) {
+
+                // Recover existing post.
+
+                route.go('entry/' + recovered.type +
+                    '/' + recovered.$id);
+
+            } else {
+
+                // Recover new post.
+
+                route.go('new/' + recovered.type);
+            }
+
+        } else {
+
+            route.go('landing');
+        }
+    }
+});
 
 route(/^entries\/([^\/]+)/, function(type) {
 
-    authenticated();
+    if (authenticated() && !recovery()) {
 
-    menu.active(type);
+        menu.active(type);
 
-    posts.create(type).catch(message.error);
+        posts.create(type).catch(message.error);
+    }
 });
 
 route(/^entry\/([^\/]+)\/([^\/]+)/, function(type, id) {
 
-    authenticated();
+    if (authenticated() && !recovery()) {
 
-    menu.active(type);
+        menu.active(type);
 
-    post.create(type, id).catch(message.error);
+        // Include recovery data (can be undefined).
+
+        post.create(type, id, recovered).catch(message.error);
+
+        recovered = undefined;
+    }
 });
 
 route(/^new\/([^\/]+)/, function(type) {
 
-    authenticated();
+    if (authenticated() && !recovery()) {
 
-    menu.active(type);
+        menu.active(type);
 
-    post.create(type).catch(message.error);
+        // Include recovery data (can be undefined).
+
+        post.create(type, null, recovered).catch(message.error);
+
+        recovered = undefined;
+    }
 });
 
 route(/^comments\/([^\/]+)\/([^\/]+)/, function(type, id) {
 
-    authenticated();
+    if (authenticated() && !recovery()) {
 
-    menu.active(type);
+        menu.active(type);
 
-    comments.create(type, id).catch(message.error);
+        comments.create(type, id).catch(message.error);
+    }
 });
 
 route(/^trash/, function() {
 
-    authenticated();
+    if (authenticated() && !recovery()) {
 
-    menu.active('trash');
+        menu.active('trash');
 
-    trash.create().catch(message.error);
+        trash.create().catch(message.error);
+    }
 });
 
 route(/^users/, function() {
 
-    authenticated();
+    if (authenticated() && !recovery()) {
 
-    menu.active('users');
+        menu.active('users');
 
-    users.create().catch(message.error);
+        users.create().catch(message.error);
+    }
 });
 
 route(/^user\/new/, function() {
 
-    authenticated();
+    if (authenticated() && !recovery()) {
 
-    menu.active('users');
+        menu.active('users');
 
-    user.create().catch(message.error);
+        user.create().catch(message.error);
+    }
 });
 
 route(/^user\/([^\/]+)/, function(id) {
 
-    authenticated();
+    if (authenticated() && !recovery()) {
 
-    menu.active('users');
+        menu.active('users');
 
-    user.create(id).catch(message.error);
+        user.create(id).catch(message.error);
+    }
 });
 
 route(/^login/, function() {
-
-    authenticated();
 
     menu.active(null);
 
@@ -153,11 +242,12 @@ route(/^login/, function() {
 
 route(/^email/, function() {
 
-    authenticated();
+    if (authenticated() && !recovery()) {
 
-    menu.active('email');
+        menu.active('email');
 
-    email.create().catch(message.error);
+        email.create().catch(message.error);
+    }
 });
 
 route(/^logout/, function() {

@@ -10,7 +10,7 @@ var template = fs.readFileSync(__dirname + '/post.html', { encoding: 'utf8' });
 
 // The post edit page.
 
-exports.create = function(type, id) {
+exports.create = function(type, id, recovered) {
 
     var model = {
 
@@ -88,7 +88,8 @@ exports.create = function(type, id) {
 
         // data.post will be undefined when id is not set.
 
-        model.post(post.create(data.userInfo, type, data.types, data.users, data.files, data.post));
+        model.post(post.create(data.userInfo, type,
+            data.types, data.users, data.files, data.post, recovered));
 
         // Save handler.
         // http://stackoverflow.com/questions/4446987/overriding-controls-save-functionality-in-browser
@@ -112,6 +113,40 @@ exports.create = function(type, id) {
 
         document.addEventListener('keydown', saveHandler, false);
 
+        // Saves entry contents to
+        // localStorage. Prevents data loss
+        // after server/browser crash.
+
+        model.autosave = function() {
+
+            var obj = model.post().toJS();
+
+            obj.$id = model.post().$id();
+
+            localStorage.setItem('autosave', JSON.stringify(obj));
+        };
+
+        // Starts timer that automatically saves
+        // post to localStorage.
+
+        model.autosaveTimer = setInterval(function() {
+
+            // Save only when modified.
+
+            if (model.modified()) {
+
+                model.autosave();
+            }
+
+        }, 15000);
+
+        // Clears possible autosave.
+
+        model.clearAutosave = function() {
+
+            localStorage.removeItem('autosave');
+        };
+
         // Remove save handler when
         // view changes.
 
@@ -122,6 +157,10 @@ exports.create = function(type, id) {
             preview.dispose();
 
             editor.dispose();
+
+            // Stop autosave timer.
+
+            clearTimeout(model.autosaveTimer);
         };
 
         view.show(template, model);
@@ -133,7 +172,18 @@ exports.create = function(type, id) {
 
         if (id) {
 
-            editor.begin(data.post.content);
+            // Set initial editor content.
+
+            if (recovered) {
+
+                editor.begin(recovered.content);
+
+                model.modified(true);
+
+            } else {
+
+                editor.begin(data.post.content);
+            }
 
             // Enable preview
 
@@ -143,6 +193,13 @@ exports.create = function(type, id) {
             }
 
         } else {
+
+            if (recovered) {
+
+                editor.begin(recovered.content);
+
+                model.modified(true);
+            }
 
             model.info(true);
 
@@ -157,6 +214,8 @@ exports.create = function(type, id) {
                 title.setSelectionRange(0, title.value.length);
             }
         }
+
+        // Set up modification detection.
 
         editor.change(function() {
 

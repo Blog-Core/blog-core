@@ -9,7 +9,7 @@ var files_item = require('./files_item');
 // argument must contain the list of all
 // users.
 
-exports.create = function(userInfo, type, types, authors, files, data) {
+exports.create = function(userInfo, type, types, authors, files, data, recovered) {
 
     var post = {
 
@@ -35,11 +35,6 @@ exports.create = function(userInfo, type, types, authors, files, data) {
         // be left blank.
 
         description: ko.observable(''),
-
-        // The post content. Can be either
-        // Markdown or raw HTML.
-
-        content: ko.observable(''),
 
         types: types,
 
@@ -183,6 +178,48 @@ exports.create = function(userInfo, type, types, authors, files, data) {
                 tags: tags === '' ? [] : tags.split(/\, */),
                 language: post.language()
             };
+        },
+
+        // Updates values from a plain
+        // data object.
+
+        fromJS: function(data) {
+
+            // When the publish date is set then
+            // set the date field to formatted string.
+
+            if (typeof data.date_published !== 'undefined') {
+
+                var d = new Date(data.date_published * 1000);
+
+                post.date(d.toISOString().substring(0, 10));
+            }
+
+            post.$id(data.$id);
+            post.author(data.author);
+            post.title(data.title);
+            post.slug(data.slug);
+            post.description(data.description || '');
+            post.type(data.type);
+            post.content_type(data.content_type);
+            post.published(data.published);
+            post.commenting(data.commenting);
+            post.tags(data.tags.join(', '));
+            post.comments(data.comments);
+            post.language(data.language);
+
+            // Set up the existing files list.
+
+            files.sort(function(left, right) {
+
+                return left.name === right.name ? 0 : (left.name < right.name ? -1 : 1);
+            });
+
+            post.files(files.map(function(file) {
+
+                return files_item.create(data.slug, file);
+
+            }));
         }
     };
 
@@ -211,44 +248,41 @@ exports.create = function(userInfo, type, types, authors, files, data) {
 
     if (data) {
 
-        // When the publish date is set then
-        // set the date field to formatted string.
+        // Uses recovered data when set.
 
-        if (typeof data.date_published !== 'undefined') {
+        if (recovered) {
 
-            var d = new Date(data.date_published * 1000);
+            post.fromJS(recovered);
 
-            post.date(d.toISOString().substring(0, 10));
+            // Creates autosave from current state immediately.
+
+            setTimeout(function() {
+
+                post.parent.autosave();
+
+            }, 100);
+
+        } else {
+
+            post.fromJS(data);
         }
 
-        post.$id(data.$id);
-        post.author(data.author);
-        post.title(data.title);
-        post.slug(data.slug);
-        post.description(data.description || '');
-        post.content(data.content);
-        post.type(data.type);
-        post.content_type(data.content_type);
-        post.published(data.published);
-        post.commenting(data.commenting);
-        post.tags(data.tags.join(', '));
-        post.comments(data.comments);
-        post.language(data.language);
-
-        // Set up the existing files list.
-
-        files.sort(function(left, right) {
-
-            return left.name === right.name ? 0 : (left.name < right.name ? -1 : 1);
-        });
-
-        post.files(files.map(function(file) {
-
-            return files_item.create(data.slug, file);
-
-        }));
-
     } else {
+
+        // Uses recovered data.
+
+        if (recovered) {
+
+            post.fromJS(recovered);
+
+            // Creates autosave from current state immediately.
+
+            setTimeout(function() {
+
+                post.parent.autosave();
+
+            }, 100);
+        }
 
         // Only when for new post.
         // Add automatic slug generation.
@@ -462,11 +496,6 @@ function validatePost(post) {
         }
     }
 
-    if (post.content() === '') {
-
-        post.errors.content.push('Content is not entered.');
-    }
-
     var date = post.date();
 
     if (date === '') {
@@ -551,6 +580,10 @@ function updatePost(form, post, action) {
 
         message.info('The entry "' + post.title() + '" has been updated.');
 
+        // Clear autosave.
+
+        post.parent.clearAutosave();
+
         if (action === 'edit') {
 
             post.parent.modified(false);
@@ -572,6 +605,10 @@ function savePost(form, post, action) {
     return api.savePost(post.toJS()).then(function(res) {
 
         message.info('The entry "' + post.title() + '" has been saved.');
+
+        // Clear autosave.
+
+        post.parent.clearAutosave();
 
         // Redirect to post page when we
         // want to keep editing the post.
