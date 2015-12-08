@@ -1,6 +1,6 @@
 # blog-core
 
-A CMS/blog framework for [Swi-Prolog](http://swi-prolog.org/).
+A CMS/blog framework for [SWI-Prolog](http://swi-prolog.org/).
 
 [![Build Status](https://travis-ci.org/rla/blog-core.svg)](https://travis-ci.org/rla/blog-core)
 
@@ -16,6 +16,8 @@ A CMS/blog framework for [Swi-Prolog](http://swi-prolog.org/).
  * Administration API.
  * Administration UI.
  * Data migrations.
+ * Built-in search.
+ * Built-in post similarity matching.
 
 ## Getting started
 
