@@ -71,17 +71,7 @@ exports.create = function(type, id, recovered) {
 
     model.leave = function() {
 
-        if (model.modified()) {
-
-            if (confirm('You have modifications. Leave without saving?')) {
-
-                route.go('entries/' + model.post().type());
-            }
-
-        } else {
-
-            route.go('entries/' + model.post().type());
-        }
+        route.go('entries/' + model.post().type());
     };
 
     return postData(type, id).then(function(data) {
@@ -147,12 +137,39 @@ exports.create = function(type, id, recovered) {
             localStorage.removeItem('autosave');
         };
 
+        // Add browser window/tab close handler.
+
+        function beforeUnload(e) {
+
+            if (model.modified()) {
+
+                var message = 'You have modifications. Leave without saving?';
+
+                e = e || window.event;
+
+                if (e) {
+
+                    e.returnValue = message;
+                }
+
+                return message;
+
+            } else {
+
+                return false;
+            }
+        };
+
+        window.addEventListener('beforeunload', beforeUnload, false);
+
         // Remove save handler when
         // view changes.
 
         model.dispose = function() {
 
             document.removeEventListener('keydown', saveHandler, false);
+
+            window.removeEventListener('beforeunload', beforeUnload, false);
 
             preview.dispose();
 
@@ -161,6 +178,29 @@ exports.create = function(type, id, recovered) {
             // Stop autosave timer.
 
             clearTimeout(model.autosaveTimer);
+        };
+
+        // Ask leave confirmation.
+
+        route.leave = function() {
+
+            if (model.modified()) {
+
+                if (confirm('You have modifications. Leave without saving?')) {
+
+                    model.clearAutosave();
+
+                    return true;
+
+                } else {
+
+                    return false;
+                }
+
+            } else {
+
+                return true;
+            }
         };
 
         view.show(template, model);
