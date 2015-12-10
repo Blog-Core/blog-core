@@ -191,20 +191,22 @@
                                 <!-- ko if: expanded() -->
                                     URL: <!-- ko text: url --><!-- /ko -->
                                     <div class="post-controls">
-                                        <a data-bind="click: $parent.removeFile"
-                                            class="btn btn-default btn-sm" href="#">
-                                            <span class="glyphicon glyphicon-edit"></span> Remove</a>
-                                        <a data-bind="attr: { href: url }" target="_blank"
-                                            class="btn btn-default btn-sm" href="#">
-                                            <span class="glyphicon glyphicon-eye-open"></span> View (in new tab)</a>
-                                        <a data-bind="click: $parent.insertLink"
-                                            class="btn btn-default btn-sm" href="#">
-                                            <span class="glyphicon glyphicon-pencil"></span> Insert as link</a>
-                                        <!-- ko if: image -->
-                                            <a data-bind="click: $parent.insertImage"
+                                        <div class="btn-group">
+                                            <a data-bind="click: $parent.removeFile"
                                                 class="btn btn-default btn-sm" href="#">
-                                                <span class="glyphicon glyphicon-pencil"></span> Insert as image</a>
-                                        <!-- /ko -->
+                                                <span class="glyphicon glyphicon-edit"></span> Remove</a>
+                                            <a data-bind="attr: { href: url }" target="_blank"
+                                                class="btn btn-default btn-sm" href="#">
+                                                <span class="glyphicon glyphicon-eye-open"></span> View (in new tab)</a>
+                                            <a data-bind="click: $parent.insertLink"
+                                                class="btn btn-default btn-sm" href="#">
+                                                <span class="glyphicon glyphicon-pencil"></span> Insert as link</a>
+                                            <!-- ko if: image -->
+                                                <a data-bind="click: $parent.insertImage"
+                                                    class="btn btn-default btn-sm" href="#">
+                                                    <span class="glyphicon glyphicon-pencil"></span> Insert as image</a>
+                                            <!-- /ko -->
+                                        </div>
                                     </div>
                                 <!-- /ko -->
                             </li>

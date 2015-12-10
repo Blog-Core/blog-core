@@ -429,11 +429,15 @@ exports.create = function(userInfo, type, types, authors, files, data, recovered
             post.editor.insert('<img src="' + file.url() +
                 '" width="' +size.width + '" height="' + size.height + '">');
 
+            post.editor.focus();
+
         }, function() {
 
             // Ignores dimensions API error.
 
             post.editor.insert('<img src="' + file.url() + '">');
+
+            post.editor.focus();
 
         }).catch(message.error);
     };
@@ -443,6 +447,8 @@ exports.create = function(userInfo, type, types, authors, files, data, recovered
     post.insertLink = function(file) {
 
         post.editor.insert('[' + file.name + '](' + file.url() + ')');
+
+        post.editor.focus();
     };
 
     // FIXME refactor
