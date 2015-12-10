@@ -195,7 +195,16 @@
                                             class="btn btn-default btn-sm" href="#">
                                             <span class="glyphicon glyphicon-edit"></span> Remove</a>
                                         <a data-bind="attr: { href: url }" target="_blank"
-                                            class="btn btn-default btn-sm" href="#"> View (in new tab)</a>
+                                            class="btn btn-default btn-sm" href="#">
+                                            <span class="glyphicon glyphicon-eye-open"></span> View (in new tab)</a>
+                                        <a data-bind="click: $parent.insertLink"
+                                            class="btn btn-default btn-sm" href="#">
+                                            <span class="glyphicon glyphicon-pencil"></span> Insert as link</a>
+                                        <!-- ko if: image -->
+                                            <a data-bind="click: $parent.insertImage"
+                                                class="btn btn-default btn-sm" href="#">
+                                                <span class="glyphicon glyphicon-pencil"></span> Insert as image</a>
+                                        <!-- /ko -->
                                     </div>
                                 <!-- /ko -->
                             </li>

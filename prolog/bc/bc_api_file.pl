@@ -15,6 +15,7 @@
 :- use_module(bc_entry).
 :- use_module(bc_access).
 :- use_module(bc_files).
+:- use_module(bc_image).
 
 % Sends directory listing in public directory.
 
@@ -140,6 +141,19 @@ file_remove(EntryId, Name):-
 can_remove(Actor, EntryId):-
     bc_entry_exists(EntryId),
     upload_access(Actor, EntryId).
+
+% Retrieves the given image size.
+
+:- route_get(api/image/size/EntryId/Name,
+    bc_auth, file_size(EntryId, Name)).
+
+file_size(EntryId, Name):-
+    bc_entry_slug(EntryId, Slug),
+    atomic_list_concat([public, '/', Slug, '/', Name], Full),
+    check_safe_path(Full),
+    (   bc_image_dimensions(Full, Width, Height)
+    ->  bc_reply_success(_{ width: Width, height: Height })
+    ;   bc_reply_error('Error occurred during image file reading.')).
 
 % Checks that the given path is safe to be used.
 

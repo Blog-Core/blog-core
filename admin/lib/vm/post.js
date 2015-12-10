@@ -217,7 +217,7 @@ exports.create = function(userInfo, type, types, authors, files, data, recovered
 
             post.files(files.map(function(file) {
 
-                return files_item.create(data.slug, file);
+                return files_item.create(post.slug, file);
 
             }));
         }
@@ -418,6 +418,31 @@ exports.create = function(userInfo, type, types, authors, files, data, recovered
 
             }).catch(message.error);
         }
+    };
+
+    // Adds as image.
+
+    post.insertImage = function(file) {
+
+        api.imageSize(post.$id(), file.name).then(function(size) {
+
+            post.editor.insert('<img src="' + file.url() +
+                '" width="' +size.width + '" height="' + size.height + '">');
+
+        }, function() {
+
+            // Ignores dimensions API error.
+
+            post.editor.insert('<img src="' + file.url() + '">');
+
+        }).catch(message.error);
+    };
+
+    // Adds as link.
+
+    post.insertLink = function(file) {
+
+        post.editor.insert('[' + file.name + '](' + file.url() + ')');
     };
 
     // FIXME refactor

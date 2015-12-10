@@ -83,6 +83,17 @@ exports.content = function() {
     return editor.getValue();
 };
 
+// Inserts into current ACE editor
+// at the cursor.
+
+exports.insert = function(text) {
+
+    if (editor) {
+
+        editor.insert(text);
+    }
+};
+
 // Cleans up the current editor.
 // FIXME remove change callback.
 

@@ -18,8 +18,11 @@ exports.create = function(slug, data) {
 
     file.url = ko.pureComputed(function() {
 
-        return '/' + slug + '/' + file.name;
+        return '/' + encodeURIComponent(slug()) + '/' +
+            encodeURIComponent(file.name);
     });
+
+    file.image = !!file.name.match(/\.(gif|jpg|jpeg|tiff|png)$/i);
 
     return file;
 };

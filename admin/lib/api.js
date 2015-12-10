@@ -380,6 +380,14 @@ exports.tags = function(type) {
     return fetchGet('/api/tags/' + encodeURIComponent(type) + '/all');
 };
 
+// Retrieves image size for the file.
+
+exports.imageSize = function(entryId, file) {
+
+    return fetchGet('/api/image/size/' + encodeURIComponent(entryId) +
+        '/' + encodeURIComponent(file));
+};
+
 // Checks whether the API key has been set.
 
 exports.hasKey = function() {
