@@ -233,6 +233,12 @@
             <!-- /ko -->
             <hr>
         <!-- /ko -->
+        <!-- ko if: slug_changed() && $id() -->
+            <div class="alert alert-warning" role="alert">
+                You must save the entry after modifying the slug. This will
+                automatically fix images and links to files in the content.
+            </div>
+        <!-- /ko -->
         <div id="editor-wrap">
             <div id="editor"></div>
         </div>

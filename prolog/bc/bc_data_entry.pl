@@ -55,7 +55,7 @@ bc_entry_update(Actor, Entry):-
     ds_id(Entry, Id),
     can_update(Actor, Entry),
     bc_entry_slug(Id, OldSlug),
-    entry_format(Entry, Formatted),
+    entry_format(Entry, OldSlug, Formatted),
     ds_update(Formatted),
     bc_index(Id),
     rename_directory(OldSlug, Entry.slug),
@@ -122,6 +122,21 @@ rename_directory(Old, New):-
 
 % Formats entry HTML contents based on
 % the entries content type.
+
+entry_format(EntryIn, OldSlug, EntryOut):-
+    links_rewrite(EntryIn.content,
+        EntryIn.slug, OldSlug, Content),
+    Rewritten = EntryIn.put(content, Content),
+    entry_format(Rewritten, EntryOut).
+
+% Replaces slug in links in the content.
+
+links_rewrite(ContentIn, NewSlug, OldSlug, ContentOut):-
+    atomic_list_concat(['/', OldSlug, '/'], OldLink),
+    atomic_list_concat(['/', NewSlug, '/'], NewLink),
+    atomic_list_concat(Tokens, OldLink, ContentIn),
+    atomic_list_concat(Tokens, NewLink, ContentAtom),
+    atom_string(ContentAtom, ContentOut).
 
 entry_format(EntryIn, EntryOut):-
     Content = EntryIn.content,

@@ -59,7 +59,8 @@ exports.create = function(type, id, recovered) {
 
                     editor.focus();
                 });
-            });
+
+            }).catch(message.error);
 
         } else {
 

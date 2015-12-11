@@ -391,7 +391,7 @@ exports.create = function(userInfo, type, types, authors, files, data, recovered
 
             message.info('File "' + file.name + '" has been uploaded.');
 
-            post.files.push(files_item.create(post.slug(), { name: file.name }));
+            post.files.push(files_item.create(post.slug, { name: file.name }));
 
             // This resets the file input.
 
@@ -617,9 +617,20 @@ function updatePost(form, post, action) {
 
         if (action === 'edit') {
 
-            post.parent.modified(false);
-
             post.slug_changed(false);
+
+            // Reload possibly changed post content.
+
+            api.post(post.$id()).then(function(data) {
+
+                if (post.editor.content() !== data.content) {
+
+                    post.editor.begin(data.content);
+                }
+
+                post.parent.modified(false);
+
+            }).catch(message.error);
 
         } else {
 
@@ -636,6 +647,8 @@ function savePost(form, post, action) {
     return api.savePost(post.toJS()).then(function(res) {
 
         message.info('The entry "' + post.title() + '" has been saved.');
+
+        post.parent.modified(false);
 
         // Clear autosave.
 

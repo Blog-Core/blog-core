@@ -53,6 +53,10 @@ exports.begin = function(content) {
 
     editor.setValue(content);
 
+    // Remove editor's undo log.
+
+    editor.getSession().setUndoManager(new ace.UndoManager());
+
     // Go to first line
 
     editor.focus();
@@ -91,6 +95,16 @@ exports.insert = function(text) {
     if (editor) {
 
         editor.insert(text);
+    }
+};
+
+// Sets editor content.
+
+exports.setValue = function(text) {
+
+    if (editor) {
+
+        editor.setValue(text);
     }
 };
 
