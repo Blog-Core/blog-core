@@ -1,11 +1,12 @@
 <h2 data-bind="text: title"></h2>
 <h3>Comments</h3>
 <ul data-bind="foreach: comments" class="list-group">
-    <li class="list-group-item post-item">
-        <h4 data-bind="text: author, click: expand" class="list-group-item-heading"></h4>
+    <li data-bind="style: { 'padding-left': (15 * (depth + 1)) + 'px' }"
+        class="list-group-item post-item">
+        <h4 data-bind="text: author" class="list-group-item-heading"></h4>
         <div class="list-group-item-text">
             Date: <span data-bind="text: formatDate(date)"></span>
-            <div data-bind="visible: expanded" class="post-controls">
+            <div class="post-controls">
                 <div class="panel panel-default">
                     <div data-bind="text: content" class="panel-body"></div>
                 </div>

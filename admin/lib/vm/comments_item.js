@@ -1,17 +1,12 @@
 var api = require('../api');
 var assign = require('../assign');
 var message = require('../message');
-var expandable = require('./expandable');
 
 // View Model for a comment.
 
 exports.create = function(data, userInfo, entryInfo, typeInfo) {
 
     var comment = {};
-
-    // Make it expandable.
-
-    expandable.mixin(comment);
 
     // Copies data attributes.
 
