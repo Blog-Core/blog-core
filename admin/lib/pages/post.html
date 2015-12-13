@@ -1,6 +1,6 @@
 <!-- ko with: post -->
     <h2 data-bind="text: title"></h2>
-    <div class="btn-group bc-margin-bottom">
+    <div class="bc-margin-bottom">
         <button data-bind="click: $root.leave" type="button"
             class="btn btn-default" title="Leave the editor">
             <span class="glyphicon glyphicon-chevron-left"></span>
@@ -22,6 +22,10 @@
             type="button" class="btn btn-default">
             <span class="glyphicon glyphicon-cog"></span>
         </button>
+        <button data-bind="click: $root.toggleHelp, css: { active: $root.help() }"
+            type="button" class="btn btn-default">
+            <span class="glyphicon glyphicon-question-sign"></span>
+        </button>
         <!-- ko if: $root.hasPreview() -->
             <button data-bind="click: $root.preview" class="btn btn-default">
                 <span class="glyphicon glyphicon-eye-open"></span>
@@ -34,7 +38,7 @@
                 <span class="label label-danger">Published</span>
                 <!-- ko if: $root.hasPreview() -->
                     &nbsp;&nbsp;<a data-bind="attr: { href: $root.previewUrl }" href="#" target="_blank">Preview
-                        <span class="glyphicon glyphicon-new-window"></a>
+                        <span class="glyphicon glyphicon-new-window"></span></a>
                 <!-- /ko -->
             </div>
         </div>
@@ -45,7 +49,7 @@
                 <span class="label label-info">Not published</span>
                 <!-- ko if: $root.hasPreview() -->
                     &nbsp;&nbsp;<a data-bind="attr: { href: $root.previewUrl }" href="#" target="_blank">Preview
-                        <span class="glyphicon glyphicon-new-window"></a>
+                        <span class="glyphicon glyphicon-new-window"></span></a>
                 <!-- /ko -->
             </div>
         </div>
@@ -73,6 +77,72 @@
                     <option value="140">Soft wrap 140</option>
                 </select>
             </div>
+        </div>
+        <hr>
+    <!-- /ko -->
+    <!-- ko if: $root.help() -->
+        <h3>Shorcuts</h3>
+        <ul>
+            <li>CTRL+S - save</li>
+            <li>CTRL+I - preview (if preview is configured)</li>
+        </ul>
+        <h3>Markdown</h3>
+
+        <h4>Headings</h4>
+<pre># Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
+##### Heading 5
+###### Heading 6</pre>
+
+        <h4>Bulleted list</h4>
+
+<pre> + item1
+ + item2
+ + item3</pre>
+
+        <h4>Numbered list</h4>
+
+<pre> 1. item1
+ 2. item2
+ 3. item3</pre>
+
+<h4>Link</h4>
+
+<pre>[Text](http://example.com) or
+&lt;http://example.com&gt;</pre>
+
+<h4>Reference link</h4>
+
+<pre>[Text][link]
+[link]:http://example.com</pre>
+
+<h4>Styling</h4>
+
+<pre>*italic*
+**bold**
+~~strike-through~~</pre>
+
+<h4>Code block</h4>
+
+Code blocks use 4-space indent.
+
+<pre>    var x = 1;</pre>
+
+Alternative syntax:
+
+<pre>```language
+var x = 1;</pre>
+
+<p>
+More info: <a href="https://daringfireball.net/projects/markdown/syntax"
+    target="_blank">Gruber's Markdown <span class="glyphicon glyphicon-new-window"></span></a>
+</p>
+
+        <div>
+            <a href="#" data-bind="click: $root.toggleHelp"
+                class="btn btn-default">Close help</a>
         </div>
         <hr>
     <!-- /ko -->
@@ -222,22 +292,20 @@
                                 <!-- ko if: expanded() -->
                                     URL: <!-- ko text: url --><!-- /ko -->
                                     <div class="post-controls">
-                                        <div class="btn-group">
-                                            <a data-bind="click: $parent.removeFile"
+                                        <a data-bind="click: $parent.removeFile"
+                                            class="btn btn-default btn-sm" href="#">
+                                            <span class="glyphicon glyphicon-edit"></span> Remove</a>
+                                        <a data-bind="attr: { href: url }" target="_blank"
+                                            class="btn btn-default btn-sm" href="#">
+                                            <span class="glyphicon glyphicon-eye-open"></span> View (in new tab)</a>
+                                        <a data-bind="click: $parent.insertLink"
+                                            class="btn btn-default btn-sm" href="#">
+                                            <span class="glyphicon glyphicon-pencil"></span> Insert as link</a>
+                                        <!-- ko if: image -->
+                                            <a data-bind="click: $parent.insertImage"
                                                 class="btn btn-default btn-sm" href="#">
-                                                <span class="glyphicon glyphicon-edit"></span> Remove</a>
-                                            <a data-bind="attr: { href: url }" target="_blank"
-                                                class="btn btn-default btn-sm" href="#">
-                                                <span class="glyphicon glyphicon-eye-open"></span> View (in new tab)</a>
-                                            <a data-bind="click: $parent.insertLink"
-                                                class="btn btn-default btn-sm" href="#">
-                                                <span class="glyphicon glyphicon-pencil"></span> Insert as link</a>
-                                            <!-- ko if: image -->
-                                                <a data-bind="click: $parent.insertImage"
-                                                    class="btn btn-default btn-sm" href="#">
-                                                    <span class="glyphicon glyphicon-pencil"></span> Insert as image</a>
-                                            <!-- /ko -->
-                                        </div>
+                                                <span class="glyphicon glyphicon-pencil"></span> Insert as image</a>
+                                        <!-- /ko -->
                                     </div>
                                 <!-- /ko -->
                             </li>

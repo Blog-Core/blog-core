@@ -29,7 +29,9 @@ exports.create = function(type, id, recovered) {
 
         softWrap: ko.observable('100'),
 
-        settings: ko.observable(false)
+        settings: ko.observable(false),
+
+        help: ko.observable(false)
     };
 
     // Use stored softwrap value.
@@ -60,6 +62,13 @@ exports.create = function(type, id, recovered) {
     model.toggleSettings = function() {
 
         model.settings(!model.settings());
+    };
+
+    // Shows/hides the help section.
+
+    model.toggleHelp = function() {
+
+        model.help(!model.help());
     };
 
     // Gives preview URL. Returns
