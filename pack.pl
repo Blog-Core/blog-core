@@ -1,5 +1,5 @@
 name('blog_core').
-version('0.0.13').
+version('0.0.14').
 title('Blog/CMS framework').
 author('Raivo Laanemets', 'http://rlaanemets.com/').
 home('http://blog-core.net/').
