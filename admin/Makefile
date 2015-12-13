@@ -51,7 +51,4 @@ clean:
 install-tools:
 	npm install
 
-test:
-	PHANTOMJS_EXECUTABLE=$(PHANTOMJS) $(CASPERJS) test tests
-
 .PHONY: all check clean install-tools

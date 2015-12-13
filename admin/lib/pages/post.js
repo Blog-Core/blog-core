@@ -203,7 +203,7 @@ exports.create = function(type, id, recovered) {
 
                 return false;
             }
-        };
+        }
 
         window.addEventListener('beforeunload', beforeUnload, false);
 
