@@ -3,6 +3,7 @@ var api = require('../api');
 var post = require('../vm/post');
 var view = require('../view');
 var editor = require('../editor');
+var message = require('../message');
 var preview = require('../preview');
 var resolveObject = require('../resolve_object');
 
@@ -61,6 +62,20 @@ exports.create = function(type, id, recovered) {
         model.settings(!model.settings());
     };
 
+    // Gives preview URL. Returns
+    // undefined when previews are not
+    // enabled.
+
+    model.previewUrl = ko.pureComputed(function() {
+
+        var slug = model.post().slug();
+
+        if (model.post().preview) {
+
+            return model.post().preview.replace(/<slug>/g, slug);
+        }
+    });
+
     // Shows preview when possible.
 
     model.preview = function(callback) {
@@ -73,7 +88,7 @@ exports.create = function(type, id, recovered) {
 
                 var slug = model.post().slug();
 
-                var url = model.post().preview.replace(/<slug>/g, slug);
+                var url = model.previewUrl();
 
                 preview.show(url, function() {
 
