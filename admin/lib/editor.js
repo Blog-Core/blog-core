@@ -46,6 +46,16 @@ exports.enable = function() {
     editor.getSession().setMode('ace/mode/markdown');
 };
 
+// Sets the softWrap property for the editor.
+
+exports.setSoftWrap = function(softWrap) {
+
+    if (editor) {
+
+        editor.getSession().setWrapLimitRange(softWrap, softWrap);
+    }
+};
+
 // Sets the editor content
 // and initial cursor position.
 

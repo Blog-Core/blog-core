@@ -18,6 +18,10 @@
             type="button" class="btn btn-default">
             <span class="glyphicon glyphicon-paperclip"></span>
         </button>
+        <button data-bind="click: $root.toggleSettings, css: { active: $root.settings() }"
+            type="button" class="btn btn-default">
+            <span class="glyphicon glyphicon-cog"></span>
+        </button>
         <!-- ko if: $root.hasPreview() -->
             <button data-bind="click: $root.preview" class="btn btn-default">
                 <span class="glyphicon glyphicon-eye-open"></span>
@@ -45,6 +49,25 @@
         </div>
     <!-- /ko -->
     <hr>
+    <!-- ko if: $root.settings() -->
+        <div class="row">
+            <div class="col-md-2">
+                <select data-bind="value: $root.softWrap"
+                    class="form-control bc-margin-top-sm">
+                    <option value="60">Soft wrap 60</option>
+                    <option value="70">Soft wrap 70</option>
+                    <option value="80">Soft wrap 80</option>
+                    <option value="90">Soft wrap 90</option>
+                    <option value="100">Soft wrap 100</option>
+                    <option value="110">Soft wrap 110</option>
+                    <option value="120">Soft wrap 120</option>
+                    <option value="130">Soft wrap 130</option>
+                    <option value="140">Soft wrap 140</option>
+                </select>
+            </div>
+        </div>
+        <hr>
+    <!-- /ko -->
     <form data-bind="submit: submit" autocomplete="off" id="post">
         <!-- ko if: $root.info() -->
             <div class="bc-info">

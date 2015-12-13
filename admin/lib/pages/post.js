@@ -24,8 +24,21 @@ exports.create = function(type, id, recovered) {
 
         hasPreview: ko.observable(false),
 
-        previewNotice: ko.observable(false)
+        previewNotice: ko.observable(false),
+
+        softWrap: ko.observable('100'),
+
+        settings: ko.observable(false)
     };
+
+    // Use stored softwrap value.
+
+    var softWrap = localStorage.getItem('softwrap');
+
+    if (softWrap) {
+
+        model.softWrap(softWrap);
+    }
 
     // Shows/hides the info section.
 
@@ -39,6 +52,13 @@ exports.create = function(type, id, recovered) {
     model.toggleFiles = function() {
 
         model.files(!model.files());
+    };
+
+    // Shows/hides the settings section.
+
+    model.toggleSettings = function() {
+
+        model.settings(!model.settings());
     };
 
     // Shows preview when possible.
@@ -210,6 +230,20 @@ exports.create = function(type, id, recovered) {
         // current page.
 
         editor.enable();
+
+        // Set soft wrap on the editor.
+
+        editor.setSoftWrap(parseInt(model.softWrap(), 10));
+
+        // Automatically set soft wrap when changed
+        // in the UI controls.
+
+        model.softWrap.subscribe(function(value) {
+
+            localStorage.setItem('softwrap', value);
+
+            editor.setSoftWrap(parseInt(value, 10));
+        });
 
         if (id) {
 
