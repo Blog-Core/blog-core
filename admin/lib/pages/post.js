@@ -142,7 +142,12 @@ exports.create = function(type, id, recovered) {
 
                 e.preventDefault();
 
-                model.preview();
+                // Only show when previews are defined.
+
+                if (model.post().preview) {
+
+                    model.preview();
+                }
             }
         }
 
