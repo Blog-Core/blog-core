@@ -9,7 +9,7 @@
 
 % Extracts image dimensions. Fails when
 % ImageMagick's identify command is not
-% found in PATH.
+% found in PATH or outputs unexpected data.
 
 bc_image_dimensions(Path, Width, Height):-
     catch(absolute_file_name(path(identify),
@@ -17,10 +17,11 @@ bc_image_dimensions(Path, Width, Height):-
     process_create(Identify,
         ['-format', '%[fx:w]x%[fx:h]', Path], [stdout(pipe(Out))]),
     read_stream_to_codes(Out, Codes),
-    parse_dimensions(Codes, Width, Height).
+    parse_dimensions(Codes, Width, Height),
+    Width > 0, Height > 0.
 
 parse_dimensions(Codes, Width, Height):-
-    phrase(dcg_dimensions(Width, Height), Codes).
+    phrase(dcg_dimensions(Width, Height), Codes, _), !.
 
 dcg_dimensions(Width, Height) -->
     integer(Width), "x", integer(Height).
