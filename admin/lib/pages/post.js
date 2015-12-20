@@ -204,9 +204,6 @@ exports.create = function(type, id, recovered) {
 
                 return message;
 
-            } else {
-
-                return false;
             }
         }
 

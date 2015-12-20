@@ -28,6 +28,7 @@ bc_read_by_schema(Schema, Dict):-
 % and success status.
 
 bc_reply_success(Data):-
+    write('Cache-Control: no-cache\r\n'),
     reply_json(_{ status: success, data: Data }).
 
 %! bc_reply_error(+Message) is det.
@@ -35,4 +36,5 @@ bc_reply_success(Data):-
 % Sends error JSON response with Message.
 
 bc_reply_error(Message):-
+    write('Cache-Control: no-cache\r\n'),
     reply_json(_{ status: error, message: Message }).
