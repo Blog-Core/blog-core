@@ -1,4 +1,4 @@
-# blog-core
+# Blog-Core
 
 A CMS/blog framework for [SWI-Prolog](http://swi-prolog.org/).
 
