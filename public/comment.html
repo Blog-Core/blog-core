@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blog-Core comment system test</title>
+    <style>
+        .error {
+            color: red;
+        }
+        .comment-form-label {
+            display: inline-block;
+            width: 200px;
+            font-weight: bold;
+        }
+        .comment-form-control {
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .comment-form-group {
+            margin: 20px 0;
+        }
+        #comment-form {
+            width: 800px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+<form id="comment-form">
+    <input type="hidden" name="question" value="3">
+    <input type="hidden" name="post_id" value="abc123">
+    <div class="comment-form-group">
+        <label for="comment-author" class="comment-form-label">Author</label>
+        <input type="text" name="author" id="comment-author" class="comment-form-control">
+    </div>
+    <div class="comment-form-group">
+        <label for="comment-email" class="comment-form-label">Email</label>
+        <input type="text" name="email" id="comment-email" class="comment-form-control">
+    </div>
+    <div class="comment-form-group">
+        <label for="comment-site" class="comment-form-label">Site</label>
+        <input type="text" name="site" id="comment-site" class="comment-form-control">
+    </div>
+    <div class="comment-form-group">
+        <label for="comment-answer" class="comment-form-label">Content</label>
+        <textarea name="content" id="comment-answer" class="comment-form-control"></textarea>
+    </div>
+    <div class="comment-form-group" id="comment-form-question">&nbsp;</div>
+    <div class="comment-form-group">
+        <label for="comment-answer" class="comment-form-label">Answer</label>
+        <input type="text" name="answer" id="comment-answer" class="comment-form-control">
+    </div>
+    <div class="comment-form-group">
+        <label>
+            <input type="checkbox" name="notify" checked>
+            Receive notifications
+        </label>
+    </div>
+    <div class="comment-form-group">
+        <button type="submit">Post</submit>
+    </div>
+</form>
+<script src="comment.js"></script>
+<script>
+    bcComment({
+        form: document.getElementById('comment-form'),
+        question: document.getElementById('comment-form-question')
+    });
+</script>
+</body>
+</html>

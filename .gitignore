@@ -1,4 +1,5 @@
 *.docstore
 *.tgz
 admin/node_modules
-public/*
+public/test.txt
+comment/node_modules
