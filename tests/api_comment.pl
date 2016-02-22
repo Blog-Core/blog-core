@@ -160,6 +160,25 @@ test('Get random human question', [setup(new_database)]):-
     assertion(string(Data.question)),
     assertion(number(Data.id)).
 
+test('Entry author notification', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    new_post(AuthorId, test_post, Post),
+    assertion(Post.status = "success"),
+    set_no_auth,
+    new_comment(Post.data, Comment),
+    assertion(Comment.status = "success"),
+    assertion(bc_mail_queue_size(1)).
+
+test('Entry author notifications disabled', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    ds_update(AuthorId, _{ comment_notifications: false }),
+    new_post(AuthorId, test_post, Post),
+    assertion(Post.status = "success"),
+    set_no_auth,
+    new_comment(Post.data, Comment),
+    assertion(Comment.status = "success"),
+    assertion(bc_mail_queue_size(0)).
+
 test('Mention notification, no receivers', [setup(new_database)]):-
     default_user_id(AuthorId),
     new_post(AuthorId, test_post, Post),
@@ -182,7 +201,7 @@ test('Mention notification, one receiver', [setup(new_database)]):-
     new_comment(Post.data,
         _{ content: "@RLa, reply" }, Comment2),
     assertion(Comment2.status = "success"),
-    assertion(bc_mail_queue_size(1)).
+    assertion(bc_mail_queue_size(3)).
 
 test('Mention notification, two receivers', [setup(new_database)]):-
     default_user_id(AuthorId),
@@ -198,6 +217,20 @@ test('Mention notification, two receivers', [setup(new_database)]):-
     new_comment(Post.data,
         _{ content: "@RLa, @User, reply" }, Comment3),
     assertion(Comment3.status = "success"),
-    assertion(bc_mail_queue_size(2)).
+    assertion(bc_mail_queue_size(5)).
+
+test('Reply notification', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    new_post(AuthorId, test_post, Post),
+    assertion(Post.status = "success"),
+    set_no_auth,
+    new_comment(Post.data,
+        _{ notify: true, email: 'test@example.com' }, Comment1),
+    assertion(Comment1.status = "success"),
+    new_comment(Post.data, _{
+        content: "Reply",
+        reply_to: Comment1.data }, Comment2),
+    assertion(Comment2.status = "success"),
+    assertion(bc_mail_queue_size(3)).
 
 :- end_tests(api_comment).

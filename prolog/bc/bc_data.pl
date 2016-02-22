@@ -95,7 +95,11 @@ bc_init:-
     bc_migrate(
         bc_comment_notifications,
         'Adds option for users to receive comment notifications',
-        bc_comment_notifications).
+        bc_comment_notifications),
+    bc_migrate(
+        bc_site,
+        'Adds option for setting site',
+        bc_site).
 
 % Inserts the initial config.
 
@@ -117,6 +121,9 @@ bc_smtp_from:-
 
 bc_comment_notifications:-
     ds_col_add_key(user, comment_notifications, true).
+
+bc_site:-
+    bc_config_set(site, 'http://example.com').
 
 % Inserts the initial user.
 

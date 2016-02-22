@@ -93,6 +93,7 @@
     <script>
         var bcEnvironment = '{{= environment }}';
         var bcLanguage = '{{= language }}';
+        var bcSite = '{{= site }}';
     </script>
     <link rel="icon" type="image/png" href="/t-{{= cache_token }}/admin/img/bc.png">
 </head>
@@ -144,9 +145,16 @@
             environment variable PL_ENV=production prior running the Blog-Core
             process.
         </div>
+        <div class="hidden alert alert-warning" id="site-warning">
+            The site parameter is not configured yet. It is required for
+            mail notifications, sitemap and feed files to work correctly.
+        </div>
         <script>
             if (bcEnvironment === 'development') {
                 document.getElementById('env-warning').classList.remove('hidden');
+            }
+            if (bcSite === 'http://example.com') {
+                document.getElementById('site-warning').classList.remove('hidden');
             }
         </script>
         <div id="content"></div>

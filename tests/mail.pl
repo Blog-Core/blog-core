@@ -4,8 +4,8 @@
 
 test('Default mention template'):-
     bc_mail_render_template(mention, _{
-        receiver: _{ name: 'User' },
-        comment: _{ content: 'Test comment' },
+        receiver: _{ name: 'User', comment_id: 'abc-123' },
+        comment: _{ content: 'Test comment', post: 'abc-123' },
         entry: _{ title: 'Test entry' }
     }, Result),
     assertion(Result.subject = "Test entry - comment"),

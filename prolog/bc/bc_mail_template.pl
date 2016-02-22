@@ -5,8 +5,9 @@
 
 :- use_module(library(error)).
 :- use_module(library(debug)).
-
 :- use_module(library(st/st_render)).
+
+:- use_module(bc_data_config).
 
 :- dynamic(template/3).
 
@@ -32,8 +33,10 @@ bc_mail_render_template(Name, Data, Dict):-
     (   template(Name, SubjectSource, BodySource)
     ->  true
     ;   throw(error(existence_error(mail_template, Name), _))),
-    render_subject(Name, SubjectSource, Data, Subject),
-    render_body(Name, BodySource, Data, Body),
+    bc_config_dict(Config),
+    RenderData = Data.put(config, Config),
+    render_subject(Name, SubjectSource, RenderData, Subject),
+    render_body(Name, BodySource, RenderData, Body),
     Dict = _{ subject: Subject, body: Body }.
 
 % Renders subject line template.
@@ -65,13 +68,48 @@ render_body(Name, Source, Data, Body):-
 % Default mail template for mention mails.
 
 :- Lines = [
-        "Hello {{= receiver.name }}\r\n\r\n",
+        "Hello {{= receiver.name }},\r\n\r\n",
         "You have been mentioned in a comment:\r\n\r\n",
-        "{{= comment.content }}"
+        "{{= comment.content }}\r\n\r\n",
+        "Unsubscribe: {{= config.site }}/unsubscribe/entry/{{= comment.post }}/{{= receiver.comment_id }}\r\n",
+        "Unsubscribe from all: {{= config.site }}/unsubscribe/all/{{= receiver.comment_id }}\r\n\r\n",
+        "Do not reply to this mail.\r\n\r\n"
     ],
     atomic_list_concat(Lines, Body),
     text_to_string(Body, BodyString),
     bc_mail_register_template(
         mention,
         "{{= entry.title }} - comment",
+        BodyString).
+
+% Default mail template for reply mails.
+
+:- Lines = [
+        "Hello {{= parent.author }},\r\n\r\n",
+        "Your comment has reply:\r\n\r\n",
+        "{{= comment.content }}\r\n\r\n",
+        "Unsubscribe: {{= config.site }}/unsubscribe/entry/{{= comment.post }}/{{= parent.'$id' }}\r\n",
+        "Unsubscribe from all: {{= config.site }}/unsubscribe/all/{{= parent.'$id' }}\r\n\r\n",
+        "Do not reply to this mail.\r\n\r\n"
+    ],
+    atomic_list_concat(Lines, Body),
+    text_to_string(Body, BodyString),
+    bc_mail_register_template(
+        reply,
+        "{{= entry.title }} - reply",
+        BodyString).
+
+% Default mail template for comment notifications
+% to the entry author.
+
+:- Lines = [
+        "New comment by {{= comment.author }}:\r\n\r\n",
+        "{{= comment.content }}\r\n\r\n",
+        "Do not reply to this mail.\r\n\r\n"
+    ],
+    atomic_list_concat(Lines, Body),
+    text_to_string(Body, BodyString),
+    bc_mail_register_template(
+        comment,
+        "{{= entry.title }} - new comment",
         BodyString).

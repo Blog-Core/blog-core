@@ -9,13 +9,13 @@
 :- dynamic(queue/4).
 
 bc_mail_enqueue_text(Text, From, Subject, To):-
-    assertz(mail(Text, From, Subject, To)),
+    assertz(queue(Text, From, Subject, To)),
     debug(bc_mail, 'queued mail to ~w', [To]).
 
 bc_mail_queue_wipe:-
-    retractall(mail(_, _, _, _)),
+    retractall(queue(_, _, _, _)),
     debug(bc_mail, 'wiping mail queue', []).
 
 bc_mail_queue_size(Size):-
-    findall(_, mail(_, _, _, _), Mails),
+    findall(_, queue(_, _, _, _), Mails),
     length(Mails, Size).

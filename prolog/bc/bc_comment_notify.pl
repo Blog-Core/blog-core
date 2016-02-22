@@ -27,36 +27,52 @@ bc_comment_notify(CommentId):-
     debug(bc_comment,
         'sending comment ~w notifications', [CommentId]),
     ds_col_get(comment, CommentId, Comment),
-    entry_mentionable_authors(Comment.post, Authors),
     ds_col_get(entry, Comment.post, Entry),
+    notify_parent(Comment, Entry),
+    notify_mentions(Comment, Entry),
+    notify_entry_author(Comment, Entry).
+
+% Notifies parent comment author.
+
+notify_parent(Comment, Entry):-
+    (   get_dict(reply_to, Comment, ParentId),
+        ds_col_get(comment, ParentId, Parent),
+        get_dict(notify, Parent, true),
+        get_dict(email, Parent, Email)
+    ->  Data = _{
+            comment: Comment,
+            parent: Parent,
+            entry: Entry },
+        bc_mail_render_template(reply, Data, Result),
+        bc_config_get(smtp_from, From),
+        bc_mail_enqueue_text(Result.body, From,
+            Result.subject, Email)
+    ;   true).
+
+% Notify the entry author.
+
+notify_entry_author(Comment, Entry):-
+    ds_col_get(user, Entry.author, Author),
+    (   Author.comment_notifications = true
+    ->  Data = _{
+            entry: Entry,
+            author: Author,
+            comment: Comment },
+        bc_mail_render_template(comment, Data, Result),
+        bc_config_get(smtp_from, From),
+        bc_mail_enqueue_text(Result.body, From,
+            Result.subject, Author.username)
+    ;   true).
+
+% Notify users that are mentioned in the comment.
+
+notify_mentions(Comment, Entry):-
+    entry_mentionable_authors(Comment.post, Authors),
     assoc_to_keys(Authors, Names),
     include(accepts_notify(Authors), Names, Accepting),
     bc_mentions_parse(Comment.content, Accepting, Mentions),
     maplist(extract_receiver(Authors), Mentions, Receivers),
     maplist(mention_send(Entry, Comment), Receivers).
-
-% Sends comment notification to the
-% post author when SMTP is enabled
-% and user wants to receive notifications.
-
-/*
-comment_notify(EntryId, Comment):-
-    bc_entry_author(EntryId, AuthorId),
-    ds_col_get(user, AuthorId, Author),
-    bc_entry_title(EntryId, Title),
-    bc_config_get(smtp_from, From),
-    atom_concat('Comment notification: ', Title, Subject),
-    (   Author.comment_notifications = true
-    ->  bc_mail_send(comment_notify_body(Comment),
-            From, Subject, Author.username)
-    ;   true).*/
-
-% Generates body for the comment
-% mail notification.
-/*
-comment_notify_body(Comment, Out):-
-    format(Out, 'Comment author: ~w~n~n', [Comment.author]),
-    writeln(Out, Comment.content).*/
 
 extract_receiver(Authors, Name, Receiver):-
     get_assoc(Name, Authors, Receiver).
@@ -98,6 +114,7 @@ merge_author_data([Comment|Comments], Acc, Assoc):-
     (   get_dict(email, Comment, _),
         get_dict(notify, Comment, true)
     ->  New = _{
+            comment_id: Comment.'$id',
             name: Comment.author,
             notify: Comment.notify,
             email: Comment.email

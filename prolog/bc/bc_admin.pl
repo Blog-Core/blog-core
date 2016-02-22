@@ -33,12 +33,14 @@
 send_admin:-
     bc_env(Env),
     bc_config_get(default_language, Lang),
+    bc_config_get(site, Site),
     admin_relative(index, Full),
     pack_property(blog_core, version(Version)),
     bc_view_send(Full, _{
         environment: Env,
         language: Lang,
-        version: Version
+        version: Version,
+        site: Site
     }).
 
 % Server the page that is shown to

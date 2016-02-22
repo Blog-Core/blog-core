@@ -3,7 +3,8 @@
     bc_config_set/2,          % +Name, +Value
     bc_config_set_api/3,      % +Actor, +Name, +Value
     bc_config_set_list_api/2, % +Actor, +List
-    bc_config_list/2          % +Actor, -List
+    bc_config_list/2,         % +Actor, -List
+    bc_config_dict/1          % -Dict
 ]).
 
 :- use_module(library(debug)).
@@ -68,3 +69,18 @@ bc_config_set(Name, Value):-
 bc_config_list(Actor, List):-
     config_access(Actor),
     ds_all(config, List).
+
+%! bc_config_dict(-Dict) is det.
+%
+% Retrieves dict containing all
+% config entries.
+
+bc_config_dict(Dict):-
+    ds_all(config, List),
+    build_dict(List, _{}, Dict).
+
+build_dict([Entry|List], Acc, Dict):-
+    Tmp = Acc.put(Entry.name, Entry.value),
+    build_dict(List, Tmp, Dict).
+
+build_dict([], Dict, Dict).
