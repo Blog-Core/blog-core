@@ -17,7 +17,8 @@
     tests/api_tag,
     tests/api_similarity,
     tests/files,
-    tests/view
+    tests/view,
+    tests/mentions
 ], [ if(not_loaded) ]).
 
 % Registers preview for posts.
