@@ -49,6 +49,7 @@ user:message_hook(Term, _, _):-
 :- use_module(bc_data).
 :- use_module(bc_migrate).
 :- use_module(bc_search).
+:- use_module(bc_mail_queue).
 
 % In development: most debug features.
 % In production: enable simple-template and view caching.
@@ -56,6 +57,7 @@ user:message_hook(Term, _, _):-
 :- if(bc_env_production).
     :- bc_view_enable_cache.
     :- bc_enable_expires.
+    :- bc_mail_set_behavior(send).
 :- else.
     :- write(user_error, 'Running in development mode!'), nl(user_error).
     :- debug(arouter).

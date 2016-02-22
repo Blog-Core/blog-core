@@ -7,6 +7,9 @@
 /** <module> Helper module to send mail notifications */
 
 :- use_module(library(smtp)).
+:- use_module(library(error)).
+:- use_module(library(debug)).
+
 :- use_module(bc_data_config).
 
 %! bc_mail_test(+User, +Params, -Result) is det.
@@ -59,16 +62,17 @@ text_body(Text, Out):-
 % body. Goal must accept argument for output Stream.
 
 bc_mail_send(Goal, From, Subject, To):-
-    must_be(atom, From),
-    must_be(atom, Subject),
-    must_be(atom, To),
+    must_be(atomic, From),
+    must_be(atomic, Subject),
+    must_be(atomic, To),
     must_be(callable, Goal),
     (   bc_config_get(smtp_enabled, true)
-    ->  smtp_config(Config),
+    ->  debug(bc_mail, 'smtp is enabled', []),
+        smtp_config(Config),
         put_dict(_{ from: From, subject: Subject },
             Config, Options),
         wrap_smtp(To, Goal, Options, _)
-    ;   true).
+    ;   debug(bc_mail, 'smtp is not enabled', [])).
 
 %! bc_mail_send_text(+Text, +From, +Subject, +To) is det.
 %
