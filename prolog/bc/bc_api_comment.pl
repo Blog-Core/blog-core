@@ -66,7 +66,8 @@ comment_question:-
         email: _{ type: string, min_length: 1 },
         site: _{ type: string, min_length: 1 },
         question: integer,
-        answer: atom
+        answer: atom,
+        notify: bool
     },
-    optional: [ reply_to, email, site ]
+    optional: [ reply_to, email, site, notify ]
 }).

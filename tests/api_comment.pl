@@ -7,6 +7,8 @@
 :- use_module(util/util_post).
 :- use_module(util/util_comment).
 
+:- use_module(prolog/bc/bc_mail_queue).
+
 test('Add comment', [setup(new_database)]):-
     default_user_id(AuthorId),
     new_post(AuthorId, test_post, Post),
@@ -157,5 +159,45 @@ test('Get random human question', [setup(new_database)]):-
     Question.data = Data,
     assertion(string(Data.question)),
     assertion(number(Data.id)).
+
+test('Mention notification, no receivers', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    new_post(AuthorId, test_post, Post),
+    assertion(Post.status = "success"),
+    set_no_auth,
+    new_comment(Post.data, Comment1),
+    assertion(Comment1.status = "success"),
+    new_comment(Post.data,
+        _{ content: "@RLa, reply" }, Comment2),
+    assertion(Comment2.status = "success").
+
+test('Mention notification, one receiver', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    new_post(AuthorId, test_post, Post),
+    assertion(Post.status = "success"),
+    set_no_auth,
+    new_comment(Post.data,
+        _{ notify: true, email: 'test@example.com' }, Comment1),
+    assertion(Comment1.status = "success"),
+    new_comment(Post.data,
+        _{ content: "@RLa, reply" }, Comment2),
+    assertion(Comment2.status = "success"),
+    assertion(bc_mail_queue_size(1)).
+
+test('Mention notification, two receivers', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    new_post(AuthorId, test_post, Post),
+    assertion(Post.status = "success"),
+    set_no_auth,
+    new_comment(Post.data,
+        _{ notify: true, email: 'test@example.com' }, Comment1),
+    assertion(Comment1.status = "success"),
+    new_comment(Post.data,
+        _{ author: "User", notify: true, email: 'test@example.com' }, Comment2),
+    assertion(Comment2.status = "success"),
+    new_comment(Post.data,
+        _{ content: "@RLa, @User, reply" }, Comment3),
+    assertion(Comment3.status = "success"),
+    assertion(bc_mail_queue_size(2)).
 
 :- end_tests(api_comment).

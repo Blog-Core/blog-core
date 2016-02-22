@@ -294,10 +294,29 @@ var reader = {
 
 module.exports = function(options) {
 
-    if (!options || !options.form ||
-        !options.form.elements) {
+    if (typeof options.form === 'string') {
 
-        return;
+        options.form = document.querySelector(options.form);
+    }
+
+    if (typeof options.question === 'string') {
+
+        options.question = document.querySelector(options.question);
+    }
+
+    if (!options.form) {
+
+        throw new Error('Comment form element not specified.');
+    }
+
+    if (!options.question) {
+
+        throw new Error('Verification question element not specified.');
+    }
+
+    if (!options.message) {
+
+        throw new Error('Feedback message/error element not specified.');
     }
 
     var form = options.form;

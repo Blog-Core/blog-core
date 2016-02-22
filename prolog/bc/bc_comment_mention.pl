@@ -5,7 +5,7 @@
 :- use_module(library(error)).
 :- use_module(library(dcg/basics)).
 
-%! bc_mentions_parse(+Content, -ContentOut, +Names, -Mentions) is det.
+%! bc_mentions_parse(+Content, +Names, -Mentions) is det.
 %
 % Parses mentions in content. Uses names list.
 

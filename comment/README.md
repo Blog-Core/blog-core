@@ -2,7 +2,7 @@ Comment form subproject.
 
 ## Building
 
-Install dependencies:
+Install dependencies (in comment directory):
 
     npm install
 
@@ -12,10 +12,10 @@ Build bundle:
 
 ## Testing
 
-Load Blog-Core tests:
+Load Blog-Core tests (in main project root):
 
     swipl -s tests/tests.pl
 
-Run frontend tests:
+Run frontend tests (in comment directory):
 
     make test
