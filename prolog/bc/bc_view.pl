@@ -16,6 +16,7 @@
 :- use_module(library(st/st_file)).
 :- use_module(library(st/st_render)).
 
+:- use_module(bc_data_config).
 :- use_module(bc_headers).
 :- use_module(bc_env).
 
@@ -123,7 +124,9 @@ render_with_options(Name, Data):-
     (   bc_env_production
     ->  Cache = true
     ;   Cache = false),
-    st_render_file(Name, Data, Stream,
+    bc_config_dict(Config),
+    RenderData = Data.put(config, Config),
+    st_render_file(Name, RenderData, Stream,
         _{ encoding: utf8, strip: true,
            cache: Cache, extension: html }).
 
