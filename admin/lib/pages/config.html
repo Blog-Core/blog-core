@@ -1,0 +1,50 @@
+<h2>Configuration</h2>
+<!-- ko if: !permission() -->
+    <div class="alert alert-warning" role="alert">
+        You do not have permissions to edit configuration.
+    </div>
+<!-- /ko -->
+<!-- ko if: permission() -->
+    <!-- ko with: config -->
+        <div class="row">
+            <div class="col-md-2 col-sm-3 col-xs-4 text-right">
+                <strong>Site base URL</strong></div>
+            <div data-bind="text: site"
+                class="col-md-4 col-sm-5 col-xs-8"></div>
+        </div>
+        <div class="row">
+            <div class="col-md-2 col-sm-3 col-xs-4 text-right">
+                <strong>Title</strong></div>
+            <div data-bind="text: title"
+                class="col-md-4 col-sm-5 col-xs-8"></div>
+        </div>
+    <!-- /ko -->
+    <div class="row bc-margin-top">
+        <div class="col-md-4 col-sm-5 col-xs-8 col-md-offset-2 col-sm-offset-3 col-xs-offset-4">
+            <a href="#" data-bind="click: edit" class="btn btn-default">
+                <span class="glyphicon glyphicon-pencil"></span> Edit</a>
+        </div>
+    </div>
+    <!-- ko if: editing() -->
+        <hr>
+        <form data-bind="submit: save" autocomplete="off" id="config-form">
+            <div data-bind="errors: errors.site" class="form-group">
+                <label for="config-site">Site base URL</label>
+                <input data-bind="textInput: form.site"
+                    type="text" class="form-control" id="config-site"
+                    placeholder="Site base URL">
+            </div>
+            <div class="form-group">
+                <label for="config-title">Title</label>
+                <input data-bind="textInput: form.title"
+                    type="text" class="form-control" id="config-title"
+                    placeholder="Site title">
+            </div>
+            <button type="submit" class="btn btn-default">
+                <span class="glyphicon glyphicon-ok"></span> Save
+            </button>
+            <a data-bind="click: cancel" class="btn btn-default" href="#">
+                <span class="glyphicon glyphicon-remove"></span> Cancel</a>
+        </form>
+    <!-- /ko -->
+<!-- /ko -->

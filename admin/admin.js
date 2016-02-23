@@ -8,6 +8,7 @@ var user = require('./lib/pages/user');
 var email = require('./lib/pages/email');
 var comments = require('./lib/pages/comments');
 var trash = require('./lib/pages/trash');
+var config = require('./lib/pages/config');
 
 // Errors binding.
 
@@ -142,6 +143,16 @@ route(/^recover$/, function() {
 
             route.go('landing');
         }
+    }
+});
+
+route(/^config$/, function() {
+
+    if (authenticated() && !recovery()) {
+
+        menu.active('config');
+
+        config.create().catch(message.error);
     }
 });
 
