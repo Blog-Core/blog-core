@@ -4,7 +4,10 @@
     bc_register_preview/2,
     bc_unregister_preview/1,
     bc_type/5,
-    bc_type_preview/2
+    bc_type_preview/2,
+    bc_register_canonical/2,
+    bc_unregister_canonical/1,
+    bc_type_canonical/2
 ]).
 
 :- use_module(library(debug)).
@@ -14,6 +17,7 @@
 
 :- dynamic(type/5).
 :- dynamic(preview/2).
+:- dynamic(canonical/2).
 
 %! bc_type(Name, Label, MenuLabel, Roles, Comments) is nondet.
 %
@@ -28,6 +32,13 @@ bc_type(Name, Label, MenuLabel, Roles, Comments):-
 
 bc_type_preview(Name, Preview):-
     preview(Name, Preview).
+
+%! bc_type_preview(Name, Canonical) is nondet.
+%
+% Matches/generates all registered type canonical URLs.
+
+bc_type_canonical(Name, Canonical):-
+    canonical(Name, Canonical).
 
 %! bc_register_type(+Name, +Label, +MenuLabel, +Roles, +Comments) is det.
 %
@@ -65,7 +76,9 @@ bc_register_preview(Name, Preview):-
     ->  retractall(preview(Name, _))
     ;   true),
     assertz(preview(Name, Preview)),
-    debug(bc_type, 'type ~w preview URL ~w registered', [Name, Preview]).
+    debug(bc_type,
+        'type ~w preview URL ~w registered',
+        [Name, Preview]).
 
 %! bc_unregister_preview(+Name) is det.
 %
@@ -75,6 +88,30 @@ bc_register_preview(Name, Preview):-
 bc_unregister_preview(Name):-
     must_be(atom, Name),
     retractall(preview(Name, _)).
+
+%! bc_unregister_canonical(+Name) is det.
+%
+% Removes the given type canonical URL.
+
+bc_unregister_canonical(Name):-
+    must_be(atom, Name),
+    retractall(canonical(Name, _)).
+
+%! bc_register_canonical(+Name, +Canonical) is det.
+%
+% Registers a new type canonical URL.
+% Overwrites old one.
+
+bc_register_canonical(Name, Canonical):-
+    must_be(atom, Name),
+    must_be(atom, Canonical),
+    (   canonical(Name, _)
+    ->  retractall(canonical(Name, _))
+    ;   true),
+    assertz(canonical(Name, Canonical)),
+    debug(bc_type,
+        'type ~w canonical URL ~w registered',
+        [Name, Canonical]).
 
 % Checks that type gets valid
 % access roles.
