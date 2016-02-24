@@ -1,5 +1,6 @@
 :- begin_tests(api_comment).
 
+:- use_module(library(http/http_open)).
 :- use_module(library(docstore)).
 
 :- use_module(util/util).
@@ -232,5 +233,53 @@ test('Reply notification', [setup(new_database)]):-
         reply_to: Comment1.data }, Comment2),
     assertion(Comment2.status = "success"),
     assertion(bc_mail_queue_size(3)).
+
+test('Mail unsubscribe from entry', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    new_post(AuthorId, test_post, Post),
+    assertion(Post.status = "success"),
+    set_no_auth,
+    new_comment(Post.data,
+        _{ notify: true, email: 'test@example.com' }, Comment1),
+    assertion(Comment1.status = "success"),
+    new_comment(Post.data,
+        _{ content: "@RLa, reply" }, Comment2),
+    assertion(Comment2.status = "success"),
+    assertion(bc_mail_queue_size(3)),
+    atom_concat('http://localhost:18008/mail/unsubscribe/entry/',
+        Comment1.data, UnsubscribeURL),
+    http_open(UnsubscribeURL, Stream, []),
+    read_stream_to_codes(Stream, Codes),
+    close(Stream),
+    string_codes(Message, Codes),
+    assertion(sub_string(Message, _, _, _, "unsubscribed")),
+    new_comment(Post.data,
+        _{ content: "@RLa, reply" }, Comment3),
+    assertion(Comment3.status = "success"),
+    assertion(bc_mail_queue_size(4)).
+
+test('Mail unsubscribe from all', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    new_post(AuthorId, test_post, Post),
+    assertion(Post.status = "success"),
+    set_no_auth,
+    new_comment(Post.data,
+        _{ notify: true, email: 'test@example.com' }, Comment1),
+    assertion(Comment1.status = "success"),
+    new_comment(Post.data,
+        _{ content: "@RLa, reply" }, Comment2),
+    assertion(Comment2.status = "success"),
+    assertion(bc_mail_queue_size(3)),
+    atom_concat('http://localhost:18008/mail/unsubscribe/all/',
+        Comment1.data, UnsubscribeURL),
+    http_open(UnsubscribeURL, Stream, []),
+    read_stream_to_codes(Stream, Codes),
+    close(Stream),
+    string_codes(Message, Codes),
+    assertion(sub_string(Message, _, _, _, "unsubscribed")),
+    new_comment(Post.data,
+        _{ content: "@RLa, reply" }, Comment3),
+    assertion(Comment3.status = "success"),
+    assertion(bc_mail_queue_size(4)).
 
 :- end_tests(api_comment).

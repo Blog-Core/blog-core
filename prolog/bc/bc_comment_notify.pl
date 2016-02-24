@@ -105,6 +105,8 @@ accepts_notify(Authors, Name):-
     get_assoc(Name, Authors, Data),
     Data.notify = true.
 
+% FIXME move into bc_data_mail.
+
 % Finds all comment authors for the
 % given entry. Authors is an assoc.
 

@@ -8,7 +8,7 @@ Your comment has a reply:
 
 Link to entry: {{= entry_url }}
 
-Unsubscribe: {{= config.site }}/unsubscribe/entry/{{= comment.post }}/{{= parent.'$id' }}
-Unsubscribe from all: {{= config.site }}/unsubscribe/all/{{= parent.'$id' }}
+Unsubscribe: {{= config.site }}/mail/unsubscribe/entry/{{= parent.'$id' }}
+Unsubscribe from all: {{= config.site }}/mail/unsubscribe/all/{{= parent.'$id' }}
 
 Do not reply to this mail.
