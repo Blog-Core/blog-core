@@ -59,7 +59,6 @@ start_mail_thread:-
 % Tail-call optimized loop.
 
 queue_loop:-
-    debug(bc_mail, 'running queue thread', []),
     queue_loop_iteration,
     queue_thread_sleep(Sleep),
     sleep(Sleep),

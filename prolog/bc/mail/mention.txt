@@ -1,0 +1,14 @@
+Hello {{= receiver.name }},
+
+You have been mentioned in a comment:
+
+----------------------
+{{= comment.content }}
+----------------------
+
+Link to entry: {{= entry_url }}
+
+Unsubscribe: {{= config.site }}/unsubscribe/entry/{{= comment.post }}/{{= receiver.comment_id }}
+Unsubscribe from all: {{= config.site }}/unsubscribe/all/{{= receiver.comment_id }}
+
+Do not reply to this mail.

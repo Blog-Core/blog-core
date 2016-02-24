@@ -1,0 +1,14 @@
+Hello {{= parent.author }},
+
+Your comment has a reply:
+
+----------------------
+{{= comment.content }}
+----------------------
+
+Link to entry: {{= entry_url }}
+
+Unsubscribe: {{= config.site }}/unsubscribe/entry/{{= comment.post }}/{{= parent.'$id' }}
+Unsubscribe from all: {{= config.site }}/unsubscribe/all/{{= parent.'$id' }}
+
+Do not reply to this mail.

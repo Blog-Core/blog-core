@@ -1,0 +1,9 @@
+New comment by {{= comment.author }}:
+
+----------------------
+{{= comment.content }}
+----------------------
+
+Link to entry: {{= entry_url }}
+
+Do not reply to this mail.

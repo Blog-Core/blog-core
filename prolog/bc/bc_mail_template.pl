@@ -65,51 +65,35 @@ render_body(Name, Source, Data, Body):-
             frontend: simple
         }))).
 
+% Reads mail template. File is relative
+% to mail templates directory.
+
+read_mail_template(File, Source):-
+    mail_directory(Directory),
+    read_file_to_string(Directory/File, Source, []).
+
+% Mail templates directory.
+
+mail_directory(Directory):-
+    module_property(bc_mail_template, file(File)),
+    file_directory_name(File, Dir),
+    atom_concat(Dir, '/mail', Directory).
+
 % Default mail template for mention mails.
 
-:-  Lines = [
-        "Hello {{= receiver.name }},\r\n",
-        "You have been mentioned in a comment:\r\n",
-        "{{= comment.content }}\r\n",
-        "Unsubscribe: {{= config.site }}/unsubscribe/entry/{{= comment.post }}/{{= receiver.comment_id }}",
-        "Unsubscribe from all: {{= config.site }}/unsubscribe/all/{{= receiver.comment_id }}\r\n",
-        "Do not reply to this mail.\r\n"
-    ],
-    atomic_list_concat(Lines, '\r\n', Body),
-    text_to_string(Body, BodyString),
+:-  read_mail_template('mention.txt', Body),
     bc_mail_register_template(
-        mention,
-        "{{= entry.title }} - comment",
-        BodyString).
+        mention, "{{= entry.title }} - comment", Body).
 
 % Default mail template for reply mails.
 
-:-  Lines = [
-        "Hello {{= parent.author }},\r\n",
-        "Your comment has reply:\r\n",
-        "{{= comment.content }}\r\n",
-        "Unsubscribe: {{= config.site }}/unsubscribe/entry/{{= comment.post }}/{{= parent.'$id' }}",
-        "Unsubscribe from all: {{= config.site }}/unsubscribe/all/{{= parent.'$id' }}\r\n",
-        "Do not reply to this mail.\r\n"
-    ],
-    atomic_list_concat(Lines, '\r\n', Body),
-    text_to_string(Body, BodyString),
+:-  read_mail_template('reply.txt', Body),
     bc_mail_register_template(
-        reply,
-        "{{= entry.title }} - reply",
-        BodyString).
+        reply, "{{= entry.title }} - reply", Body).
 
 % Default mail template for comment notifications
 % to the entry author.
 
-:-  Lines = [
-        "New comment by {{= comment.author }}:\r\n",
-        "{{= comment.content }}\r\n",
-        "Do not reply to this mail.\r\n"
-    ],
-    atomic_list_concat(Lines, '\r\n', Body),
-    text_to_string(Body, BodyString),
+:-  read_mail_template('comment.txt', Body),
     bc_mail_register_template(
-        comment,
-        "{{= entry.title }} - new comment",
-        BodyString).
+        comment, "{{= entry.title }} - new comment", Body).

@@ -22,9 +22,10 @@
     tests/mail
 ], [ if(not_loaded) ]).
 
-% Registers preview for posts.
+% Registers preview and canonical link for posts.
 
 :- bc_register_preview(post, '/post/<slug>').
+:- bc_register_canonical(post, '/post/<slug>').
 
 % Resets database state. Used
 % for admin tests.
