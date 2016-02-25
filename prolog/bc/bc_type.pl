@@ -72,6 +72,9 @@ bc_unregister_type(Name):-
 bc_register_preview(Name, Preview):-
     must_be(atom, Name),
     must_be(atom, Preview),
+    (   sub_atom(Preview, _, _, _, '<slug>')
+    ->  true
+    ;   throw(error(invalid_preview(Preview), _))),
     (   preview(Name, _)
     ->  retractall(preview(Name, _))
     ;   true),
@@ -105,6 +108,9 @@ bc_unregister_canonical(Name):-
 bc_register_canonical(Name, Canonical):-
     must_be(atom, Name),
     must_be(atom, Canonical),
+    (   sub_atom(Canonical, _, _, _, '<slug>')
+    ->  true
+    ;   throw(error(invalid_canonical(Canonical), _))),
     (   canonical(Name, _)
     ->  retractall(canonical(Name, _))
     ;   true),
