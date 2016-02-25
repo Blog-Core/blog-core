@@ -48,7 +48,7 @@ bc_mail_queue_size(Size):-
 % Sleep time setting for the
 % mail queue thread.
 
-queue_thread_sleep(10).
+queue_thread_sleep(1).
 
 start_mail_thread:-
     debug(bc_mail, 'started queue thread', []),
