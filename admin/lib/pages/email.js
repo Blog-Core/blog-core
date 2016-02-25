@@ -1,7 +1,6 @@
 var fs = require('fs');
 var api = require('../api');
 var view = require('../view');
-var email = require('../vm/email');
 var message = require('../message');
 var resolveObject = require('../resolve_object');
 
