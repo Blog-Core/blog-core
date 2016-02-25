@@ -11,6 +11,7 @@ A CMS/blog framework for [SWI-Prolog](http://swi-prolog.org/).
  * File management.
  * Markdown for content.
  * Threaded comments.
+ * Mail notifications.
  * Built-in view caching.
  * Custom URLs.
  * Administration API.
