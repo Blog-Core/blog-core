@@ -1,7 +1,7 @@
 name('blog_core').
-version('1.0.0').
+version('1.1.0').
 title('Blog/CMS framework').
-author('Raivo Laanemets', 'http://rlaanemets.com/').
+author('Raivo Laanemets', 'https://rlaanemets.com/').
 home('http://blog-core.net/').
 requires('docstore').
 requires('arouter').
