@@ -14,9 +14,11 @@
 bc_image_dimensions(Path, Width, Height):-
     catch(absolute_file_name(path(identify),
         Identify, [access(execute)]), _, fail),
-    process_create(Identify,
-        ['-format', '%[fx:w]x%[fx:h]', Path], [stdout(pipe(Out))]),
-    read_stream_to_codes(Out, Codes),
+    setup_call_cleanup(
+        process_create(Identify,
+            ['-format', '%[fx:w]x%[fx:h]', Path], [stdout(pipe(Out))]),
+        read_stream_to_codes(Out, Codes),
+        close(Out)),
     parse_dimensions(Codes, Width, Height),
     Width > 0, Height > 0.
 
