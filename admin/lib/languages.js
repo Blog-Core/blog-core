@@ -1,7 +1,6 @@
 // http://stackoverflow.com/questions/3217492/list-of-language-codes-in-yaml-or-json
 // @author Phil Teare
-// using wikipedia data
-
+// using Wikipedia data
 module.exports = [
     {
         'code': 'ab',
