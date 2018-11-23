@@ -73,6 +73,7 @@ user:message_hook(Term, _, _):-
     :- debug(bc_search).
     :- debug(bc_mail).
     :- debug(bc_comment).
+    :- debug(bc_action).
 :- endif.
 
 % Sets up simple-template.

@@ -1,4 +1,6 @@
 :- module(bc_data_entry, [
+    bc_entry_actions/3,       % +Actor, +Id, -Actions
+    bc_entry_action/4,        % +Actor, +Id, +Action, -Result
     bc_entry_save/3,          % +Actor, +Entry, -Id
     bc_entry_update/2,        % +Actor, +Entry
     bc_entry_remove/2,        % +Actor, +Id
@@ -23,6 +25,28 @@
 :- use_module(bc_entry).
 :- use_module(bc_files).
 :- use_module(bc_user).
+:- use_module(bc_action).
+
+%! bc_entry_actions(+Actor, +Id, -Actions) is det.
+%
+% List of available actions for the actor.
+
+bc_entry_actions(Actor, Id, Actions):-
+    bc_available_actions(Actor, Id, Actions).
+
+%! bc_entry_action(+Actor, +Id, +Action, -Result) is det.
+%
+% Executes the given action on the entry.
+
+bc_entry_action(Actor, Id, Action, Result):-
+    can_execute(Actor, Action, Id),
+    bc_execute(Actor, Action, Id, Result).
+
+can_execute(Actor, Action, Id):-
+    bc_execute_access_id(Actor, Action, Id), !.
+
+can_execute(_, _, _):-
+    throw(error(no_access)).
 
 %! bc_entry_save(+Actor, +Entry, -Id) is det.
 %

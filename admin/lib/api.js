@@ -264,6 +264,17 @@ exports.imageSize = function(entryId, file) {
         '/' + encodeURIComponent(file));
 };
 
+// Actions associated with the post.
+exports.actions = function(id) {
+    return fetchGet('/api/actions/' + encodeURIComponent(id));
+};
+
+exports.execute = function(id, action) {
+    var url = '/api/action/' + encodeURIComponent(id) + '/' +
+        encodeURIComponent(action);
+    return fetchUpdate(url);
+};
+
 // Checks whether the API key has been set.
 exports.hasKey = function() {
     return !!(sessionStorage.getItem('api-key') ||

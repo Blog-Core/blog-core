@@ -19,9 +19,11 @@ exports.create = function(type, id, recovered) {
         modified: ko.observable(false),
         hasPreview: ko.observable(false),
         previewNotice: ko.observable(false),
+        actionNotice: ko.observable(false),
         softWrap: ko.observable('100'),
         settings: ko.observable(false),
-        help: ko.observable(false)
+        help: ko.observable(false),
+        actions: ko.observable([])
     };
 
     // Use stored softwrap value.
@@ -76,6 +78,21 @@ exports.create = function(type, id, recovered) {
         }
     };
 
+    // Executes the given action.
+    model.execute = function(action) {
+        if (id) {
+            if (confirm('Do you want to run: ' + action.label + '?')) {
+                model.post().submitUpdate().then(function() {
+                    return api.execute(id, action.name);
+                }).then(function() {
+                    message.info('Executed on the post: ' + action.label + '.');
+                }).catch(message.error);
+            }
+        } else {
+            model.actionNotice(true);
+        }
+    };
+
     // Leaves from the editing page.
     model.leave = function() {
         route.go('entries/' + model.post().type());
@@ -86,6 +103,15 @@ exports.create = function(type, id, recovered) {
         // data.post will be undefined when id is not set.
         model.post(post.create(data.userInfo, type,
             data.types, data.users, data.files, data.post, recovered));
+
+        // Custom actions for the entry.
+        if (data.actions) {
+            data.actions.forEach(function(action) {
+                var icon = action.icon;
+                action.textLabel = icon.length > 0 && icon[0] === icon[0].toUpperCase();
+            });
+            model.actions(data.actions);
+        }
 
         // Save handler.
         // http://stackoverflow.com/questions/4446987/overriding-controls-save-functionality-in-browser
@@ -274,12 +300,14 @@ function postData(type, id) {
             types: api.types(),
             users: authors(userInfo),
             userInfo: Promise.resolve(userInfo),
-            tags: api.tags(type)
+            tags: api.tags(type)            
         };
         if (id) {
             requests.post = api.post(id);
             // The entry files.
             requests.files = api.files(id);
+            // Actions.
+            requests.actions = api.actions(id);
         } else {
             requests.files = Promise.resolve([]);
         }

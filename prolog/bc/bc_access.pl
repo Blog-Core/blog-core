@@ -10,6 +10,7 @@
     bc_login_access/1         % +Actor
 ]).
 
+:- use_module(library(error)).
 :- use_module(bc_type).
 :- use_module(bc_role).
 :- use_module(bc_entry).

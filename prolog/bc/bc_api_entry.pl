@@ -117,6 +117,27 @@ entry_get_info(Id):-
     bc_entry_info(Actor, Id, Entry),
     bc_reply_success(Entry).
 
+% Execute action on the given entry.
+
+:- route_put(api/action/Id/Action,
+    bc_auth, entry_run_action(Id, Action)).
+
+entry_run_action(Id, Action):-
+    bc_actor(Actor),
+    bc_entry_action(Actor, Id, Action, Result),
+    bc_reply_success(Result).
+
+% List of actions available for this
+% type of entry.
+
+:- route_get(api/actions/Id,
+    bc_auth, entry_actions(Id)).
+
+entry_actions(Id):-
+    bc_actor(Actor),
+    bc_entry_actions(Actor, Id, Actions),
+    bc_reply_success(Actions).
+
 % Entry schema.
 % can probably be reduced.
 
