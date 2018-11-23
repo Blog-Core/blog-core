@@ -23,7 +23,4 @@ check:
 clean:
 	$(MAKE) -C admin clean
 
-test-admin:
-	$(MAKE) -C admin test
-
 .PHONY: test package upload admin clean check install-tools test-admin
