@@ -16,6 +16,7 @@ A CMS/blog framework for [SWI-Prolog](http://swi-prolog.org/).
  * Custom URLs.
  * Administration API.
  * Administration UI.
+ * Custom actions in editor.
  * Data migrations.
  * Built-in search.
  * Built-in post similarity matching.
