@@ -32,6 +32,13 @@ exports.setSoftWrap = function(softWrap) {
     }
 };
 
+// Sets the font size used by the editor.
+exports.setFontSize = function(size) {
+    if (editor) {
+        editor.setOption('fontSize', size);
+    }
+};
+
 // Sets the editor content
 // and initial cursor position.
 exports.begin = function(content) {

@@ -23,13 +23,20 @@ exports.create = function(type, id, recovered) {
         softWrap: ko.observable('100'),
         settings: ko.observable(false),
         help: ko.observable(false),
-        actions: ko.observable([])
+        actions: ko.observable([]),
+        fontSize: ko.observable('14')
     };
 
     // Use stored softwrap value.
     var softWrap = localStorage.getItem('softwrap');
     if (softWrap) {
         model.softWrap(softWrap);
+    }
+
+    // Use stored font size value.
+    var fontSize = localStorage.getItem('fontsize');
+    if (fontSize) {
+        model.fontSize(fontSize);
     }
 
     // Shows/hides the info section.
@@ -202,11 +209,20 @@ exports.create = function(type, id, recovered) {
         // Set soft wrap on the editor.
         editor.setSoftWrap(parseInt(model.softWrap(), 10));
 
+        // Set font size in the editor.
+        editor.setFontSize(parseInt(model.fontSize(), 10));
+
         // Automatically set soft wrap when changed
         // in the UI controls.
         model.softWrap.subscribe(function(value) {
             localStorage.setItem('softwrap', value);
             editor.setSoftWrap(parseInt(value, 10));
+        });
+
+        // Same as above for the editor font size.
+        model.fontSize.subscribe(function(value) {
+            localStorage.setItem('fontsize', value);
+            editor.setFontSize(parseInt(value, 10));
         });
 
         if (id) {
