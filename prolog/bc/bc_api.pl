@@ -16,3 +16,4 @@
 :- use_module(bc_api_tag).
 :- use_module(bc_api_similarity).
 :- use_module(bc_mail_unsubscribe).
+:- use_module(bc_api_analytics).

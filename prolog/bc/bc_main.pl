@@ -50,6 +50,7 @@ user:message_hook(Term, _, _):-
 :- use_module(bc_migrate).
 :- use_module(bc_search).
 :- use_module(bc_mail_queue).
+:- use_module(bc_analytics).
 
 % In development: most debug features.
 % In production: enable simple-template and view caching.
@@ -74,6 +75,7 @@ user:message_hook(Term, _, _):-
     :- debug(bc_mail).
     :- debug(bc_comment).
     :- debug(bc_action).
+    :- debug(bc_analytics).
 :- endif.
 
 % Sets up simple-template.
