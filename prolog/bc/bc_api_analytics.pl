@@ -16,50 +16,52 @@
 :- use_module(bc_analytics).
 :- use_module(bc_analytics_db).
 
-:- route_post(api/visitor/user, record_user).
+% Handlers for data from the readers script.
+
+:- route_post(api/readers/user, record_user).
 
 record_user:-
     bc_read_by_schema(bc_analytics_user, User),
     bc_record_user(User, UserId),
     bc_reply_success(UserId).
 
-:- route_post(api/visitor/session, record_session).
+:- route_post(api/readers/session, record_session).
 
 record_session:-
     bc_read_by_schema(bc_analytics_session, Session),
     bc_record_session(Session, SessionId),
     bc_reply_success(SessionId).
 
-:- route_post(api/visitor/pageview, record_pageview).
+:- route_post(api/readers/pageview, record_pageview).
 
 record_pageview:-
     bc_read_by_schema(bc_analytics_pageview, Pageview),
     bc_record_pageview(Pageview, PageviewId),
     bc_reply_success(PageviewId).
 
-:- route_post(api/visitor/pageview_extend, record_pageview_extend).
+:- route_post(api/readers/pageview_extend, record_pageview_extend).
 
 record_pageview_extend:-
     bc_read_by_schema(bc_analytics_pageview_extend, Pageview),
     bc_record_pageview_extend(Pageview),
     bc_reply_success(true).
 
-:- route_get(bc/'visitor.min.js', visitor_script).
+:- route_get(bc/'readers.min.js', visitor_script).
 
 visitor_script:-
     http_current_request(Request),
     module_property(bc_api_analytics, file(File)),
     file_directory_name(File, Dir),
-    atom_concat(Dir, '/public/js/visitor.min.js', Path),
+    atom_concat(Dir, '/public/js/readers.min.js', Path),
     http_reply_file(Path, [unsafe(true)], Request).
 
-:- route_get(bc/'visitor.min.js.map', visitor_script_map).
+:- route_get(bc/'readers.min.js.map', visitor_script_map).
 
 visitor_script_map:-
     http_current_request(Request),
     module_property(bc_api_analytics, file(File)),
     file_directory_name(File, Dir),
-    atom_concat(Dir, '/public/js/visitor.min.js.map', Path),
+    atom_concat(Dir, '/public/js/readers.min.js.map', Path),
     http_reply_file(Path, [unsafe(true)], Request).
 
 :- register_schema(bc_analytics_user, _{
@@ -100,6 +102,7 @@ visitor_script_map:-
 
 % Analytic timeseries results for the administration API.
 
+% TODO: add auth
 :- route_get(api/analytics/timeseries/From/To/Duration,
    analytics_timeseries(From, To, Duration)).
 

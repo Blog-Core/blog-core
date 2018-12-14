@@ -4,7 +4,7 @@
 
     // Reads the previously stored user id.
     const readUserId = () => {
-        const match = document.cookie.match(/visitor_user\s*=\s*([a-z0-9\-]+)/);
+        const match = document.cookie.match(/readers_user\s*=\s*([a-z0-9\-]+)/);
         return match ? match[1] : null;
     };
 
@@ -12,16 +12,16 @@
     const writeUserId = (userId) => {
         const expires = new Date();
         expires.setFullYear(expires.getFullYear() + 1);
-        document.cookie = 'visitor_user=' + userId + '; path=/; expires=' + expires.toUTCString();
+        document.cookie = 'readers_user=' + userId + '; path=/; expires=' + expires.toUTCString();
     };
 
     const readSessionId = () => {
-        const match = document.cookie.match(/visitor_session\s*=\s*([a-z0-9\-]+)/);
+        const match = document.cookie.match(/readers_session\s*=\s*([a-z0-9\-]+)/);
         return match ? match[1] : null;
     };
 
     const writeSessionId = (sessionId) => {
-        document.cookie = 'visitor_session=' + sessionId + '; path=/';
+        document.cookie = 'readers_session=' + sessionId + '; path=/';
     };
 
     // Helper to run HTTP POST request to the backend.
@@ -50,7 +50,7 @@
             cb(userId);
         } else {
             // Record the new user.
-            postJSON('/api/visitor/user', {}, (response) => {
+            postJSON('/api/readers/user', {}, (response) => {
                 if (response.status === 'success') {
                     const userId = response.data;
                     // Remember for later.
@@ -76,7 +76,7 @@
                 agent: navigator.userAgent || null,
                 platform: navigator.platform || null
             };
-            postJSON('/api/visitor/session', data, (response) => {
+            postJSON('/api/readers/session', data, (response) => {
                 if (response.status === 'success') {
                     const sessionId = response.data;
                     // Remember for later.
@@ -97,7 +97,7 @@
                 pageview_id: pageviewId,
                 elapsed: elapsed
             }
-            postJSON('/api/visitor/pageview_extend', data, (response) => {
+            postJSON('/api/readers/pageview_extend', data, (response) => {
                 if (response.status === 'success') {
                     cb(userId, sessionId);
                 }
@@ -110,7 +110,7 @@
                 elapsed: elapsed
             };
             // First pageview record.
-            postJSON('/api/visitor/pageview', data, (response) => {
+            postJSON('/api/readers/pageview', data, (response) => {
                 if (response.status === 'success') {
                     // Update the current pageview id.
                     pageviewId = response.data;
