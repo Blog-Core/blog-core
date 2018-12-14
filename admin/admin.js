@@ -11,6 +11,15 @@ var trash = require('./lib/pages/trash');
 var config = require('./lib/pages/config');
 var analytics = require('./lib/pages/analytics');
 
+// Sets admin cookie to disable analytics for
+// the administrator as a visitor.
+function setAdminCookie() {
+    var expires = new Date();
+    expires.setFullYear(expires.getFullYear() + 1);
+    document.cookie = 'blog_core_admin=1; path=/; expires=' + expires.toUTCString();
+}
+setAdminCookie();
+
 // Errors binding.
 require('./lib/form_error');
 

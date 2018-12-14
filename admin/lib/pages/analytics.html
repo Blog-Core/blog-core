@@ -45,9 +45,21 @@
             data-bind="attr: { 'data-values': $root.results.timeseries.pageviews().join(',') }"></canvas>
     </div>
 </div>
-<div class="row">
+<div class="row bc-margin-bottom">
     <div class="col-md-12">
         <a data-bind="click: $root.load" class="btn btn-default" href="#">
             <span class="glyphicon glyphicon-refresh"></span> Refresh</a>
     </div>
 </div>
+<h3>Last users</h3>
+<table class="table table-striped table-condensed">
+    <tbody>
+        <!-- ko foreach: $root.results.users.list -->
+            <tr>
+                <td data-bind="text: datetime"></td>
+                <td data-bind="text: session_count" class="text-right"></td>
+                <td data-bind="text: duration" class="text-right"></td>
+            </tr>
+        <!-- /ko -->
+    </tbody>
+</table>

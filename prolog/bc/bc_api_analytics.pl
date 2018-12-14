@@ -121,6 +121,21 @@ analytics_timeseries(From, To, Duration):-
         sessions: Sessions,
         pageviews: Pageviews}).
 
+% List of recent users.
+
+:- route_get(api/analytics/users/From/To/Duration/Offset/Count,
+   bc_auth, analytics_users(From, To, Duration, Offset, Count)).
+
+analytics_users(From, To, Duration, Offset, Count):-
+    atom_number(Duration, DurationNum),
+    parse_month(From, FromParsed),
+    parse_month(To, ToParsed),
+    atom_number(Offset, OffsetNum),
+    atom_number(Count, CountNum),
+    bc_analytics_users(FromParsed-ToParsed,
+        DurationNum, OffsetNum, CountNum, Users),
+    bc_reply_success(Users).
+
 parse_month(Atom, (YearNum, MonthNum)):-
     atomic_list_concat([Year, Month], -, Atom),
     atom_number(Year, YearNum),

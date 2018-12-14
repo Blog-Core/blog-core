@@ -283,6 +283,16 @@ exports.analyticsTs = function(start, end, duration) {
     return fetchGet(url);
 };
 
+exports.analyticsUsers = function(start, end, duration, offset, count) {
+    var url = '/api/analytics/users/' +
+        encodeURIComponent(start) + '/' +
+        encodeURIComponent(end) + '/' +
+        encodeURIComponent(duration) + '/' +
+        encodeURIComponent(offset) + '/' +
+        encodeURIComponent(count);
+    return fetchGet(url);
+};
+
 // Checks whether the API key has been set.
 exports.hasKey = function() {
     return !!(sessionStorage.getItem('api-key') ||

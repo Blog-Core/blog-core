@@ -121,7 +121,8 @@ bc_analytics_users(Interval, MinDuration, Offset, Count, Users):-
         call(Module:user(UserId)),
         call(Module:user_duration(UserId, Duration)),
         Duration >= MinDuration), AllUserIds),
-    sublist_offset_count(AllUserIds, Offset, Count, UserIds),
+    reverse(AllUserIds, RecentFirstIds),
+    sublist_offset_count(RecentFirstIds, Offset, Count, UserIds),
     maplist(user_data(Module), UserIds, Users).
 
 % List of sessions that are longer
@@ -165,10 +166,12 @@ sublist_offset_count(List, Offset, Count, Sublist):-
 user_data(Module, UserId, Dict):-
     call(Module:user_duration(UserId, Duration)),
     call(Module:user_timestamp(UserId, TimeStamp)),
+    call(Module:user_session_count(UserId, SessionCount)),
     Dict = user{
         user_id: UserId,
         duration: Duration,
-        timestamp: TimeStamp}.
+        timestamp: TimeStamp,
+        session_count: SessionCount}.
 
 % Turns user id into a data dict containing
 % information about the user.
@@ -192,15 +195,63 @@ session_data(Module, SessionId, Dict):-
 % Turns pageview id into a data dict containing
 % information about the pageview.
 
-% TODO: add title
 pageview_data(Module, PageviewId, Dict):-
     call(Module:pageview_duration(PageviewId, Duration)),
     call(Module:pageview_timestamp(PageviewId, TimeStamp)),
     call(Module:pageview_location(PageviewId, Location)),
     call(Module:pageview_referrer(PageviewId, Referrer)),
+    call(Module:pageview_title(PageviewId, Title)),
+    call(Module:pageview_entry(PageviewId, EntryId)),
     Dict = pageview{
         pageview_id: PageviewId,
         duration: Duration,
         timestamp: TimeStamp,
         location: Location,
-        referrer: Referrer}.
+        referrer: Referrer,
+        title: Title,
+        entry_id: EntryId}.
+
+% Sleep time setting for the
+% cache invalidation queue thread.
+
+cache_thread_sleep(10).
+
+start_cache_thread:-
+    debug(bc_analytics, 'Started analytics invalidation thread', []),
+    cache_loop.
+
+% Tail-call optimized loop.
+
+cache_loop:-
+    cache_loop_iteration,
+    cache_thread_sleep(Sleep),
+    sleep(Sleep),
+    cache_loop.
+
+cache_loop_iteration:-
+    findall(Module-TimeStamp,
+        analytics_cache(_, Module, TimeStamp), Entries),
+    include(expired_cache, Entries, Expired),
+    maplist(invalidate_expired, Expired).
+
+expired_cache(_-TimeStamp):-
+    get_time(CurrentTime),
+    CurrentTime > TimeStamp + 10.
+
+invalidate_expired(Entry):-
+    with_mutex(analytics_cache,
+        invalidate_expired_unsafe(Entry)).
+
+invalidate_expired_unsafe(Module-_):-
+    debug(bc_analytics, 'Invalidating analytics cache ~w.', [Module]),
+    retractall(analytics_cache(_, Module, _)),
+    clear_module(Module).
+
+clear_module(Module):-
+    PredicateIndicator = Module:_,
+    forall(current_predicate(PredicateIndicator),
+        abolish(PredicateIndicator)).
+
+% Queue loop thread is always started.
+
+:- thread_create(start_cache_thread, _, []).

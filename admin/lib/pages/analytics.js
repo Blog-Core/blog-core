@@ -4,6 +4,7 @@ var resolveObject = require('../resolve_object');
 var template = require('./analytics.html');
 var message = require('../message');
 var dataline = require('../dataline');
+var analyticsUser = require('../vm/analytics_user');
 
 // Page for visitor analytics.
 exports.create = function() {
@@ -34,6 +35,9 @@ exports.create = function() {
                 users: ko.observable([]),
                 sessions: ko.observable([]),
                 pageviews: ko.observable([])
+            },
+            users: {
+                list: ko.observableArray([])
             }
         }
     };
@@ -52,6 +56,13 @@ exports.create = function() {
             model.results.timeseries.pageviews(data.pageviews.map(function(pageview) {
                 return pageview.count;
             }));
+        }).then(function() {
+            model.results.users.list([]);
+            return api.analyticsUsers(start, end, duration, 0, 50).then(function(data) {
+                data.forEach(function(user) {
+                    model.results.users.list.push(analyticsUser.create(user));
+                });                
+            });
         }).catch(function(err) {
             message.error(err);
         });

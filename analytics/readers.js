@@ -2,6 +2,17 @@
     const startTimestamp = Date.now();
     let pageviewId = null;
 
+    // Helper to check whether the current visitor is the
+    // blog administrator.
+    const isAdmin = () => {
+        return document.cookie.match(/blog_core_admin\s*=\s*1/);
+    };
+
+    // Don't run the remainder of the script for the admin.
+    if (isAdmin()) {
+        return;
+    }
+
     // Reads the previously stored user id.
     const readUserId = () => {
         const match = document.cookie.match(/readers_user\s*=\s*([a-z0-9\-]+)/);

@@ -21,8 +21,11 @@ bc_analytics_read(From, To, Module):-
     dynamic(Module:pageview/1),
     findall(Name, file_name(From, To, Name), Names),
     maplist(read_file_into(Module), Names),
+    compute_session_pagecounts(Module),
     compute_session_durations(Module),
-    compute_user_durations(Module).
+    compute_user_session_counts(Module),
+    compute_user_pagecounts(Module),
+    compute_user_durations(Module). 
 
 read_file_into(Module, File):-
     debug(bc_analytics, 'Reading file ~w into module ~w.', [File, Module]),
@@ -49,13 +52,13 @@ load_term_into(Module, Term):-
     is_dict(Term, Tag),
     load_dict_term_into(Tag, Module, Term).
 
-% TODO: add session count, page count
-
 load_dict_term_into(user, Module, Dict):- !,
     UserId = Dict.user_id,
     assertz(Module:user(UserId)),
     assertz(Module:user_duration(UserId, 0)),
-    assertz(Module:user_timestamp(UserId, Dict.timestamp)).
+    assertz(Module:user_timestamp(UserId, Dict.timestamp)),
+    assertz(Module:user_session_count(UserId, 0)),
+    assertz(Module:user_pagecount(UserId, 0)).
 
 load_dict_term_into(session, Module, Dict):-
     UserId = Dict.user_id,
@@ -69,7 +72,6 @@ load_dict_term_into(session, Module, Dict):-
     assertz(Module:session_agent(SessionId, Dict.agent)),
     assertz(Module:session_platform(SessionId, Dict.platform)).
 
-% TODO: add title and entry id.
 load_dict_term_into(pageview, Module, Dict):-
     SessionId = Dict.session_id,
     call(Module:session(SessionId)), !,
@@ -80,10 +82,8 @@ load_dict_term_into(pageview, Module, Dict):-
     assertz(Module:pageview_timestamp(PageviewId, Dict.timestamp)),
     assertz(Module:pageview_location(PageviewId, Dict.location)),
     assertz(Module:pageview_referrer(PageviewId, Dict.referrer)),
-    call(Module:session_pagecount(SessionId, PageCount)),
-    retractall(Module:session_pagecount(SessionId, _)),
-    NewPageCount is PageCount + 1,
-    assertz(Module:session_pagecount(SessionId, NewPageCount)).
+    assertz(Module:pageview_title(PageviewId, Dict.title)),
+    assertz(Module:pageview_entry(PageviewId, Dict.entry_id)).
 
 load_dict_term_into(pageview_extend, Module, Dict):-
     PageviewId = Dict.pageview_id,
@@ -121,6 +121,45 @@ compute_user_duration(Module, UserId):-
     sum_list(Durations, Total),
     retractall(Module:user_duration(UserId, _)),
     assertz(Module:user_duration(UserId, Total)).
+
+% Computes total user page views from the sum of
+% session page views.
+
+compute_user_pagecounts(Module):-
+    findall(UserId, call(Module:user(UserId)), Users),
+    maplist(compute_user_pagecount(Module), Users).
+
+compute_user_pagecount(Module, UserId):-
+    findall(PageCount, (
+        call(Module:session_user(SessionId, UserId)),
+        call(Module:session_pagecount(SessionId, PageCount))), PageCounts),
+    sum_list(PageCounts, Total),
+    retractall(Module:user_pagecount(UserId, _)),
+    assertz(Module:user_pagecount(UserId, Total)).
+
+% Computes the number of sessions for the user.
+
+compute_user_session_counts(Module):-
+    findall(UserId, call(Module:user(UserId)), Users),
+    maplist(compute_user_session_count(Module), Users).
+
+compute_user_session_count(Module, UserId):-
+    findall(_, call(Module:session_user(_, UserId)), List),
+    length(List, SessionCount),
+    retractall(Module:user_session_count(UserId, _)),
+    assertz(Module:user_session_count(UserId, SessionCount)).
+
+% Computes the number of pagecounts for the sessions.
+
+compute_session_pagecounts(Module):-
+    findall(SessionId, call(Module:session(SessionId)), Sessions),
+    maplist(compute_session_pagecount(Module), Sessions).
+
+compute_session_pagecount(Module, SessionId):-
+    findall(_, call(Module:pageview_session(_, SessionId)), List),
+    length(List, PageCount),
+    retractall(Module:session_pagecount(SessionId, PageCount)),
+    assertz(Module:session_pagecount(SessionId, PageCount)).
 
 file_name(From, To, File):-
     From = (YearFrom, MonthFrom),

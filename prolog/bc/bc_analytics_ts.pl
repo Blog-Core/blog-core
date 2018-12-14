@@ -17,8 +17,10 @@ bc_analytics_ts_zero(Interval, Series):-
     MonthEnd is MonthTo + 1,
     EndDate = date(YearTo, MonthEnd, 1,
         0, 0, 0, 0, 'UTC', -),
+    get_time(CurrentTimeStamp),
     date_time_stamp(EndDate, EndTimeStamp),
-    prefill_empty(StartDate, EndTimeStamp, [], Prefilled),
+    MinEndTimeStamp is min(CurrentTimeStamp, EndTimeStamp),
+    prefill_empty(StartDate, MinEndTimeStamp, [], Prefilled),
     list_to_assoc(Prefilled, Series).
 
 % Helper to fill a list with initial values per day.
