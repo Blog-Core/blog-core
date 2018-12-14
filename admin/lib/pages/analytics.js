@@ -36,9 +36,7 @@ exports.create = function() {
                 sessions: ko.observable([]),
                 pageviews: ko.observable([])
             },
-            users: {
-                list: ko.observableArray([])
-            }
+            pages: ko.observable([])
         }
     };
 
@@ -57,11 +55,9 @@ exports.create = function() {
                 return pageview.count;
             }));
         }).then(function() {
-            model.results.users.list([]);
-            return api.analyticsUsers(start, end, duration, 0, 50).then(function(data) {
-                data.forEach(function(user) {
-                    model.results.users.list.push(analyticsUser.create(user));
-                });                
+            model.results.pages([]);
+            return api.analyticsPages(start, end, duration).then(function(data) {
+                model.results.pages(data);
             });
         }).catch(function(err) {
             message.error(err);

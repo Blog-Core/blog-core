@@ -2,12 +2,14 @@
     bc_analytics_user_ts/3,      % +Interval, +MinDuration, -Series
     bc_analytics_session_ts/3,   % +Interval, +MinDuration, -Series
     bc_analytics_pageview_ts/3,  % +Interval, +MinDuration, -Series
-    bc_analytics_users/5,    % +Interval, +MinDuration, +Offset, +Count, -Users
-    bc_analytics_sessions/5  % +Interval, +MinDuration, +Offset, +Count, -Sessions
+    bc_analytics_users/5,        % +Interval, +MinDuration, +Offset, +Count, -Users
+    bc_analytics_sessions/5,     % +Interval, +MinDuration, +Offset, +Count, -Sessions
+    bc_analytics_top_pages/3     % +Interval, +MinDuration, -Pages
 ]).
 
 /** <module> Generic visitor tracking analytics */
 
+:- use_module(library(assoc)).
 :- use_module(library(error)).
 :- use_module(library(debug)).
 :- use_module(bc_analytics_read).
@@ -160,6 +162,45 @@ sublist_offset_count(List, Offset, Count, Sublist):-
         Index >= Offset,
         Index < UpperBound), Sublist), !.
 
+% Top pages that were viewed in a session with
+% the given minimum duration. Pages are identified
+% by location paths.
+
+bc_analytics_top_pages(Interval, MinDuration, Pages):-
+    analytics_module(Interval, Module),
+    findall(Location, (
+        call(Module:pageview_location(PageviewId, Location)),
+        call(Module:pageview_session(PageviewId, SessionId)),
+        call(Module:session_duration(SessionId, Duration)),
+        Duration >= MinDuration), Locations),
+    empty_assoc(Empty),
+    fill_page_count_assoc(Locations, Empty, Assoc),
+    assoc_to_list(Assoc, List),
+    sort(2, @>=, List, Sorted),
+    sublist_offset_count(Sorted, 0, 50, Top),
+    maplist(top_page_data(Module), Top, Pages).
+
+fill_page_count_assoc([Location|Locations], AssocIn, AssocOut):-
+    (   get_assoc(Location, AssocIn, Count)
+    ->  NewCount is Count + 1,
+        put_assoc(Location, AssocIn, NewCount, AssocTmp),
+        fill_page_count_assoc(Locations, AssocTmp, AssocOut)
+    ;   put_assoc(Location, AssocIn, 1, AssocTmp),
+        fill_page_count_assoc(Locations, AssocTmp, AssocOut)).
+
+fill_page_count_assoc([], Assoc, Assoc).
+
+top_page_data(Module, Location-Count, Dict):-
+    location_title(Module, Location, Title),
+    Dict = _{
+        location: Location,
+        title: Title,
+        count: Count}.
+
+location_title(Module, Location, Title):-
+    call(Module:pageview_location(PageviewId, Location)),
+    call(Module:pageview_title(PageviewId, Title)), !.
+
 % Turns user id into a data dict containing
 % information about the user.
 
@@ -214,7 +255,7 @@ pageview_data(Module, PageviewId, Dict):-
 % Sleep time setting for the
 % cache invalidation queue thread.
 
-cache_thread_sleep(10).
+cache_thread_sleep(60).
 
 start_cache_thread:-
     debug(bc_analytics, 'Started analytics invalidation thread', []),
@@ -236,7 +277,7 @@ cache_loop_iteration:-
 
 expired_cache(_-TimeStamp):-
     get_time(CurrentTime),
-    CurrentTime > TimeStamp + 10.
+    CurrentTime > TimeStamp + 1800.
 
 invalidate_expired(Entry):-
     with_mutex(analytics_cache,
@@ -252,6 +293,6 @@ clear_module(Module):-
     forall(current_predicate(PredicateIndicator),
         abolish(PredicateIndicator)).
 
-% Queue loop thread is always started.
+% Starts the cache invalidation thread.
 
 :- thread_create(start_cache_thread, _, []).

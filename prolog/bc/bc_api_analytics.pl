@@ -136,6 +136,19 @@ analytics_users(From, To, Duration, Offset, Count):-
         DurationNum, OffsetNum, CountNum, Users),
     bc_reply_success(Users).
 
+% List of top pages.
+
+:- route_get(api/analytics/pages/From/To/Duration,
+   bc_auth, analytics_pages(From, To, Duration)).
+
+analytics_pages(From, To, Duration):-
+    atom_number(Duration, DurationNum),
+    parse_month(From, FromParsed),
+    parse_month(To, ToParsed),
+    bc_analytics_top_pages(FromParsed-ToParsed,
+        DurationNum, Pages),
+    bc_reply_success(Pages).
+
 parse_month(Atom, (YearNum, MonthNum)):-
     atomic_list_concat([Year, Month], -, Atom),
     atom_number(Year, YearNum),

@@ -7,6 +7,7 @@
 :- use_module(library(debug)).
 :- use_module(library(error)).
 :- use_module(library(gensym)).
+:- use_module(library(pcre)).
 :- use_module(bc_analytics).
 
 % Reads analytics data into the given module.
@@ -61,6 +62,7 @@ load_dict_term_into(user, Module, Dict):- !,
     assertz(Module:user_pagecount(UserId, 0)).
 
 load_dict_term_into(session, Module, Dict):-
+    \+ re_match("crawler|bot|spider"/i, Dict.agent),
     UserId = Dict.user_id,
     call(Module:user(UserId)), !,
     SessionId = Dict.session_id,
