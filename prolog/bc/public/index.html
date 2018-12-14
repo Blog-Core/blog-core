@@ -11,7 +11,7 @@
     <![endif]-->
     <script>
         if (oldie || !(Array.prototype.forEach) || !(console.log) ||
-            !(JSON) || !(FormData) || (!String.prototype.trim)) {
+            !(JSON) || !(FormData) || (!String.prototype.trim) || !(window.fetch)) {
             window.location.href = '/admin/unsupported';
         }
     </script>
@@ -167,14 +167,11 @@
         <a href="#" class="btn btn-primary btn-lg" data-control="close">
             <span class="glyphicon glyphicon-remove"></span></a>
     </div>
-    <script src="/t-{{= cache_token }}/admin/js/libs/es6-promise.js"></script>
-    <script>ES6Promise.polyfill();</script>
-    <script src="/t-{{= cache_token }}/admin/js/libs/fetch.js"></script>
     <script src="/t-{{= cache_token }}/admin/js/libs/knockout.js"></script>
     <script src="/t-{{= cache_token }}/admin/js/libs/router-standalone.js"></script>
     <script src="/t-{{= cache_token }}/admin/js/libs/kontainer-standalone.js"></script>
     <script src="/t-{{= cache_token }}/admin/js/libs/speakingurl.js"></script>
-    <script src="/t-{{= cache_token }}/admin/js/admin.bundle.js"></script>
+    <script src="/t-{{= cache_token }}/admin/js/admin.min.js"></script>
     <script src="/t-{{= cache_token }}/admin/js/libs/ace/ace.js"></script>
 </body>
 </html>

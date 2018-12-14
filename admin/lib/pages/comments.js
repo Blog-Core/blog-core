@@ -1,10 +1,8 @@
-var fs = require('fs');
 var api = require('../api');
 var view = require('../view');
 var resolveObject = require('../resolve_object');
 var comments_item = require('../vm/comments_item');
-
-var template = fs.readFileSync(__dirname + '/comments.html', { encoding: 'utf8' });
+var template = require('./comments.html');
 
 // Page for the comments list.
 exports.create = function(type, id) {

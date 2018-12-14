@@ -1,5 +1,5 @@
 :- module(bc_analytics_read, [
-    bc_analytics_read/3
+    bc_analytics_read/3 % +From, +To, -Module
 ]).
 
 /** <module> Generic visitor tracking analytics */
@@ -15,7 +15,7 @@
 bc_analytics_read(From, To, Module):-
     must_be(ground, From),
     must_be(ground, To),
-    gensym(module, Module),
+    gensym(analytics_cache_module_, Module),
     dynamic(Module:user/1),
     dynamic(Module:session/1),
     dynamic(Module:pageview/1),
@@ -31,16 +31,25 @@ read_file_into(Module, File):-
         read_stream_into(Module, Stream),
         close(Stream)).
 
+% Reads and loads the terms from the given
+% file into the target module.
+
 read_stream_into(Module, Stream):-
-    read_term(Stream, Term, [dotlists(true)]),
-    (   Term = end_of_file
-    ->  true
-    ;   load_term_into(Module, Term),
-        read_stream_into(Module, Stream)).
+    catch(
+        read_term(Stream, Term, [dotlists(true)]),
+        E, true),
+    (   var(E)
+    ->  (   Term = end_of_file
+        ->  true
+        ;   load_term_into(Module, Term),
+            read_stream_into(Module, Stream))
+    ;   true).
 
 load_term_into(Module, Term):-
     is_dict(Term, Tag),
     load_dict_term_into(Tag, Module, Term).
+
+% TODO: add session count, page count
 
 load_dict_term_into(user, Module, Dict):- !,
     UserId = Dict.user_id,
@@ -60,6 +69,7 @@ load_dict_term_into(session, Module, Dict):-
     assertz(Module:session_agent(SessionId, Dict.agent)),
     assertz(Module:session_platform(SessionId, Dict.platform)).
 
+% TODO: add title and entry id.
 load_dict_term_into(pageview, Module, Dict):-
     SessionId = Dict.session_id,
     call(Module:session(SessionId)), !,

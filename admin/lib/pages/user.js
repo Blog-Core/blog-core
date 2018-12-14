@@ -1,10 +1,8 @@
-var fs = require('fs');
 var api = require('../api');
 var view = require('../view');
 var user = require('../vm/user');
 var resolveObject = require('../resolve_object');
-
-var template = fs.readFileSync(__dirname + '/user.html', { encoding: 'utf8' });
+var template = require('./user.html');
 
 // Page for editing an user.
 exports.create = function(id) {

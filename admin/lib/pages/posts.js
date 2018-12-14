@@ -1,10 +1,8 @@
-var fs = require('fs');
 var api = require('../api');
 var view = require('../view');
 var postsItem = require('../vm/posts_item');
 var resolveObject = require('../resolve_object');
-
-var template = fs.readFileSync(__dirname + '/posts.html', { encoding: 'utf8' });
+var template = require('./posts.html');
 
 // Page for displaying a post list.
 exports.create = function(type) {

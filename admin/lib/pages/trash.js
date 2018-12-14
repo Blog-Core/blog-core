@@ -1,10 +1,8 @@
-var fs = require('fs');
 var api = require('../api');
 var view = require('../view');
 var message = require('../message');
 var trash_item = require('../vm/trash_item');
-
-var template = fs.readFileSync(__dirname + '/trash.html', { encoding: 'utf8' });
+var template = require('./trash.html');
 
 // Page for displaying the trash list.
 exports.create = function() {

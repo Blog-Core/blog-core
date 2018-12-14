@@ -1,9 +1,7 @@
-var fs = require('fs');
 var api = require('../api');
 var view = require('../view');
 var users_item = require('../vm/users_item');
-
-var template = fs.readFileSync(__dirname + '/users.html', { encoding: 'utf8' });
+var template = require('./users.html');
 
 // Page for displaying the users list.
 exports.create = function() {

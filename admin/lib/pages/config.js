@@ -1,10 +1,8 @@
-var fs = require('fs');
 var api = require('../api');
 var view = require('../view');
 var message = require('../message');
 var resolveObject = require('../resolve_object');
-
-var template = fs.readFileSync(__dirname + '/config.html', { encoding: 'utf8' });
+var template = require('./config.html');
 
 // Page for editing email settings.
 exports.create = function(id) {

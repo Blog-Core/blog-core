@@ -1,4 +1,3 @@
-var fs = require('fs');
 var api = require('../api');
 var post = require('../vm/post');
 var view = require('../view');
@@ -6,8 +5,7 @@ var editor = require('../editor');
 var message = require('../message');
 var preview = require('../preview');
 var resolveObject = require('../resolve_object');
-
-var template = fs.readFileSync(__dirname + '/post.html', { encoding: 'utf8' });
+var template = require('./post.html');
 
 // The post edit page.
 exports.create = function(type, id, recovered) {

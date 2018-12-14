@@ -6,10 +6,12 @@
         "@babel/core": "^7.2.0",
         "@babel/preset-env": "^7.2.0",
         "babel-loader": "^8.0.4",
+        "raw-loader": "^1.0.0",
         "webpack": "^4.27.1",
         "webpack-cli": "^3.1.2"
     },
     "scripts": {
-        "build": "webpack --mode production --config webpack.js"
+        "build-analytics": "webpack --mode production --config webpack.js",
+        "build-admin": "webpack --mode production --config webpack.admin.js"
     }
 }

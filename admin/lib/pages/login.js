@@ -1,9 +1,7 @@
-var fs = require('fs');
 var api = require('../api');
 var view = require('../view');
 var message = require('../message');
-
-var template = fs.readFileSync(__dirname + '/login.html', { encoding: 'utf8' });
+var template = require('./login.html');
 
 // The login page.
 exports.create = function() {

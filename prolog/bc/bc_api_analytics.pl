@@ -14,6 +14,7 @@
 :- use_module(bc_api_actor).
 :- use_module(bc_data_entry).
 :- use_module(bc_analytics).
+:- use_module(bc_analytics_db).
 
 :- route_post(api/visitor/user, record_user).
 
@@ -96,3 +97,29 @@ visitor_script_map:-
         elapsed: integer
     }
 }).
+
+% Analytic timeseries results for the administration API.
+
+:- route_get(api/analytics/timeseries/From/To/Duration,
+   analytics_timeseries(From, To, Duration)).
+
+% TODO: check atom_number/2 calls.
+
+analytics_timeseries(From, To, Duration):-
+    writeln(user_error, From),
+    atom_number(Duration, DurationNum),
+    parse_month(From, FromParsed),
+    parse_month(To, ToParsed),
+    writeln(user_error, FromParsed),
+    bc_analytics_user_ts(FromParsed-ToParsed, DurationNum, Users),
+    bc_analytics_session_ts(FromParsed-ToParsed, DurationNum, Sessions),
+    bc_analytics_pageview_ts(FromParsed-ToParsed, DurationNum, Pageviews),
+    bc_reply_success(_{
+        users: Users,
+        sessions: Sessions,
+        pageviews: Pageviews}).
+
+parse_month(Atom, (YearNum, MonthNum)):-
+    atomic_list_concat([Year, Month], -, Atom),
+    atom_number(Year, YearNum),
+    atom_number(Month, MonthNum).

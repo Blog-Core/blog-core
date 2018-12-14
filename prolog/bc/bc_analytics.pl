@@ -20,6 +20,8 @@
 :- dynamic(stream/1).
 :- dynamic(open_month/2).
 
+% TODO: round timestamps.
+
 % Stores the user data while generating the
 % new random user identifier.
 
