@@ -9,6 +9,7 @@ var email = require('./lib/pages/email');
 var comments = require('./lib/pages/comments');
 var trash = require('./lib/pages/trash');
 var config = require('./lib/pages/config');
+var analytics = require('./lib/pages/analytics');
 
 // Errors binding.
 require('./lib/form_error');
@@ -163,6 +164,13 @@ route(/^user\/([^\/]+)/, function(id) {
     if (authenticated() && !recovery()) {
         menu.active('users');
         user.create(id).catch(message.error);
+    }
+});
+
+route(/^analytics/, function() {
+    if (authenticated() && !recovery()) {
+        menu.active('analytics');
+        analytics.create().catch(message.error);
     }
 });
 

@@ -12,6 +12,7 @@
     },
     "scripts": {
         "build-analytics": "webpack --mode production --config webpack.js",
-        "build-admin": "webpack --mode production --config webpack.admin.js"
+        "build-admin": "webpack --mode production --config webpack.admin.js",
+        "build-admin-watch": "webpack --watch --mode production --config webpack.admin.js"
     }
 }

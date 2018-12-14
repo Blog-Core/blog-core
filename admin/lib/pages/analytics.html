@@ -1,0 +1,53 @@
+<h2>Reader analytics</h2>
+<div class="row">
+    <div class="col-md-2">
+        <div class="form-group">
+            <label for="analytics-start">Start month</label>
+            <select data-bind="value: $root.startMonth, options: $root.months"
+                id="analytics-start"
+                class="form-control bc-margin-top-sm">
+            </select>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label for="analytics-end">End month</label>
+            <select data-bind="value: $root.endMonth, options: $root.months"
+                id="analytics-end"
+                class="form-control bc-margin-top-sm">
+            </select>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label for="analytics-duration">Duration</label>
+            <select data-bind="value: $root.duration, options: $root.durations"
+                id="analytics-duration"
+                class="form-control bc-margin-top-sm">
+            </select>
+        </div>
+    </div>
+</div>
+<div class="row bc-margin-bottom">
+    <div class="col-md-4">
+        <div class="bc-margin-bottom-sm"><strong>Unique users:</strong></div>
+        <canvas class="chart" id="analytics-chart-users"
+            data-bind="attr: { 'data-values': $root.results.timeseries.users().join(',') }"></canvas>
+    </div>
+    <div class="col-md-4">
+        <div class="bc-margin-bottom-sm"><strong>Sessions:</strong></div>
+        <canvas class="chart" id="analytics-chart-sessions"
+            data-bind="attr: { 'data-values': $root.results.timeseries.sessions().join(',') }"></canvas>
+    </div>
+    <div class="col-md-4">
+        <div class="bc-margin-bottom-sm"><strong>Pageviews:</strong></div>
+        <canvas class="chart" id="analytics-chart-pageviews"
+            data-bind="attr: { 'data-values': $root.results.timeseries.pageviews().join(',') }"></canvas>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <a data-bind="click: $root.load" class="btn btn-default" href="#">
+            <span class="glyphicon glyphicon-refresh"></span> Refresh</a>
+    </div>
+</div>

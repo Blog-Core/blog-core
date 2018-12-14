@@ -89,6 +89,7 @@
             box-shadow: 0 0 6px rgba(160, 160, 160, 0.6) !important;
         }
         .bc-red { color: red; }
+        .chart { width: 100%; height: 200px; }
     </style>
     <script>
         var bcEnvironment = '{{= environment }}';
@@ -130,6 +131,9 @@
                 <a data-bind="css: { active: active() === 'users' }"
                     class="btn btn-default" href="#users">
                     <span class="glyphicon glyphicon-user"></span> Users</a>
+                <a data-bind="css: { active: active() === 'analytics' }"
+                    class="btn btn-default" href="#analytics">
+                    <span class="glyphicon glyphicon-stats"></span> Analytics</a>
                 <a data-bind="css: { active: active() === 'email' }"
                     class="btn btn-default" href="#email">
                     <span class="glyphicon glyphicon-envelope"></span> Email</a>

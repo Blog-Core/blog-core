@@ -275,6 +275,14 @@ exports.execute = function(id, action) {
     return fetchUpdate(url);
 };
 
+exports.analyticsTs = function(start, end, duration) {
+    var url = '/api/analytics/timeseries/' +
+        encodeURIComponent(start) + '/' +
+        encodeURIComponent(end) + '/' +
+        encodeURIComponent(duration);
+    return fetchGet(url);
+};
+
 // Checks whether the API key has been set.
 exports.hasKey = function() {
     return !!(sessionStorage.getItem('api-key') ||

@@ -1,6 +1,5 @@
 const path = require('path');
 const assert = require('assert');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const publicJsDir = path.join(__dirname, 'prolog', 'bc', 'public', 'js');
 

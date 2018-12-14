@@ -106,11 +106,9 @@ visitor_script_map:-
 % TODO: check atom_number/2 calls.
 
 analytics_timeseries(From, To, Duration):-
-    writeln(user_error, From),
     atom_number(Duration, DurationNum),
     parse_month(From, FromParsed),
     parse_month(To, ToParsed),
-    writeln(user_error, FromParsed),
     bc_analytics_user_ts(FromParsed-ToParsed, DurationNum, Users),
     bc_analytics_session_ts(FromParsed-ToParsed, DurationNum, Sessions),
     bc_analytics_pageview_ts(FromParsed-ToParsed, DurationNum, Pageviews),
