@@ -107,7 +107,9 @@
                 session_id: sessionId,
                 location: window.location.toString(),
                 referrer: document.referrer || null,
-                elapsed: elapsed
+                elapsed: elapsed,
+                entry_id: window.bcEntryId || null,
+                title: document.title
             };
             // First pageview record.
             postJSON('/api/readers/pageview', data, (response) => {

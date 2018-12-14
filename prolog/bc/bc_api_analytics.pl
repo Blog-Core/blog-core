@@ -87,7 +87,9 @@ visitor_script_map:-
         session_id: atom,
         location: atom,
         referrer: atom,
-        elapsed: integer
+        elapsed: integer,
+        entry_id: atom,
+        title: atom
     }
 }).
 
@@ -102,9 +104,8 @@ visitor_script_map:-
 
 % Analytic timeseries results for the administration API.
 
-% TODO: add auth
 :- route_get(api/analytics/timeseries/From/To/Duration,
-   analytics_timeseries(From, To, Duration)).
+   bc_auth, analytics_timeseries(From, To, Duration)).
 
 % TODO: check atom_number/2 calls.
 
