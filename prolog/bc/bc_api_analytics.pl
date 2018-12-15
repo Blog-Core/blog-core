@@ -15,6 +15,7 @@
 :- use_module(bc_data_entry).
 :- use_module(bc_analytics).
 :- use_module(bc_analytics_db).
+:- use_module(bc_admin_file).
 
 % Handlers for data from the readers script.
 
@@ -49,20 +50,12 @@ record_pageview_extend:-
 :- route_get(bc/'readers.min.js', visitor_script).
 
 visitor_script:-
-    http_current_request(Request),
-    module_property(bc_api_analytics, file(File)),
-    file_directory_name(File, Dir),
-    atom_concat(Dir, '/public/js/readers.min.js', Path),
-    http_reply_file(Path, [unsafe(true)], Request).
+    bc_admin_send_file('js/readers.min.js').
 
 :- route_get(bc/'readers.min.js.map', visitor_script_map).
 
 visitor_script_map:-
-    http_current_request(Request),
-    module_property(bc_api_analytics, file(File)),
-    file_directory_name(File, Dir),
-    atom_concat(Dir, '/public/js/readers.min.js.map', Path),
-    http_reply_file(Path, [unsafe(true)], Request).
+    bc_admin_send_file('js/readers.min.js.map').
 
 :- register_schema(bc_analytics_user, _{
     type: dict,
