@@ -19,7 +19,7 @@ bc_check_dependencies:-
 
 check_swi:-
     current_prolog_flag(version, Version),
-    (   Version < 70312
+    (   Version < 70722
     ->  throw(error(bc_dep:old_swi_version(Version), _))
     ;   true).
 
