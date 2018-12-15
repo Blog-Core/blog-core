@@ -301,6 +301,14 @@ exports.analyticsPages = function(start, end, duration) {
     return fetchGet(url);
 };
 
+exports.analyticsSummary = function(start, end, duration) {
+    var url = '/api/analytics/summary/' +
+        encodeURIComponent(start) + '/' +
+        encodeURIComponent(end) + '/' +
+        encodeURIComponent(duration);
+    return fetchGet(url);
+};
+
 // Checks whether the API key has been set.
 exports.hasKey = function() {
     return !!(sessionStorage.getItem('api-key') ||

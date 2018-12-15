@@ -31,6 +31,11 @@ exports.create = function() {
         endMonth: ko.observable(startDate.toISOString().substring(0, 7)),
         duration: ko.observable('30'),
         results: {
+            summary: {
+                user_count: ko.observable(0),
+                session_count: ko.observable(0),
+                pageview_count: ko.observable(0)
+            },
             timeseries: {
                 users: ko.observable([]),
                 sessions: ko.observable([]),
@@ -58,6 +63,12 @@ exports.create = function() {
             model.results.pages([]);
             return api.analyticsPages(start, end, duration).then(function(data) {
                 model.results.pages(data);
+            });
+        }).then(function() {
+            return api.analyticsSummary(start, end, duration).then(function(data) {
+                model.results.summary.user_count(data.user_count);
+                model.results.summary.session_count(data.session_count);
+                model.results.summary.pageview_count(data.pageview_count);
             });
         }).catch(function(err) {
             message.error(err);

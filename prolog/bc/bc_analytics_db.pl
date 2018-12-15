@@ -4,7 +4,8 @@
     bc_analytics_pageview_ts/3,  % +Interval, +MinDuration, -Series
     bc_analytics_users/5,        % +Interval, +MinDuration, +Offset, +Count, -Users
     bc_analytics_sessions/5,     % +Interval, +MinDuration, +Offset, +Count, -Sessions
-    bc_analytics_top_pages/3     % +Interval, +MinDuration, -Pages
+    bc_analytics_top_pages/3,    % +Interval, +MinDuration, -Pages
+    bc_analytics_summary/3       % +Interval, +MinDuration, -Summary
 ]).
 
 /** <module> Generic visitor tracking analytics */
@@ -12,6 +13,7 @@
 :- use_module(library(assoc)).
 :- use_module(library(error)).
 :- use_module(library(debug)).
+:- use_module(bc_analytics).
 :- use_module(bc_analytics_read).
 :- use_module(bc_analytics_ts).
 
@@ -45,6 +47,7 @@ analytics_module_unsafe(Interval, Module):-
     ->  debug(bc_analytics,
             'Using cached analytics for ~w.', [Interval])
     ;   Interval = From-To,
+        bc_analytics_flush_output,
         bc_analytics_read(From, To, Module),
         get_time(TimeStamp),
         assertz(analytics_cache(Interval, Module, TimeStamp))).
@@ -200,6 +203,39 @@ top_page_data(Module, Location-Count, Dict):-
 location_title(Module, Location, Title):-
     call(Module:pageview_location(PageviewId, Location)),
     call(Module:pageview_title(PageviewId, Title)), !.
+
+% Analytics summary for the given period.
+
+bc_analytics_summary(Interval, MinDuration, Summary):-
+    analytics_module(Interval, Module),
+    pageview_count(Module, MinDuration, PageviewCount),
+    session_count(Module, MinDuration, SessionCount),
+    user_count(Module, MinDuration, UserCount),
+    Summary = summary{
+        pageview_count: PageviewCount,
+        session_count: SessionCount,
+        user_count: UserCount}.
+
+% TODO: just count solutions.
+
+pageview_count(Module, MinDuration, Count):-
+    findall(_, (
+        call(Module:pageview_session(_, SessionId)),
+        call(Module:session_duration(SessionId, Duration)),
+        Duration >= MinDuration), Pageviews),
+    length(Pageviews, Count).
+
+session_count(Module, MinDuration, Count):-
+    findall(_, (
+        call(Module:session_duration(_, Duration)),
+        Duration >= MinDuration), Sessions),
+    length(Sessions, Count).
+
+user_count(Module, MinDuration, Count):-
+    findall(_, (
+        call(Module:user_duration(_, Duration)),
+        Duration >= MinDuration), Users),
+    length(Users, Count).
 
 % Turns user id into a data dict containing
 % information about the user.

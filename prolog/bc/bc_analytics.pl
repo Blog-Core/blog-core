@@ -1,11 +1,11 @@
 :- module(bc_analytics, [
-    bc_record_user/2,             % +Data, -UserId
-    bc_record_session/2,          % +Data, -SessionId
-    bc_record_pageview/2,         % +Data, -PageviewId
-    bc_record_pageview_extend/1,  % +Data
-    bc_enable_analytics/1,        % +Path
-    bc_flush_output/0,
-    bc_month_file_name/3          % + Year, +Month, -File
+    bc_analytics_record_user/2,             % +Data, -UserId
+    bc_analytics_record_session/2,          % +Data, -SessionId
+    bc_analytics_record_pageview/2,         % +Data, -PageviewId
+    bc_analytics_record_pageview_extend/1,  % +Data
+    bc_enable_analytics/1,                  % +Path
+    bc_analytics_flush_output/0,
+    bc_month_file_name/3                    % + Year, +Month, -File
 ]).
 
 /** <module> Generic visitor tracking analytics */
@@ -20,15 +20,13 @@
 :- dynamic(stream/1).
 :- dynamic(open_month/2).
 
-% TODO: round timestamps.
-
 % Stores the user data while generating the
 % new random user identifier.
 
-bc_record_user(UserData, UserId):-
+bc_analytics_record_user(UserData, UserId):-
     must_be(dict, UserData),
     ds_uuid(UserId),
-    get_time(TimeStamp),
+    integer_timestamp(TimeStamp),
     record_entry(UserData.put(_{
         user_id: UserId,
         timestamp: TimeStamp})).
@@ -36,29 +34,36 @@ bc_record_user(UserData, UserId):-
 % Stores the session data while generating the
 % new random session identifier.
 
-bc_record_session(SessionData, SessionId):-
+bc_analytics_record_session(SessionData, SessionId):-
     must_be(dict, SessionData),
     ds_uuid(SessionId),
-    get_time(TimeStamp),
+    integer_timestamp(TimeStamp),
     record_entry(SessionData.put(_{
         session_id: SessionId,
         timestamp: TimeStamp})).
 
-bc_record_pageview(PageviewData, PageviewId):-
+bc_analytics_record_pageview(PageviewData, PageviewId):-
     must_be(dict, PageviewData),
     (   get_dict(pageview_id, PageviewData, PageviewId)
     ->  true
     ;   ds_uuid(PageviewId)),
     parse_url(PageviewData.location, UrlParts),
     memberchk(path(Path), UrlParts),
-    get_time(TimeStamp),
+    integer_timestamp(TimeStamp),
     record_entry(PageviewData.put(_{
         location: Path,
         pageview_id: PageviewId,        
         timestamp: TimeStamp})).
 
-bc_record_pageview_extend(PageviewData):-
+bc_analytics_record_pageview_extend(PageviewData):-
     record_entry(PageviewData).
+
+% Timestamp rounded as an integer. Leads
+% to a more compact log files.
+
+integer_timestamp(TimeStamp):-
+    get_time(Time),
+    TimeStamp is round(Time).
 
 record_entry(Entry):-    
     with_mutex(serialized_write, record_entry_unsafe(Entry)).
@@ -135,7 +140,7 @@ bc_enable_analytics(Path):-
 
 % Flushes the log stream.
 
-bc_flush_output:-
+bc_analytics_flush_output:-
     (   stream(Stream)
     ->  flush_output(Stream)
     ;   true).

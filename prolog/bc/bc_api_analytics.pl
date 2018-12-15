@@ -22,28 +22,28 @@
 
 record_user:-
     bc_read_by_schema(bc_analytics_user, User),
-    bc_record_user(User, UserId),
+    bc_analytics_record_user(User, UserId),
     bc_reply_success(UserId).
 
 :- route_post(api/readers/session, record_session).
 
 record_session:-
     bc_read_by_schema(bc_analytics_session, Session),
-    bc_record_session(Session, SessionId),
+    bc_analytics_record_session(Session, SessionId),
     bc_reply_success(SessionId).
 
 :- route_post(api/readers/pageview, record_pageview).
 
 record_pageview:-
     bc_read_by_schema(bc_analytics_pageview, Pageview),
-    bc_record_pageview(Pageview, PageviewId),
+    bc_analytics_record_pageview(Pageview, PageviewId),
     bc_reply_success(PageviewId).
 
 :- route_post(api/readers/pageview_extend, record_pageview_extend).
 
 record_pageview_extend:-
     bc_read_by_schema(bc_analytics_pageview_extend, Pageview),
-    bc_record_pageview_extend(Pageview),
+    bc_analytics_record_pageview_extend(Pageview),
     bc_reply_success(true).
 
 :- route_get(bc/'readers.min.js', visitor_script).
@@ -120,6 +120,19 @@ analytics_timeseries(From, To, Duration):-
         users: Users,
         sessions: Sessions,
         pageviews: Pageviews}).
+
+% Analytics summary.
+
+:- route_get(api/analytics/summary/From/To/Duration,
+   bc_auth, analytics_summary(From, To, Duration)).
+
+analytics_summary(From, To, Duration):-
+    atom_number(Duration, DurationNum),
+    parse_month(From, FromParsed),
+    parse_month(To, ToParsed),
+    bc_analytics_summary(FromParsed-ToParsed,
+        DurationNum, Summary),
+    bc_reply_success(Summary).
 
 % List of recent users.
 
