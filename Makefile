@@ -5,22 +5,10 @@ remote=www-data@packs.rlaanemets.com:/sites/packs.rlaanemets.com/public/blog-cor
 test:
 	swipl -s tests/tests.pl -g run_tests,halt -t 'halt(1)'
 
-package: test admin
+package: test
 	tar cvzf $(packfile) prolog pack.pl README.md LICENSE
 
 upload: package
 	scp $(packfile) $(remote)/$(packfile)
 
-install-tools:
-	$(MAKE) -C admin install-tools
-
-admin:
-	$(MAKE) -C admin all
-
-check:
-	$(MAKE) -C admin check
-
-clean:
-	$(MAKE) -C admin clean
-
-.PHONY: test package upload admin clean check install-tools test-admin
+.PHONY: test package upload clean check
