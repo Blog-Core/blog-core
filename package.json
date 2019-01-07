@@ -1,6 +1,6 @@
 {
     "name": "blog-core",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "private": true,
     "devDependencies": {
         "@babel/core": "^7.2.0",
@@ -12,6 +12,7 @@
     },
     "scripts": {
         "build-readers": "webpack --mode production --config webpack.readers.js",
+        "build-readers-image": "webpack --mode production --config webpack.readers.image.js",
         "build-admin": "webpack --mode production --config webpack.admin.js",
         "build-admin-watch": "webpack --watch --mode production --config webpack.admin.js"
     }

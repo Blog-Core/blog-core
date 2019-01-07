@@ -1,4 +1,5 @@
 :- module(bc_analytics, [
+    bc_analytics_record_pixel/1,            % +Data
     bc_analytics_record_user/2,             % +Data, -UserId
     bc_analytics_record_session/2,          % +Data, -SessionId
     bc_analytics_record_pageview/2,         % +Data, -PageviewId
@@ -19,6 +20,15 @@
 :- dynamic(path/1).
 :- dynamic(stream/1).
 :- dynamic(open_month/2).
+
+% Stores pixel-based analytics data.
+
+bc_analytics_record_pixel(Data):-
+    Data.user_id = null, !.
+
+bc_analytics_record_pixel(Data):-
+    integer_timestamp(TimeStamp),
+    record_entry(Data.put(timestamp, TimeStamp)).
 
 % Stores the user data while generating the
 % new random user identifier.

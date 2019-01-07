@@ -13,6 +13,7 @@
 :- use_module(library(assoc)).
 :- use_module(library(error)).
 :- use_module(library(debug)).
+:- use_module(bc_env).
 :- use_module(bc_analytics).
 :- use_module(bc_analytics_read).
 :- use_module(bc_analytics_ts).
@@ -50,7 +51,16 @@ analytics_module_unsafe(Interval, Module):-
         bc_analytics_flush_output,
         bc_analytics_read(From, To, Module),
         get_time(TimeStamp),
-        assertz(analytics_cache(Interval, Module, TimeStamp))).
+        assert_analytics_cache(Interval, Module, TimeStamp)).
+
+% Stores the cache entry only in the production
+% environment.
+
+assert_analytics_cache(Interval, Module, TimeStamp):-
+    bc_env_production, !,
+    assertz(analytics_cache(Interval, Module, TimeStamp)).
+
+assert_analytics_cache(_, _, _).
 
 % Timeseries analytics.
 

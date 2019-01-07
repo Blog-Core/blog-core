@@ -8,6 +8,7 @@
 :- use_module(library(error)).
 :- use_module(library(gensym)).
 :- use_module(library(pcre)).
+:- use_module(library(gensym)).
 :- use_module(bc_analytics).
 
 % Reads analytics data into the given module.
@@ -18,8 +19,27 @@ bc_analytics_read(From, To, Module):-
     must_be(ground, To),
     gensym(analytics_cache_module_, Module),
     dynamic(Module:user/1),
+    dynamic(Module:user_pixel/1),
+    dynamic(Module:user_duration/2),
+    dynamic(Module:user_timestamp/2),
+    dynamic(Module:user_session_count/2),
+    dynamic(Module:user_pagecount/2),
     dynamic(Module:session/1),
+    dynamic(Module:session_pixel/1),
+    dynamic(Module:session_user/2),
+    dynamic(Module:session_duration/2),
+    dynamic(Module:session_pagecount/2),
+    dynamic(Module:session_agent/2),
+    dynamic(Module:session_platform/2),
     dynamic(Module:pageview/1),
+    dynamic(Module:pageview_pixel/1),
+    dynamic(Module:pageview_session/2),
+    dynamic(Module:pageview_duration/2),
+    dynamic(Module:pageview_timestamp/2),
+    dynamic(Module:pageview_location/2),
+    dynamic(Module:pageview_referrer/2),
+    dynamic(Module:pageview_title/2),
+    dynamic(Module:pageview_entry/2),
     findall(Name, file_name(From, To, Name), Names),
     maplist(read_file_into(Module), Names),
     compute_session_pagecounts(Module),
@@ -93,19 +113,110 @@ load_dict_term_into(pageview_extend, Module, Dict):-
     retractall(Module:pageview_duration(PageviewId, _)),
     assertz(Module:pageview_duration(PageviewId, Dict.elapsed)).
 
+load_dict_term_into(pixel, Module, Dict):-
+    _{
+        user_id: UserId,
+        agent: Agent,
+        platform: Platform,
+        session_id: SessionId,
+        location: Location,
+        referrer: Referrer,
+        entry_id: EntryId,
+        title: Title,
+        timestamp: TimeStamp
+    } :< Dict,
+    load_pixel_user(Module, UserId, SessionId, TimeStamp),
+    load_pixel_session(Module, UserId, SessionId, TimeStamp, Agent, Platform),
+    load_pixel_pageview(Module, SessionId, TimeStamp, Location, Referrer, Title, EntryId).
+
 load_dict_term_into(_, _, _).
+
+% Loads user data from a pixel tracking event.
+% Updates user duration, page and session count.
+
+load_pixel_user(Module, UserId, SessionId, TimeStamp):-
+    call(Module:user(UserId)), !,
+    call(Module:user_timestamp(UserId, OldTimeStamp)),
+    call(Module:user_pagecount(UserId, OldPageCount)),
+    call(Module:user_session_count(UserId, OldSessionCount)),
+    Duration is TimeStamp - OldTimeStamp,
+    PageCount is OldPageCount + 1,
+    (   call(Module:session_user(SessionId, UserId))
+    ->  SessionCount = OldSessionCount
+    ;   SessionCount is OldSessionCount + 1),
+    retractall(Module:user_duration(UserId, _)),
+    retractall(Module:user_pagecount(UserId, _)),
+    retractall(Module:user_session_count(UserId, _)),
+    assertz(Module:user_duration(UserId, Duration)),
+    assertz(Module:user_pagecount(UserId, PageCount)),
+    assertz(Module:user_session_count(UserId, SessionCount)).
+
+% Loads user data from a pixel tracking event.
+% Sets initial duration, page and session count.
+
+load_pixel_user(Module, UserId, _, TimeStamp):-    
+    assertz(Module:user(UserId)),
+    assertz(Module:user_pixel(UserId)),
+    assertz(Module:user_duration(UserId, 0)),
+    assertz(Module:user_timestamp(UserId, TimeStamp)),
+    assertz(Module:user_session_count(UserId, 1)),
+    assertz(Module:user_pagecount(UserId, 1)).
+
+% Loads session data from a pixel tracking event.
+% Updates session duration and page count.
+
+load_pixel_session(Module, _, SessionId, TimeStamp, _, _):-
+    call(Module:session(SessionId)), !,
+    call(Module:session_pagecount(SessionId, OldPageCount)),
+    call(Module:session_timestamp(SessionId, OldTimeStamp)),
+    Duration is TimeStamp - OldTimeStamp,
+    PageCount is OldPageCount + 1,
+    retractall(Module:session_duration(SessionId, _)),
+    retractall(Module:session_pagecount(SessionId, _)),    
+    assertz(Module:session_pagecount(SessionId, PageCount)),
+    assertz(Module:session_duration(SessionId, Duration)).
+
+% Loads session data from a pixel tracking event.
+% Sets initial session duration and page count, user agent and platform.
+
+load_pixel_session(Module, UserId, SessionId, TimeStamp, Agent, Platform):-
+    assertz(Module:session(SessionId)),
+    assertz(Module:session_pixel(SessionId)),
+    assertz(Module:session_user(SessionId, UserId)),
+    assertz(Module:session_duration(SessionId, 0)),
+    assertz(Module:session_pagecount(SessionId, 0)),
+    assertz(Module:session_timestamp(SessionId, TimeStamp)),
+    assertz(Module:session_agent(SessionId, Agent)),
+    assertz(Module:session_platform(SessionId, Platform)).
+
+% Loads pageview data from pixel tracing event.
+
+load_pixel_pageview(Module, SessionId, TimeStamp, Location, Referrer, Title, EntryId):-
+    gensym(pv_, PageviewId),
+    assertz(Module:pageview(PageviewId)),
+    assertz(Module:pageview_session(PageviewId, SessionId)),
+    assertz(Module:pageview_duration(PageviewId, 0)),
+    assertz(Module:pageview_timestamp(PageviewId, TimeStamp)),
+    assertz(Module:pageview_location(PageviewId, Location)),
+    assertz(Module:pageview_referrer(PageviewId, Referrer)),
+    assertz(Module:pageview_title(PageviewId, Title)),
+    assertz(Module:pageview_entry(PageviewId, EntryId)).
 
 % Computes total session durations from pageview
 % durations.
 
 compute_session_durations(Module):-
-    findall(SessionId, call(Module:session(SessionId)), Sessions),
+    findall(SessionId, (
+        call(Module:session(SessionId)),
+        \+ call(Module:session_pixel(SessionId))
+    ), Sessions),
     maplist(compute_session_duration(Module), Sessions).
 
 compute_session_duration(Module, SessionId):-
     findall(Duration, (
         call(Module:pageview_session(PageviewId, SessionId)),
-        call(Module:pageview_duration(PageviewId, Duration))), Durations),
+        call(Module:pageview_duration(PageviewId, Duration))
+    ), Durations),
     sum_list(Durations, Total),
     retractall(Module:session_duration(SessionId, _)),
     assertz(Module:session_duration(SessionId, Total)).
@@ -113,7 +224,10 @@ compute_session_duration(Module, SessionId):-
 % Computes total user durations from session durations.
 
 compute_user_durations(Module):-
-    findall(UserId, call(Module:user(UserId)), Users),
+    findall(UserId, (
+        call(Module:user(UserId)),
+        \+ call(Module:user_pixel(UserId))
+    ), Users),
     maplist(compute_user_duration(Module), Users).
 
 compute_user_duration(Module, UserId):-
@@ -128,7 +242,10 @@ compute_user_duration(Module, UserId):-
 % session page views.
 
 compute_user_pagecounts(Module):-
-    findall(UserId, call(Module:user(UserId)), Users),
+    findall(UserId, (
+        call(Module:user(UserId)),
+        \+ call(Module:user_pixel(UserId))
+    ), Users),
     maplist(compute_user_pagecount(Module), Users).
 
 compute_user_pagecount(Module, UserId):-
@@ -142,7 +259,10 @@ compute_user_pagecount(Module, UserId):-
 % Computes the number of sessions for the user.
 
 compute_user_session_counts(Module):-
-    findall(UserId, call(Module:user(UserId)), Users),
+    findall(UserId, (
+        call(Module:user(UserId)),
+        \+ call(Module:user_pixel(UserId))
+    ), Users),
     maplist(compute_user_session_count(Module), Users).
 
 compute_user_session_count(Module, UserId):-
@@ -154,7 +274,10 @@ compute_user_session_count(Module, UserId):-
 % Computes the number of pagecounts for the sessions.
 
 compute_session_pagecounts(Module):-
-    findall(SessionId, call(Module:session(SessionId)), Sessions),
+    findall(SessionId, (
+        call(Module:session(SessionId)),
+        \+ call(Module:session_pixel(SessionId))
+    ), Sessions),
     maplist(compute_session_pagecount(Module), Sessions).
 
 compute_session_pagecount(Module, SessionId):-

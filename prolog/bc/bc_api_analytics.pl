@@ -4,6 +4,7 @@
 
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_wrapper)).
+:- use_module(library(url)).
 
 :- use_module(library(arouter)).
 :- use_module(library(dict_schema)).
@@ -47,6 +48,8 @@ record_pageview_extend:-
     bc_analytics_record_pageview_extend(Pageview),
     bc_reply_success(true).
 
+% Full tracking script.
+
 :- route_get(bc/'readers.min.js', visitor_script).
 
 visitor_script:-
@@ -56,6 +59,62 @@ visitor_script:-
 
 visitor_script_map:-
     bc_admin_send_file('js/readers.min.js.map').
+
+% Pixel-based tracking script.
+
+:- route_get(bc/'readers.image.min.js', visitor_image_script).
+
+visitor_image_script:-
+    bc_admin_send_file('js/readers.image.min.js').
+
+:- route_get(bc/'readers.image.min.js.map', visitor_image_script_map).
+
+visitor_image_script_map:-
+    bc_admin_send_file('js/readers.image.min.js.map').
+
+:- route_get(bc/'reader.png', visitor_pixel).
+
+visitor_pixel:-
+    http_current_request(Request),
+    pixel_location(Request, Location),
+    pixel_agent(Request, Agent),
+    memberchk(search(Query), Request),
+    param_or_null(u, Query, UserId),
+    param_or_null(s, Query, SessionId),
+    param_or_null(p, Query, Platform),
+    param_or_null(t, Query, Title),
+    param_or_null(e, Query, EntryId),
+    param_or_null(r, Query, Referrer),
+    Data = pixel{
+        user_id: UserId,
+        agent: Agent,
+        platform: Platform,
+        session_id: SessionId,
+        location: Location,
+        referrer: Referrer,
+        entry_id: EntryId,
+        title: Title
+    },
+    bc_analytics_record_pixel(Data),
+    bc_admin_relative(img/'reader.png', ImagePath),
+    http_reply_file(ImagePath, [unsafe(true), cache(false)], Request).
+
+param_or_null(Name, Query, Value):-
+    memberchk(Name=Value, Query), !.
+
+param_or_null(_, _, null).
+
+pixel_location(Request, Path):-
+    memberchk(referer(Referrer), Request), !,
+    parse_url(Referrer, Attributes),
+    memberchk(path(Path), Attributes).
+
+pixel_location(_, null).
+
+pixel_agent(Request, Agent):-
+    memberchk(user_agent(Agent), Request), !.
+
+pixel_agent(_, null).
 
 :- register_schema(bc_analytics_user, _{
     type: dict,

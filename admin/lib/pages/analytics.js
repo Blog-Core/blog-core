@@ -29,7 +29,7 @@ exports.create = function() {
         months: months,
         startMonth: ko.observable(currentDate.toISOString().substring(0, 7)),
         endMonth: ko.observable(startDate.toISOString().substring(0, 7)),
-        duration: ko.observable('30'),
+        duration: ko.observable('0'),
         results: {
             summary: {
                 user_count: ko.observable(0),
