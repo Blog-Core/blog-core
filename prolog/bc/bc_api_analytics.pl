@@ -97,7 +97,11 @@ visitor_pixel:-
     },
     bc_analytics_record_pixel(Data),
     bc_admin_relative(img/'reader.png', ImagePath),
-    http_reply_file(ImagePath, [unsafe(true), cache(false)], Request).
+    http_reply_file(ImagePath, [
+        unsafe(true),
+        cache(false),
+        headers([ cache_control('no-cache') ])
+    ], Request).
 
 param_or_null(Name, Query, Value):-
     memberchk(Name=Value, Query), !.
