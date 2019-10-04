@@ -89,8 +89,9 @@ bc_mail_send_text(Text, From, Subject, To):-
 smtp_config(Config):-
     bc_config_get(smtp_host, Host),
     bc_config_get(smtp_auth, Auth),
+    bc_config_get(smtp_security, Security),
     (   Auth = plain
-    ->  Config = _{ smtp: Host, auth_method: Auth }
+    ->  Config = _{ smtp: Host, auth_method: Auth, security: Security }
     ;   bc_config_get(smtp_user, User),
         bc_config_get(smtp_password, Password),
-        Config = _{ smtp: Host, auth_method: Auth, auth: User-Password }).
+        Config = _{ smtp: Host, auth_method: Auth, auth: User-Password, security: Security }).
