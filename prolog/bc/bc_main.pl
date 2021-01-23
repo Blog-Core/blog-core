@@ -82,7 +82,7 @@ user:message_hook(Term, _, _):-
 
 :- st_set_function(excerpt, 2, bc_excerpt).
 
-:- dynamic(initialized).
+:- dynamic(initialized/0).
 
 %! bc_main(+File) is det.
 %
