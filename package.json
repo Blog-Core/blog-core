@@ -1,6 +1,6 @@
 {
     "name": "blog-core",
-    "version": "1.5.1",
+    "version": "1.5.3",
     "private": true,
     "devDependencies": {
         "@babel/core": "^7.2.0",

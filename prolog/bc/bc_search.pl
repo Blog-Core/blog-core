@@ -1,5 +1,5 @@
 :- module(bc_search, [
-    bc_search/3,
+    bc_search/4,            % +Type, +Language, +Query, -Results
     bc_index/1,             % +Id
     bc_index_remove/1,      % +Id
     bc_index_remove/0,      % +Id
@@ -170,15 +170,15 @@ tfidf_vector_norm([Index|Indices], Acc, Vector, Norm):-
 tfidf_vector_norm([], Sum, _, Norm):-
     Norm is sqrt(Sum).
 
-%! bc_search(Type, Query, Results) is det.
+%! bc_search(Type, Language, Query, Results) is det.
 %
 % Runs search against the given type.
 % Gives back matching results sorted
 % by match score. Each entry is added
 % excerpt from beginning.
 
-bc_search(Type, Query, Results):-
-    split(Query, Tokens),
+bc_search(Type, Language, Query, Results):-
+    split(Query, Language, Tokens),
     ds_find(entry, (type=Type, published=true),
         [slug, tags, title, author, date_published,
         date_updated, description, language], Entries),
@@ -260,25 +260,38 @@ index_unsafe(Id):-
     retractall(content_index(_, Id, _, _)),
     retractall(indexed(Id)),
     ds_col_get(entry, Id,
-        [content, tags, title, slug], Entry),
-    split(Entry.content, Tokens),
-    length(Tokens, Length),
-    maplist(add_token(Id, Length), Tokens),
-    maplist(add_tag_token(Id), Entry.tags),
-    split(Entry.title, TitleTokens),
-    maplist(add_tag_token(Id), TitleTokens),
-    split(Entry.slug, SlugTokens),
-    maplist(add_tag_token(Id), SlugTokens),
+        [content, tags, title, slug, language], Entry),
+    index_content(Id, Entry.content, Entry.language),
+    index_tags(Id, Entry.tags, Entry.language),
+    index_title(Id, Entry.title, Entry.language),
+    index_slug(Id, Entry.slug, Entry.language),
     assertz(indexed(Id)).
+
+index_content(Id, Content, Language):-
+    split(Content, Language, Tokens),
+    length(Tokens, Length),
+    maplist(add_content_token(Id, Length), Tokens).
+
+index_tags(Id, Tags, Language):-
+    atomic_list_concat(Tags, ' ', Concat),
+    split(Concat, Language, Tokens),
+    maplist(add_tag_token(Id), Tokens).
+
+index_title(Id, Title, Language):-
+    split(Title, Language, Tokens),
+    maplist(add_tag_token(Id), Tokens).
+
+index_slug(Id, Slug, Language):-
+    split(Slug, Language, Tokens),
+    maplist(add_tag_token(Id), Tokens).
 
 % Adds tag token. Tag token has
 % relative weight 1.
 
-add_tag_token(Id, Tag):-
-    porter_stem(Tag, Stemmed),
-    add_term(Stemmed),
-    retractall(content_index(Stemmed, Id, _, _)),
-    assertz(content_index(Stemmed, Id, 1, 1)).
+add_tag_token(Id, Token):-
+    add_term(Token),
+    retractall(content_index(Token, Id, _, _)),
+    assertz(content_index(Token, Id, 1, 1)).
 
 %! bc_index_remove(+Id) is det.
 %
@@ -301,17 +314,15 @@ bc_index_remove:-
 % Adds token to the index.
 % Recalculates relative historgram.
 
-add_token(Id, Length, Token):-
-    (   stopword(Token)
-    ->  true
-    ;   add_term(Token),
-        (   content_index(Token, Id, Count, _)
-        ->  retractall(content_index(Token, Id, _, _)),
-            NewCount is Count + 1,
-            NewRel is NewCount / Length,
-            assertz(content_index(Token, Id, NewCount, NewRel))
-        ;   NewRel is 1/Length,
-            assertz(content_index(Token, Id, 1, NewRel)))).
+add_content_token(Id, Length, Token):-
+    add_term(Token),
+    (   content_index(Token, Id, Count, _)
+    ->  retractall(content_index(Token, Id, _, _)),
+        NewCount is Count + 1,
+        NewRel is NewCount / Length,
+        assertz(content_index(Token, Id, NewCount, NewRel))
+    ;   NewRel is 1/Length,
+        assertz(content_index(Token, Id, 1, NewRel))).
 
 % Helper to add token. Only
 % adds when it does not exist yet.
@@ -321,15 +332,32 @@ add_term(Token):-
     ->  true
     ;   assertz(term(Token))).
 
-split(Text, Stemmed):-
+% Stems the given term. Non-english entries will not
+% have stemmed terms.
+
+stem_term(en, Term, Stemmed):- !,
+    catch(porter_stem(Term, Stemmed), Error, true),
+    (   var(Error)
+    ->  true
+    ;   Stemmed = Term).
+
+stem_term(_, Term, Term).
+
+split(Text, Language, Stemmed):-
     atom_codes(Text, Codes),
     split(Codes, [], [], Tokens),
-    exclude(empty_token, Tokens, Filtered),
-    maplist(porter_stem, Filtered, Stemmed).
+    exclude(unused_token, Tokens, Filtered),
+    maplist(stem_term(Language), Filtered, Stemmed).
 
-empty_token(Token):-
+% Tokens with length < 2 and stopwords are
+% not used.
+
+unused_token(Token):-
     atom_length(Token, Length),
-    Length < 2.
+    Length < 2, !.
+
+unused_token(Token):-
+    stopword(Token).
 
 % Splits list of codes into a list
 % of tokens (atoms).
@@ -352,7 +380,7 @@ split([], _, Acc, [Lower]):-
 
 % Preserves inter-word dot.
 
-split_at([0'.,Code|_], _):-
+split_at([46,Code|_], _):-
     code_type(Code, digit), !,
     fail.
 

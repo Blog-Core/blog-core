@@ -10,8 +10,8 @@
 bc_check_dependencies:-
     check_swi,
     check_installed(smtp, v(0, 9, 4)),
-    check_installed(docstore, v(2, 0, 1)),
-    check_installed(arouter, v(1, 1, 1)),
+    check_installed(docstore, v(2, 0, 2)),
+    check_installed(arouter, v(2, 0, 0)),
     check_installed(simple_template, v(1, 0, 1)),
     check_installed(sort_dict, v(0, 0, 3)),
     check_installed(dict_schema, v(0, 0, 2)),

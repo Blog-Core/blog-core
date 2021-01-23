@@ -17,6 +17,11 @@ test('New entry, invalid data', [setup(new_database)]):-
     new_post(AuthorId, test_post, _{ title: "" }, Post),
     assertion(is_invalid_data(Post)).
 
+test('New entry, contains non-latin1', [setup(new_database)]):-
+    default_user_id(AuthorId),
+    new_post(AuthorId, test_post, _{ title: "Testő" }, Post),
+    assertion(Post.status = "success").
+
 test('New entry, no authentication', [setup(new_database)]):-
     default_user_id(AuthorId),
     set_no_auth,

@@ -14,6 +14,7 @@
 search(Type):-
     http_current_request(Request),
     http_parameters(Request, [
-        q(Query, [atom, default('')])]),
-    bc_search(Type, Query, Results),
+        q(Query, [atom, default('')]),
+        l(Language, [atom, default(en)])]),
+    bc_search(Type, Language, Query, Results),
     bc_reply_success(Results).
