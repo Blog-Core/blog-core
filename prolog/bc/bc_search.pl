@@ -261,10 +261,11 @@ index_unsafe(Id):-
     retractall(indexed(Id)),
     ds_col_get(entry, Id,
         [content, tags, title, slug, language], Entry),
-    index_content(Id, Entry.content, Entry.language),
-    index_tags(Id, Entry.tags, Entry.language),
-    index_title(Id, Entry.title, Entry.language),
-    index_slug(Id, Entry.slug, Entry.language),
+    atom_string(Language, Entry.language),
+    index_content(Id, Entry.content, Language),
+    index_tags(Id, Entry.tags, Language),
+    index_title(Id, Entry.title, Language),
+    index_slug(Id, Entry.slug, Language),
     assertz(indexed(Id)).
 
 index_content(Id, Content, Language):-
@@ -344,6 +345,7 @@ stem_term(en, Term, Stemmed):- !,
 stem_term(_, Term, Term).
 
 split(Text, Language, Stemmed):-
+    must_be(atom, Language),
     atom_codes(Text, Codes),
     split(Codes, [], [], Tokens),
     exclude(unused_token, Tokens, Filtered),
