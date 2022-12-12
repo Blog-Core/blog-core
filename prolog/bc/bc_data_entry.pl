@@ -10,7 +10,8 @@
     bc_trash_list/2,          % +Actor, -List
     bc_purge_trash/1,         % +Actor
     bc_entry/3,               % +Actor, +Id, -Entry
-    bc_entry_info/3           % +Actor, +Id, -Entry
+    bc_entry_info/3,          % +Actor, +Id, -Entry
+    bc_export_all/1           % +Directory
 ]).
 
 /** <module> Handles entry data */
@@ -19,6 +20,7 @@
 :- use_module(library(sort_dict)).
 :- use_module(library(docstore)).
 :- use_module(library(md/md_parse)).
+:- use_module(library(http/json)).
 
 :- use_module(bc_access).
 :- use_module(bc_search).
@@ -304,3 +306,44 @@ attach_comment_count(EntryIn, EntryOut):-
     ds_find(comment, post=Id, [post], List),
     length(List, Count),
     put_dict(_{ comments: Count }, EntryIn, EntryOut).
+
+% Exports all entries to the directory.
+
+bc_export_all(Directory):-
+    (   exists_directory(Directory)
+    ->  export_all_to_directory(Directory)
+    ;   throw(error(no_directory(Directory)))).
+
+export_all_to_directory(Directory):-
+    ds_all(entry, Entries),
+    maplist(export_entry(Directory), Entries).
+
+% Exports entry to the given directory.
+
+export_entry(Directory, Entry):-
+    export_entry_meta(Directory, Entry),
+    export_entry_content(Directory, Entry).
+
+% Exports entry Markdown content.
+
+export_entry_content(Directory, Entry):-
+    atomic_list_concat([Directory, /, Entry.slug, '.md'], MdFile),
+    setup_call_cleanup(
+        open(MdFile, write, Stream, [encoding('utf8')]),
+        write(Stream, Entry.content),
+        close(Stream)).
+
+% Exports entry metadata.    
+
+export_entry_meta(Directory, Entry):-
+    dict_pairs(Entry, Tag, Pairs),
+    exclude(key_is_non_meta, Pairs, MetaPairs),
+    dict_pairs(Meta, Tag, MetaPairs),
+    atomic_list_concat([Directory, /, Entry.slug, '.json'], MetaFile),
+    setup_call_cleanup(
+        open(MetaFile, write, Stream, [encoding('utf8')]),
+        json_write(Stream, Meta),
+        close(Stream)).
+
+key_is_non_meta(content-_).
+key_is_non_meta(html-_).

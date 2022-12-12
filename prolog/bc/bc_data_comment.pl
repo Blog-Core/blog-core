@@ -1,7 +1,8 @@
 :- module(bc_data_comment, [
     bc_comment_tree/2,      % +EntryId, -Comments
     bc_comment_save/3,      % +EntryId, +Comment, -Id
-    bc_comment_remove/3     % +Actor, +EntryId, +Id
+    bc_comment_remove/3,    % +Actor, +EntryId, +Id
+    bc_export_comments/1    % +Filename
 ]).
 
 /** <module> Handles post comments */
@@ -9,6 +10,7 @@
 :- use_module(library(sort_dict)).
 :- use_module(library(docstore)).
 :- use_module(library(debug)).
+:- use_module(library(http/json)).
 
 :- use_module(bc_mail).
 :- use_module(bc_entry).
@@ -97,3 +99,12 @@ remove_access(Actor, EntryId):-
 
 remove_access(_, _):-
     throw(error(no_access)).
+
+% Exports all comments to the given file.
+
+bc_export_comments(File):-
+    ds_all(comment, Comments),
+    setup_call_cleanup(
+        open(File, write, Stream, [encoding('utf8')]),
+        json_write(Stream, Comments),
+        close(Stream)).
